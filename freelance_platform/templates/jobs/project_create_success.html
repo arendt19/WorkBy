@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Project Created" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}">{% trans "My Projects" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{% trans "Project Created" %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{% trans "Project Created Successfully" %}</h4>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    <h3>{% trans "Your project has been posted!" %}</h3>
+                    <p class="text-muted mb-4">{% trans "Freelancers can now view your project and submit proposals." %}</p>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-primary mx-2">
+                            <i class="fas fa-eye me-2"></i> {% trans "View Project" %}
+                        </a>
+                        <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-primary mx-2">
+                            <i class="fas fa-list me-2"></i> {% trans "My Projects" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "What's Next?" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-user-check text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5>{% trans "Review Proposals" %}</h5>
+                            <p class="text-muted small">{% trans "Check for proposals from freelancers interested in your project." %}</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-comments text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5>{% trans "Discuss Details" %}</h5>
+                            <p class="text-muted small">{% trans "Communicate with potential freelancers to clarify requirements." %}</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
+                                <i class="fas fa-file-contract text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5>{% trans "Create Contract" %}</h5>
+                            <p class="text-muted small">{% trans "Once you find the right freelancer, create a contract to begin work." %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

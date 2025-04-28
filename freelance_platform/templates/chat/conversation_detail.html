@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Conversation with" %} {{ other_participant.get_full_name }} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-dark text-light">
+                <div class="card-header d-flex justify-content-between align-items-center bg-dark">
+                    <div class="d-flex align-items-center">
+                        <a href="{% url 'chat:inbox' %}" class="btn btn-sm btn-outline-light me-3">
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
+                        <div class="position-relative d-flex align-items-center">
+                            {% if other_participant.profile.avatar %}
+                            <img src="{{ other_participant.profile.avatar.url }}" 
+                                 alt="{{ other_participant.get_full_name }}" 
+                                 class="rounded-circle me-2" width="40" height="40">
+                            {% else %}
+                            <div class="user-initial-avatar rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" 
+                                 style="width: 40px; height: 40px;">
+                                <span class="text-white fw-bold">{{ other_participant.get_full_name|slice:":1" }}</span>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-0 text-light">{{ other_participant.get_full_name }}</h5>
+                                <small class="text-light opacity-75">
+                                    {% if other_participant.profile.is_online %}
+                                    <span class="text-success">
+                                        <i class="fas fa-circle me-1" style="font-size: 8px;"></i>{% trans "Online" %}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">
+                                        {% trans "Last seen" %} {{ other_participant.profile.last_activity|date:"d.m.Y H:i" }}
+                                    </span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        {% if other_participant.is_freelancer %}
+                        <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-outline-light btn-sm" title="{% trans 'View profile' %}">
+                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
+                        </a>
+                        {% else %}
+                        <a href="{% url 'accounts:client_detail' other_participant.username %}" class="btn btn-outline-light btn-sm" title="{% trans 'View profile' %}">
+                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
+                        </a>
+                        {% endif %}
+                        {% if related_job %}
+                        <a href="{% url 'jobs:job_detail' related_job.pk %}" class="btn btn-primary btn-sm ms-2" title="{% trans 'View related job' %}">
+                            <i class="fas fa-briefcase me-1"></i> {% trans "View Job" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body bg-dark" style="height: 65vh; max-height: 65vh; overflow-y: auto;" id="message-container">
+                    {% if messages %}
+                        <div class="message-group">
+                            {% for message in messages %}
+                                <div class="message mb-3 {% if message.sender == request.user %}message-outgoing{% else %}message-incoming{% endif %}" 
+                                     id="message-{{ message.id }}">
+                                    <div class="message-bubble p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-white ml-auto{% else %}bg-dark border border-secondary text-light{% endif %}"
+                                         style="max-width: 85%; {% if message.sender == request.user %}margin-left: auto;{% endif %}">
+                                        {{ message.content|linebreaksbr }}
+                                        {% if message.attachment %}
+                                            <div class="message-attachment mt-2">
+                                                {% if message.is_image %}
+                                                    <a href="{{ message.attachment.url }}" target="_blank" class="d-block">
+                                                        <img src="{{ message.attachment.url }}" alt="{% trans 'Attachment' %}" class="img-fluid rounded-3" style="max-height: 200px;">
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{{ message.attachment.url }}" target="_blank" class="d-flex align-items-center p-2 rounded-3 bg-dark bg-opacity-25">
+                                                        <i class="fas fa-file-alt me-2 text-light"></i>
+                                                        <span class="text-truncate text-light">{{ message.attachment.name|slice:"14:" }}</span>
+                                                        <i class="fas fa-download ms-2 text-light"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="message-meta d-flex align-items-center {% if message.sender == request.user %}justify-content-end{% endif %} mt-1">
+                                        <small class="text-muted">{{ message.created_at|date:"H:i" }}</small>
+                                        {% if message.sender == request.user %}
+                                            {% if message.is_read %}
+                                                <i class="fas fa-check-double ms-1 text-primary" title="{% trans 'Read' %}"></i>
+                                            {% else %}
+                                                <i class="fas fa-check ms-1 text-muted" title="{% trans 'Sent' %}"></i>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center my-5 py-5">
+                            <img src="{% static 'img/start-conversation.svg' %}" alt="{% trans 'Start conversation' %}" class="img-fluid mb-4" style="max-width: 150px; opacity: 0.7;">
+                            <h5 class="text-light">{% trans "Start your conversation with" %} {{ other_participant.get_full_name }}</h5>
+                            <p class="text-muted">{% trans "Send your first message below" %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-dark border-top border-secondary p-3">
+                    <form id="message-form" method="post" enctype="multipart/form-data" class="message-form">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="file" id="attachment" name="attachment" class="d-none">
+                            <button type="button" class="btn btn-outline-secondary border-secondary text-light" id="attach-button">
+                                <i class="fas fa-paperclip"></i>
+                            </button>
+                            <textarea id="id_content" name="content" class="form-control bg-dark bg-opacity-50 text-light border-secondary" 
+                                      placeholder="{% trans 'Type your message...' %}" rows="1" required></textarea>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div id="file-preview" class="mt-2 d-none">
+                            <div class="d-flex align-items-center bg-dark bg-opacity-50 p-2 rounded">
+                                <i class="fas fa-file me-2 text-light"></i>
+                                <span id="file-name" class="text-truncate text-light"></span>
+                                <button type="button" id="remove-file" class="btn btn-sm text-danger ms-auto">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Прокрутка к последнему сообщению при загрузке страницы
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+        
+        // Отправка сообщения через AJAX
+        $('#message-form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            
+            $.ajax({
+                url: '{% url "chat:api_send_message" conversation.id %}',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    // Очищаем поле ввода и предпросмотр файла
+                    $('#id_content').val('');
+                    $('#attachment').val('');
+                    $('#file-preview').addClass('d-none');
+                    
+                    // Добавляем новое сообщение в чат
+                    const messageHtml = `
+                        <div class="message mb-3 message-outgoing" id="message-${response.id}">
+                            <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 85%; margin-left: auto;">
+                                ${response.content.replace(/\n/g, '<br>')}
+                                ${response.attachment ? `
+                                    <div class="message-attachment mt-2">
+                                        ${response.is_image ? `
+                                            <a href="${response.attachment_url}" target="_blank" class="d-block">
+                                                <img src="${response.attachment_url}" alt="{% trans 'Attachment' %}" class="img-fluid rounded-3" style="max-height: 200px;">
+                                            </a>
+                                        ` : `
+                                            <a href="${response.attachment_url}" target="_blank" class="d-flex align-items-center p-2 rounded-3 bg-dark bg-opacity-25">
+                                                <i class="fas fa-file-alt me-2 text-light"></i>
+                                                <span class="text-truncate text-light">${response.attachment_name}</span>
+                                                <i class="fas fa-download ms-2 text-light"></i>
+                                            </a>
+                                        `}
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="message-meta d-flex align-items-center justify-content-end mt-1">
+                                <small class="text-muted">${response.created_at}</small>
+                                <i class="fas fa-check ms-1 text-muted" title="{% trans 'Sent' %}"></i>
+                            </div>
+                        </div>
+                    `;
+                    
+                    $('.message-group').append(messageHtml);
+                    messageContainer.scrollTop = messageContainer.scrollHeight;
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error sending message:', error);
+                }
+            });
+        });
+        
+        // Обработка прикрепления файла
+        $('#attach-button').on('click', function() {
+            $('#attachment').click();
+        });
+        
+        $('#attachment').on('change', function() {
+            const file = this.files[0];
+            if (file) {
+                $('#file-name').text(file.name);
+                $('#file-preview').removeClass('d-none');
+            } else {
+                $('#file-preview').addClass('d-none');
+            }
+        });
+        
+        $('#remove-file').on('click', function() {
+            $('#attachment').val('');
+            $('#file-preview').addClass('d-none');
+        });
+        
+        // Автоматический ресайз текстового поля
+        $('#id_content').on('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // Проверка новых сообщений каждые 5 секунд
+        function checkNewMessages() {
+            const lastMessageId = $('.message').last().attr('id')?.split('-')[1] || 0;
+            
+            $.ajax({
+                url: '{% url "chat:api_check_messages" conversation.id %}',
+                type: 'GET',
+                data: { last_id: lastMessageId },
+                success: function(response) {
+                    if (response.messages && response.messages.length > 0) {
+                        let newMessagesHtml = '';
+                        
+                        response.messages.forEach(function(message) {
+                            if (message.sender_id !== {{ request.user.id }}) {
+                                newMessagesHtml += `
+                                    <div class="message mb-3 message-incoming" id="message-${message.id}">
+                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light" style="max-width: 85%;">
+                                            ${message.content.replace(/\n/g, '<br>')}
+                                            ${message.attachment ? `
+                                                <div class="message-attachment mt-2">
+                                                    ${message.is_image ? `
+                                                        <a href="${message.attachment_url}" target="_blank" class="d-block">
+                                                            <img src="${message.attachment_url}" alt="{% trans 'Attachment' %}" class="img-fluid rounded-3" style="max-height: 200px;">
+                                                        </a>
+                                                    ` : `
+                                                        <a href="${message.attachment_url}" target="_blank" class="d-flex align-items-center p-2 rounded-3 bg-dark bg-opacity-25">
+                                                            <i class="fas fa-file-alt me-2 text-light"></i>
+                                                            <span class="text-truncate text-light">${message.attachment_name}</span>
+                                                            <i class="fas fa-download ms-2 text-light"></i>
+                                                        </a>
+                                                    `}
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                        <div class="message-meta d-flex align-items-center mt-1">
+                                            <small class="text-muted">${message.created_at}</small>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        });
+                        
+                        $('.message-group').append(newMessagesHtml);
+                        messageContainer.scrollTop = messageContainer.scrollHeight;
+                        
+                        // Отмечаем сообщения как прочитанные
+                        $.ajax({
+                            url: '{% url "chat:api_mark_messages_read" conversation.id %}',
+                            type: 'POST',
+                            data: {
+                                'csrfmiddlewaretoken': '{{ csrf_token }}'
+                            }
+                        });
+                    }
+                }
+            });
+        }
+        
+        // Запускаем проверку новых сообщений каждые 5 секунд
+        setInterval(checkNewMessages, 5000);
+    });
+</script>
+{% endblock %} 

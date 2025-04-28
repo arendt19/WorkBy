@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ client.get_full_name|default:client.username }} - {% trans "Profile" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Профиль клиента -->
+    <div class="profile-header shadow-sm">
+        <div class="row">
+            <div class="col-md-3 text-center">
+                {% if client.avatar %}
+                    <img src="{{ client.avatar.url }}" alt="{{ client.username }}" class="profile-avatar">
+                {% else %}
+                    <div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white">
+                        <span style="font-size: 80px;">{{ client.username.0|upper }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2>{{ client.get_full_name|default:client.username }}</h2>
+                        <p class="lead">
+                            {% if client.company_name %}
+                                {{ client.company_name }}
+                            {% else %}
+                                {% trans "Client" %}
+                            {% endif %}
+                        </p>
+                        <p>{{ client.bio|linebreaks }}</p>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="count">{{ profile.projects_count|default:0 }}</div>
+                            <div class="stat-label">{% trans "Posted Projects" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="count">{{ profile.completed_projects_count|default:0 }}</div>
+                            <div class="stat-label">{% trans "Completed Projects" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="count">{{ profile.total_spent|default:0|floatformat:0 }}</div>
+                            <div class="stat-label">{% trans "Total Spent (₸)" %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Подробная информация -->
+    <div class="row">
+        <div class="col-md-4">
+            {% if profile.company_website or profile.industry or profile.company_size %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Company Information" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if client.company_name %}
+                        <p><strong>{% trans "Company" %}:</strong> {{ client.company_name }}</p>
+                    {% endif %}
+                    
+                    {% if profile.industry %}
+                        <p><strong>{% trans "Industry" %}:</strong> {{ profile.industry }}</p>
+                    {% endif %}
+                    
+                    {% if profile.company_size %}
+                        <p><strong>{% trans "Company Size" %}:</strong> {{ profile.company_size }} {% trans "employees" %}</p>
+                    {% endif %}
+                    
+                    {% if profile.company_website %}
+                        <p>
+                            <i class="fas fa-globe me-2"></i>
+                            <a href="{{ profile.company_website }}" target="_blank" rel="noopener noreferrer">
+                                {{ profile.company_website }}
+                            </a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Projects" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_projects %}
+                        <div class="list-group">
+                            {% for project in recent_projects %}
+                                <a href="{% url 'jobs:project_detail' project.id %}" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ project.title }}</h6>
+                                        <small>{% trans "Posted" %}: {{ project.created_at|date:"d.m.Y" }}</small>
+                                    </div>
+                                    <p class="mb-1 small">{{ project.description|truncatewords:20 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-primary">{{ project.category.name }}</span>
+                                        <span class="badge bg-success">{{ project.budget|floatformat:0 }} ₸</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-center py-4">{% trans "No public projects available." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

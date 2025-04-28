@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Proposal Details" %} - WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="mb-4">{% trans "Proposal Details" %}</h1>
+            
+            <!-- Информация о проекте -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans "Project Information" %}</h5>
+                    <a href="{% url 'jobs:project_detail' proposal.project.id %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-external-link-alt me-1"></i> {% trans "View Project" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title mb-3">{{ proposal.project.title }}</h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Category:" %}</strong> {{ proposal.project.category }}</p>
+                            <p><strong>{% trans "Client:" %}</strong> {{ proposal.project.client.get_full_name|default:proposal.project.client.username }}</p>
+                            <p><strong>{% trans "Budget:" %}</strong> {{ proposal.project.budget }} ₸</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Deadline:" %}</strong> {{ proposal.project.deadline|date:"j M Y" }}</p>
+                            <p><strong>{% trans "Status:" %}</strong> <span class="badge status-badge status-{{ proposal.project.status }}">{{ proposal.project.get_status_display }}</span></p>
+                            <p><strong>{% trans "Posted:" %}</strong> {{ proposal.project.created_at|date:"j M Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Информация о предложении -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "Proposal Details" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Your Bid:" %}</strong> {{ proposal.bid_amount }} ₸</p>
+                            <p><strong>{% trans "Delivery Time:" %}</strong> {{ proposal.delivery_time }} {% trans "days" %}</p>
+                            <p><strong>{% trans "Status:" %}</strong> <span class="badge status-badge status-{{ proposal.status }}">{{ proposal.get_status_display }}</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Submitted:" %}</strong> {{ proposal.created_at|date:"j M Y" }}</p>
+                            {% if proposal.updated_at != proposal.created_at %}
+                            <p><strong>{% trans "Updated:" %}</strong> {{ proposal.updated_at|date:"j M Y" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h6>{% trans "Cover Letter" %}</h6>
+                        <div class="p-3 bg-light rounded">
+                            {{ proposal.cover_letter|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Кнопки действий -->
+            <div class="d-flex gap-2">
+                {% if proposal.status == 'pending' %}
+                    <a href="{% url 'jobs:proposal_edit' proposal.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit me-1"></i> {% trans "Edit Proposal" %}
+                    </a>
+                    <a href="{% url 'jobs:proposal_withdraw' proposal.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-times-circle me-1"></i> {% trans "Withdraw" %}
+                    </a>
+                {% endif %}
+                
+                <a href="{% url 'jobs:my_proposals' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> {% trans "Back to My Proposals" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

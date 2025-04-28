@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Edit Profile" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:profile' %}">{% trans "Profile" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{% trans "Edit Profile" %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{% trans "Edit Profile" %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Основные данные пользователя -->
+                            <div class="col-md-6">
+                                <h5>{% trans "Basic Information" %}</h5>
+                                <hr>
+                                
+                                <div class="mb-3">
+                                    {{ user_form.username|as_crispy_field }}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ user_form.first_name|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            {{ user_form.last_name|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ user_form.email|as_crispy_field }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ user_form.bio|as_crispy_field }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ user_form.avatar|as_crispy_field }}
+                                    {% if user.avatar %}
+                                        <div class="mt-2">
+                                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded" style="max-width: 150px;">
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" name="delete_avatar" id="delete_avatar">
+                                                <label class="form-check-label" for="delete_avatar">
+                                                    {% trans "Delete current avatar" %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-group">
+                                        <label for="id_user_type">{% trans "Account Type" %}</label>
+                                        <select name="user_type" class="form-select" id="id_user_type">
+                                            <option value="client" {% if user.user_type == 'client' %}selected{% endif %}>{% trans "Client" %}</option>
+                                            <option value="freelancer" {% if user.user_type == 'freelancer' %}selected{% endif %}>{% trans "Freelancer" %}</option>
+                                        </select>
+                                        <small class="form-text text-muted">{% trans "You can change your account type at any time." %}</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-group">
+                                        <label for="id_preferred_language">{% trans "Preferred Language" %}</label>
+                                        <select name="preferred_language" class="form-select" id="id_preferred_language">
+                                            <option value="en" {% if user.preferred_language == 'en' %}selected{% endif %}>{% trans "English" %}</option>
+                                            <option value="ru" {% if user.preferred_language == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
+                                            <option value="kk" {% if user.preferred_language == 'kk' %}selected{% endif %}>{% trans "Kazakh" %}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Специфичные данные в зависимости от типа пользователя -->
+                            <div class="col-md-6">
+                                <!-- Информация для фрилансера -->
+                                <div id="freelancer-info" {% if user.user_type != 'freelancer' %}style="display: none;"{% endif %}>
+                                    <h5>{% trans "Freelancer Information" %}</h5>
+                                    <hr>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.specialization|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {% if 'skills' in user_form.fields %}
+                                            {{ user_form.skills|as_crispy_field }}
+                                        {% endif %}
+                                        <small class="form-text text-muted">{% trans "Enter skills separated by commas (e.g. JavaScript, Python, Design)" %}</small>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                {{ profile_form.experience_years|as_crispy_field }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                {% if 'hourly_rate' in user_form.fields %}
+                                                    {{ user_form.hourly_rate|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.portfolio_website|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.education|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.certifications|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.languages|as_crispy_field }}
+                                        <small class="form-text text-muted">{% trans "Enter languages separated by commas (e.g. English, Russian, Kazakh)" %}</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.is_available|as_crispy_field }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Информация для клиента -->
+                                <div id="client-info" {% if user.user_type != 'client' %}style="display: none;"{% endif %}>
+                                    <h5>{% trans "Client Information" %}</h5>
+                                    <hr>
+                                    
+                                    <div class="mb-3">
+                                        {{ client_form.company_name|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.company_website|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.industry|as_crispy_field }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ profile_form.company_size|as_crispy_field }}
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ profile_form.phone_number|as_crispy_field }}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    {{ profile_form.location|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary me-2">
+                                <i class="bi bi-x-circle"></i> {% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> {% trans "Save Changes" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userTypeSelect = document.getElementById('id_user_type');
+        const freelancerInfo = document.getElementById('freelancer-info');
+        const clientInfo = document.getElementById('client-info');
+        
+        // Функция для переключения отображения разделов
+        function toggleUserTypeSections() {
+            const selectedType = userTypeSelect.value;
+            
+            if (selectedType === 'freelancer') {
+                freelancerInfo.style.display = 'block';
+                clientInfo.style.display = 'none';
+            } else if (selectedType === 'client') {
+                freelancerInfo.style.display = 'none';
+                clientInfo.style.display = 'block';
+            }
+        }
+        
+        // Применяем при первой загрузке
+        toggleUserTypeSections();
+        
+        // Добавляем обработчик события изменения
+        userTypeSelect.addEventListener('change', toggleUserTypeSections);
+    });
+</script>
+{% endblock %} 

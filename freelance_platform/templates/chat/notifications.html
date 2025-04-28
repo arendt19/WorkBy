@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Notifications" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm mb-4 bg-dark text-light">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0 text-light">{% trans "Notifications" %}</h3>
+                    <div class="d-flex align-items-center">
+                        <span id="notification-count-badge" class="badge bg-danger me-2 {% if notifications_count == 0 %}d-none{% endif %}">{{ notifications_count }}</span>
+                        <button id="mark-all-read" class="btn btn-sm btn-outline-light" {% if notifications_count == 0 %}disabled{% endif %}>
+                            {% trans "Mark all as read" %}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if notifications %}
+                    <ul class="list-group list-group-flush" id="notifications-list">
+                        {% for notification in notifications %}
+                        <li class="list-group-item list-group-item-action d-flex align-items-start p-3 bg-dark text-light {% if not notification.is_read %}unread border-start border-4 border-primary{% endif %}" 
+                            data-id="{{ notification.id }}">
+                            <div class="notification-icon d-flex align-items-center justify-content-center rounded-circle me-3 
+                                {% if notification.notification_type == 'message' %}bg-info bg-opacity-25{% elif notification.notification_type == 'proposal' %}bg-success bg-opacity-25{% elif notification.notification_type == 'contract' %}bg-warning bg-opacity-25{% elif notification.notification_type == 'milestone' %}bg-primary bg-opacity-25{% elif notification.notification_type == 'review' %}bg-danger bg-opacity-25{% endif %}" 
+                                style="width: 48px; height: 48px;">
+                                {% if notification.notification_type == 'message' %}
+                                    <i class="fas fa-envelope fa-lg text-info"></i>
+                                {% elif notification.notification_type == 'proposal' %}
+                                    <i class="fas fa-file-contract fa-lg text-success"></i>
+                                {% elif notification.notification_type == 'contract' %}
+                                    <i class="fas fa-handshake fa-lg text-warning"></i>
+                                {% elif notification.notification_type == 'milestone' %}
+                                    <i class="fas fa-flag-checkered fa-lg text-primary"></i>
+                                {% elif notification.notification_type == 'review' %}
+                                    <i class="fas fa-star fa-lg text-danger"></i>
+                                {% else %}
+                                    <i class="fas fa-bell fa-lg text-light"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ notification.get_notification_type_display }}</h5>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} {% trans "ago" %}</small>
+                                </div>
+                                <p class="mb-1">{{ notification.content }}</p>
+                                {% if notification.notification_type == 'message' and notification.related_object_id %}
+                                <a href="{% url 'chat:conversation_detail' notification.related_object_id %}" class="btn btn-sm btn-primary mt-2">
+                                    {% trans "View conversation" %}
+                                </a>
+                                {% endif %}
+                            </div>
+                            {% if not notification.is_read %}
+                            <a href="{% url 'chat:mark_notification_read' notification.id %}" class="mark-read-btn" data-id="{{ notification.id }}">
+                                <i class="fas fa-check-circle fa-lg ms-3 text-primary"></i>
+                            </a>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <img src="{% static 'img/empty-notifications.svg' %}" alt="{% trans 'No notifications' %}" class="img-fluid mb-4" style="max-width: 180px; opacity: 0.7;">
+                        <h5 class="text-light">{% trans "You don't have any notifications" %}</h5>
+                        <p class="text-muted">{% trans "When you receive new notifications, they will appear here" %}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Обновление счетчика уведомлений каждые 30 секунд
+        function updateNotificationCount() {
+            $.ajax({
+                url: '{% url "chat:api_unread_count" %}',
+                type: 'GET',
+                success: function(data) {
+                    const count = data.unread_notifications;
+                    $('#notification-count').text(count);
+                    
+                    // Обновляем счетчик на странице уведомлений
+                    const badgeElement = $('#notification-count-badge');
+                    if (count > 0) {
+                        badgeElement.text(count).removeClass('d-none');
+                        $('#mark-all-read').prop('disabled', false);
+                    } else {
+                        badgeElement.addClass('d-none');
+                        $('#mark-all-read').prop('disabled', true);
+                    }
+                }
+            });
+        }
+        
+        // Отметить уведомление как прочитанное
+        $('.mark-read-btn').on('click', function(e) {
+            e.preventDefault();
+            const notificationId = $(this).data('id');
+            const listItem = $(this).closest('li');
+            
+            $.ajax({
+                url: $(this).attr('href'),
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function() {
+                    // Обновить визуальное отображение
+                    listItem.removeClass('unread border-start border-4 border-primary');
+                    listItem.find('.mark-read-btn').remove();
+                    
+                    // Обновить счетчик
+                    const currentCount = parseInt($('#notification-count-badge').text()) || 0;
+                    if (currentCount > 1) {
+                        $('#notification-count-badge').text(currentCount - 1);
+                        $('#notification-count').text(currentCount - 1);
+                    } else {
+                        $('#notification-count-badge').addClass('d-none');
+                        $('#notification-count').text('0');
+                        $('#mark-all-read').prop('disabled', true);
+                        // Если есть, скрыть индикатор в шапке
+                        $('#notification-indicator').addClass('d-none');
+                    }
+                }
+            });
+        });
+        
+        // Отметить все уведомления как прочитанные
+        $('#mark-all-read').on('click', function() {
+            $.ajax({
+                url: '{% url "chat:mark_all_read" %}',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                success: function() {
+                    // Обновить визуальное отображение
+                    $('.unread').removeClass('unread border-start border-4 border-primary');
+                    $('.mark-read-btn').remove();
+                    $('#notification-count-badge').addClass('d-none');
+                    $('#mark-all-read').prop('disabled', true);
+                    
+                    // Обновить счетчик в шапке
+                    $('#notification-count').text('0');
+                    
+                    // Если есть, скрыть индикатор в шапке
+                    $('#notification-indicator').addClass('d-none');
+                }
+            });
+        });
+        
+        // Запускаем обновление счетчика
+        setInterval(updateNotificationCount, 30000);
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}
+        {% trans "Edit Project" %}
+    {% else %}
+        {% trans "Post New Project" %}
+    {% endif %} | WorkBy
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    .select2-container--default .select2-selection--multiple {
+        min-height: 38px;
+        border: 1px solid #ced4da;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if is_edit %}
+                            {% trans "Edit Project" %}
+                        {% else %}
+                            {% trans "Post New Project" %}
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="mb-4">
+                            <h5>{% trans "Project Details" %}</h5>
+                            <hr>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.title.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.title.help_text %}
+                                    <div class="form-text">{{ form.title.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.description.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.description.help_text %}
+                                    <div class="form-text">{{ form.description.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">{{ form.category.label }}</label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.category.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.tags.id_for_label }}" class="form-label">{{ form.tags.label }}</label>
+                                {{ form.tags }}
+                                {% if form.tags.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tags.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.tags.help_text %}
+                                    <div class="form-text">{{ form.tags.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>{% trans "Budget & Timeline" %}</h5>
+                            <hr>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.budget_type.id_for_label }}" class="form-label">{{ form.budget_type.label }}</label>
+                                {{ form.budget_type }}
+                                {% if form.budget_type.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.budget_type.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.budget_min.id_for_label }}" class="form-label">{{ form.budget_min.label }}</label>
+                                    {{ form.budget_min }}
+                                    {% if form.budget_min.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.budget_min.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.budget_max.id_for_label }}" class="form-label">{{ form.budget_max.label }}</label>
+                                    {{ form.budget_max }}
+                                    {% if form.budget_max.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.budget_max.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.deadline.id_for_label }}" class="form-label">{{ form.deadline.label }}</label>
+                                {{ form.deadline }}
+                                {% if form.deadline.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.deadline.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5>{% trans "Project Requirements" %}</h5>
+                            <hr>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.experience_required.id_for_label }}" class="form-label">{{ form.experience_required.label }}</label>
+                                {{ form.experience_required }}
+                                {% if form.experience_required.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.experience_required.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ form.location_required.id_for_label }}" class="form-label">{{ form.location_required.label }}</label>
+                                {{ form.location_required }}
+                                {% if form.location_required.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.location_required.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                {{ form.is_remote }}
+                                <label class="form-check-label" for="{{ form.is_remote.id_for_label }}">
+                                    {{ form.is_remote.label }}
+                                </label>
+                                {% if form.is_remote.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.is_remote.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3 form-check">
+                                {{ form.is_private }}
+                                <label class="form-check-label" for="{{ form.is_private.id_for_label }}">
+                                    {{ form.is_private.label }}
+                                </label>
+                                {% if form.is_private.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.is_private.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.is_private.help_text %}
+                                    <div class="form-text">{{ form.is_private.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> {% trans "Back" %}
+                            </a>
+                            
+                            <div>
+                                {% if is_edit %}
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-1"></i> {% trans "Save Changes" %}
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-plus me-1"></i> {% trans "Create Project" %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Применяем Select2 для полей с выбором
+        $('#id_category').select2({
+            placeholder: "{% trans 'Select a category' %}",
+            width: '100%'
+        });
+        
+        // Инициализация форматирования полей
+        $('#id_title').addClass('form-control');
+        $('#id_description').addClass('form-control');
+        $('#id_category').addClass('form-control');
+        $('#id_tags').addClass('form-control');
+        $('#id_budget_type').addClass('form-select');
+        $('#id_budget_min').addClass('form-control');
+        $('#id_budget_max').addClass('form-control');
+        $('#id_deadline').addClass('form-control');
+        $('#id_experience_required').addClass('form-control');
+        $('#id_location_required').addClass('form-control');
+        $('#id_is_remote').addClass('form-check-input');
+        $('#id_is_private').addClass('form-check-input');
+    });
+</script>
+{% endblock %} 

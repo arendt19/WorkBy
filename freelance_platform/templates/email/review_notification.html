@@ -1,0 +1,17 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Новый отзыв - FreelanceKZ{% endblock %}
+
+{% block header %}Новый отзыв о вас{% endblock %}
+
+{% block content %}
+<h2>Здравствуйте, {{ user.get_full_name|default:user.username }}!</h2>
+
+<p>Для вас оставили новый отзыв на платформе FreelanceKZ.</p>
+
+<div class="message-box">
+    {{ notification.content }}
+</div>
+
+<p>Для просмотра отзыва и вашего профиля, нажмите на кнопку ниже:</p>
+{% endblock %} 

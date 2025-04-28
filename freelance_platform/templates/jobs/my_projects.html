@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "My Projects" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">{% trans "My Projects" %}</h1>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'jobs:project_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> {% trans "Post New Project" %}
+        </a>
+        
+        <div class="nav nav-pills">
+            <a class="nav-link {% if active_tab == 'active' %}active{% endif %}" href="?tab=active">
+                {% trans "Active" %} ({{ active_count }})
+            </a>
+            <a class="nav-link {% if active_tab == 'completed' %}active{% endif %}" href="?tab=completed">
+                {% trans "Completed" %} ({{ completed_count }})
+            </a>
+            <a class="nav-link {% if active_tab == 'drafts' %}active{% endif %}" href="?tab=drafts">
+                {% trans "Drafts" %} ({{ drafts_count }})
+            </a>
+        </div>
+    </div>
+    
+    {% if projects %}
+        <div class="project-list">
+            {% for project in projects %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="card-title">
+                                    <a href="{% url 'jobs:project_detail' project.pk %}" class="text-decoration-none">
+                                        {{ project.title }}
+                                    </a>
+                                </h4>
+                                <div class="text-muted small">
+                                    <span class="me-3">
+                                        <i class="fas fa-tag me-1"></i> {{ project.category.name }}
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-calendar me-1"></i> {{ project.created_at|date:"d M Y" }}
+                                    </span>
+                                    {% if project.deadline %}
+                                        <span class="me-3">
+                                            <i class="fas fa-clock me-1"></i> 
+                                            {% trans "Deadline" %}: {{ project.deadline|date:"d M Y" }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div>
+                                <span class="badge bg-{{ project.status|slugify }}">
+                                    {{ project.get_status_display }}
+                                </span>
+                                <span class="badge bg-primary ms-1">
+                                    {{ project.get_budget_type_display }}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <p class="mb-3">{{ project.description|truncatewords:40 }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="badge bg-secondary me-2">
+                                    <i class="fas fa-money-bill me-1"></i> {{ project.budget_min }} - {{ project.budget_max }} ₸
+                                </span>
+                                
+                                <span class="badge bg-secondary me-2">
+                                    <i class="fas fa-users me-1"></i> {{ project.proposals.count }} {% trans "Proposals" %}
+                                </span>
+                                
+                                {% if project.is_remote %}
+                                    <span class="badge bg-info text-dark">
+                                        <i class="fas fa-laptop-house me-1"></i> {% trans "Remote" %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="btn-group">
+                                <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> {% trans "View" %}
+                                </a>
+                                
+                                {% if project.status == 'draft' or project.status == 'open' %}
+                                    <a href="{% url 'jobs:project_edit' project.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit me-1"></i> {% trans "Edit" %}
+                                    </a>
+                                {% endif %}
+                                
+                                {% if project.status == 'draft' %}
+                                    <form method="post" action="{% url 'jobs:project_publish' project.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check me-1"></i> {% trans "Publish" %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        {% include 'includes/pagination.html' with page_obj=projects %}
+    {% else %}
+        <div class="alert alert-info">
+            {% if active_tab == 'active' %}
+                {% trans "You don't have any active projects yet." %}
+            {% elif active_tab == 'completed' %}
+                {% trans "You don't have any completed projects yet." %}
+            {% elif active_tab == 'drafts' %}
+                {% trans "You don't have any draft projects yet." %}
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

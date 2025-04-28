@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "About Us" %} - WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-md-12 text-center">
+            <h1 class="display-4 mb-4">{% trans "About WorkBy" %}</h1>
+            <p class="lead">{% trans "The leading freelance platform in Kazakhstan" %}</p>
+        </div>
+    </div>
+    
+    <div class="row mb-5 align-items-center">
+        <div class="col-md-6 mb-4 mb-md-0">
+            <h2>{% trans "Our Mission" %}</h2>
+            <p>{% trans "WorkBy is dedicated to connecting talented freelancers with businesses in Kazakhstan and around the world. Our mission is to create opportunities for professionals and help businesses find the expertise they need to grow." %}</p>
+            <p>{% trans "We believe in fair work, transparent relationships, and building a community where talent is valued regardless of location." %}</p>
+        </div>
+        <div class="col-md-6">
+            <img src="{% static 'img/about/mission.jpg' %}" alt="WorkBy Mission" class="img-fluid rounded shadow">
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">{% trans "Why Choose WorkBy?" %}</h2>
+            
+            <div class="row mt-4">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-globe fa-3x text-primary"></i>
+                            </div>
+                            <h4>{% trans "Local Focus, Global Reach" %}</h4>
+                            <p class="card-text">{% trans "Designed for the Kazakhstani market with support for local payment methods and multilingual interface while connecting you to global opportunities." %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-shield-alt fa-3x text-primary"></i>
+                            </div>
+                            <h4>{% trans "Secure Payments" %}</h4>
+                            <p class="card-text">{% trans "Our escrow payment system ensures freelancers get paid for their work and clients receive quality deliverables before funds are released." %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-user-check fa-3x text-primary"></i>
+                            </div>
+                            <h4>{% trans "Verified Professionals" %}</h4>
+                            <p class="card-text">{% trans "We verify freelancers' skills and client history to maintain high-quality standards and build trust within our community." %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h2 class="text-center mb-4">{% trans "How It Works" %}</h2>
+            
+            <div class="row mt-4">
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="process-number mb-3">
+                                <span class="rounded-circle bg-primary text-white d-inline-block" style="width: 40px; height: 40px; line-height: 40px;">1</span>
+                            </div>
+                            <h4>{% trans "Post a Project" %}</h4>
+                            <p class="card-text">{% trans "Clients describe their project needs, budget, and timeline." %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="process-number mb-3">
+                                <span class="rounded-circle bg-primary text-white d-inline-block" style="width: 40px; height: 40px; line-height: 40px;">2</span>
+                            </div>
+                            <h4>{% trans "Receive Proposals" %}</h4>
+                            <p class="card-text">{% trans "Freelancers submit detailed proposals with their approach and pricing." %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="process-number mb-3">
+                                <span class="rounded-circle bg-primary text-white d-inline-block" style="width: 40px; height: 40px; line-height: 40px;">3</span>
+                            </div>
+                            <h4>{% trans "Collaborate" %}</h4>
+                            <p class="card-text">{% trans "Work together through our platform's tools for seamless communication." %}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="process-number mb-3">
+                                <span class="rounded-circle bg-primary text-white d-inline-block" style="width: 40px; height: 40px; line-height: 40px;">4</span>
+                            </div>
+                            <h4>{% trans "Payment" %}</h4>
+                            <p class="card-text">{% trans "Secure milestone-based payments ensure satisfaction for both parties." %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12 text-center">
+            <h2 class="mb-4">{% trans "Join Our Community" %}</h2>
+            <p class="lead mb-4">{% trans "Whether you're a freelancer looking for work or a business needing talent, WorkBy is the platform for you." %}</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">{% trans "Sign Up Now" %}</a>
+                <a href="{% url 'jobs:project_list' %}" class="btn btn-outline-primary btn-lg">{% trans "Explore Projects" %}</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

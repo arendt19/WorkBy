@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ project.title }} | {% trans "Portfolio" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:profile' %}">{% trans "Profile" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:portfolio_list' %}">{% trans "Portfolio" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ project.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ project.title }}</h4>
+                    <div>
+                        {% if can_edit %}
+                            <a href="{% url 'accounts:portfolio_edit' project.pk %}" class="btn btn-sm btn-light me-2">
+                                <i class="bi bi-pencil"></i> {% trans "Edit" %}
+                            </a>
+                            <a href="{% url 'accounts:portfolio_delete' project.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> {% trans "Delete" %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    {% if images %}
+                        <div class="project-gallery mb-4">
+                            <div id="projectCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-indicators">
+                                    {% for image in images %}
+                                        <button type="button" data-bs-target="#projectCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active"{% endif %}></button>
+                                    {% endfor %}
+                                </div>
+                                <div class="carousel-inner">
+                                    {% for image in images %}
+                                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                            <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ image.caption|default:project.title }}" style="max-height: 500px; object-fit: contain;">
+                                            {% if image.caption %}
+                                                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                                    <p class="mb-0">{{ image.caption }}</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#projectCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">{% trans "Previous" %}</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#projectCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">{% trans "Next" %}</span>
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5 class="mb-3">{% trans "Project Description" %}</h5>
+                            <p>{{ project.description|linebreaks }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">{% trans "Project Details" %}</h5>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    {% if project.client_name %}
+                                        <li class="list-group-item">
+                                            <strong>{% trans "Client" %}:</strong> {{ project.client_name }}
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% if project.completed_date %}
+                                        <li class="list-group-item">
+                                            <strong>{% trans "Completed On" %}:</strong> {{ project.completed_date|date:"F Y" }}
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% if project.categories.all %}
+                                        <li class="list-group-item">
+                                            <strong>{% trans "Categories" %}:</strong><br>
+                                            {% for category in project.categories.all %}
+                                                <span class="badge bg-secondary me-1 mb-1">{{ category.name }}</span>
+                                            {% endfor %}
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% if project.url %}
+                                        <li class="list-group-item">
+                                            <strong>{% trans "Project URL" %}:</strong><br>
+                                            <a href="{{ project.url }}" target="_blank" rel="noopener noreferrer">
+                                                {{ project.url|truncatechars:30 }}
+                                                <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="{% url 'accounts:portfolio_list' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> {% trans "Back to Portfolio" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

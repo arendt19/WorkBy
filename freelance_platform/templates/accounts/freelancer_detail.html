@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load jobs_tags %}
+
+{% block title %}{{ freelancer.get_full_name|default:freelancer.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:freelancer_list' %}">{% trans "Freelancers" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ freelancer.get_full_name|default:freelancer.username }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Профиль фрилансера -->
+    <div class="row">
+        <!-- Информация о фрилансере -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{% trans "Profile" %}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center">
+                            {% if freelancer.avatar %}
+                                <img src="{{ freelancer.avatar.url }}" alt="{{ freelancer.get_full_name }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px;">
+                                    <span style="font-size: 3rem;">{{ freelancer.get_initials }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="rating mb-3">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= avg_rating|floatformat:"0" %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <div class="small text-muted mt-1">
+                                    {{ avg_rating|floatformat:1 }} {% trans "out of 5" %} ({{ reviews.count }} {% trans "reviews" %})
+                                </div>
+                            </div>
+                            
+                            {% if profile.is_available %}
+                                <div class="badge bg-success mb-3">{% trans "Available for Hire" %}</div>
+                            {% else %}
+                                <div class="badge bg-secondary mb-3">{% trans "Not Available" %}</div>
+                            {% endif %}
+                            
+                            <a href="{% url 'chat:start_conversation' freelancer.id %}" class="btn btn-primary w-100">
+                                <i class="fas fa-comments me-1"></i> {% trans "Contact" %}
+                            </a>
+                        </div>
+                        
+                        <div class="col-md-9">
+                            <h3>{{ freelancer.get_full_name|default:freelancer.username }}</h3>
+                            <h5 class="text-muted mb-3">{{ profile.specialization }}</h5>
+                            
+                            <div class="mb-3">
+                                {{ freelancer.bio|linebreaks }}
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <strong><i class="fas fa-map-marker-alt me-2"></i> {% trans "Location:" %}</strong>
+                                        {{ profile.location|default:_("Not specified") }}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="fas fa-briefcase me-2"></i> {% trans "Experience:" %}</strong>
+                                        {{ profile.experience_years }} {% trans "years" %}
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="fas fa-language me-2"></i> {% trans "Languages:" %}</strong>
+                                        {{ profile.languages|default:_("Not specified") }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <strong><i class="fas fa-money-bill-wave me-2"></i> {% trans "Hourly Rate:" %}</strong>
+                                        {{ freelancer.hourly_rate }} ₸
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong><i class="fas fa-graduation-cap me-2"></i> {% trans "Education:" %}</strong>
+                                        {{ profile.education|default:_("Not specified") }}
+                                    </div>
+                                    {% if profile.portfolio_website %}
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-globe me-2"></i> {% trans "Website:" %}</strong>
+                                            <a href="{{ profile.portfolio_website }}" target="_blank">{{ profile.portfolio_website }}</a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if freelancer.skills %}
+                                <div class="mb-3">
+                                    <strong><i class="fas fa-tools me-2"></i> {% trans "Skills:" %}</strong>
+                                    <div class="mt-2">
+                                        {% for skill in freelancer.skills|split:"," %}
+                                            <span class="badge bg-light text-dark me-1 mb-1">{{ skill|strip }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Статистика и контактная информация -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Statistics" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="h2">{{ stats.completed_projects|default:"0" }}</div>
+                            <div class="text-muted">{% trans "Completed Projects" %}</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h2">{{ stats.success_rate|default:"0" }}%</div>
+                            <div class="text-muted">{% trans "Success Rate" %}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h2">{{ stats.on_time|default:"0" }}%</div>
+                            <div class="text-muted">{% trans "On-Time Delivery" %}</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="h2">{{ stats.on_budget|default:"0" }}%</div>
+                            <div class="text-muted">{% trans "On-Budget" %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Contact Information" %}</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-envelope me-2"></i> 
+                            <a href="mailto:{{ freelancer.email }}">{{ freelancer.email }}</a>
+                        </li>
+                        {% if profile.phone_number %}
+                            <li class="list-group-item">
+                                <i class="fas fa-phone me-2"></i> {{ profile.phone_number }}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Портфолио -->
+    {% if portfolio_projects %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">{% trans "Portfolio" %}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for project in portfolio_projects %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100">
+                                        {% with image=project.get_first_image %}
+                                            {% if image %}
+                                                <img src="{{ image.image.url }}" class="card-img-top" alt="{{ project.title }}" style="height: 200px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-light text-center py-5">
+                                                    <i class="fas fa-images" style="font-size: 3rem; color: #ccc;"></i>
+                                                </div>
+                                            {% endif %}
+                                        {% endwith %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ project.title }}</h5>
+                                            <p class="card-text">{{ project.description|truncatechars:100 }}</p>
+                                            <a href="{% url 'accounts:portfolio_detail' project.id %}" class="btn btn-sm btn-outline-primary">
+                                                {% trans "View Details" %}
+                                            </a>
+                                        </div>
+                                        <div class="card-footer text-muted">
+                                            <small>{{ project.completed_date|date:"d.m.Y" }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Отзывы -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{% trans "Reviews" %}</h4>
+                    {% if user.is_authenticated and user.user_type == 'client' and user != freelancer %}
+                        <a href="{% url 'accounts:create_review' freelancer.id 1 %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-star me-1"></i> {% trans "Write a Review" %}
+                        </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        <div class="reviews">
+                            {% for review in reviews %}
+                                <div class="review border-bottom pb-3 mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            {% if review.client.avatar %}
+                                                <img src="{{ review.client.avatar.url }}" alt="{{ review.client.username }}" class="rounded-circle me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 50px; height: 50px;">
+                                                    <span style="font-size: 1.2rem;">{{ review.client.get_initials }}</span>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <div class="fw-bold">{{ review.client.get_full_name|default:review.client.username }}</div>
+                                                <div class="small text-muted">
+                                                    {% for i in review.rating|get_range %}
+                                                        <i class="fas fa-star text-warning"></i>
+                                                    {% endfor %}
+                                                    {% for i in "12345"|slice:review.rating|get_range|length %}
+                                                        <i class="far fa-star text-warning"></i>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="text-muted small">
+                                            {{ review.created_at|date:"d.m.Y" }}
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        {{ review.comment|linebreaks }}
+                                    </div>
+                                    {% if review.project %}
+                                        <div class="small text-muted">
+                                            <i class="fas fa-briefcase me-1"></i> {% trans "Project:" %} {{ review.project.title }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="far fa-star" style="font-size: 3rem; color: #ddd;"></i>
+                            </div>
+                            <h5>{% trans "No reviews yet" %}</h5>
+                            <p class="text-muted">{% trans "This freelancer hasn't received any reviews yet." %}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

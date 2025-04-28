@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Categories" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="mb-4">{% trans "Browse Categories" %}</h1>
+            <p class="lead">{% trans "Find projects in your area of expertise" %}</p>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        {% for category in categories %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">{{ category.get_translated_name }}</h5>
+                    <p class="card-text text-muted">
+                        {% trans "Projects" %}: {{ category.projects.count }}
+                    </p>
+                    <a href="{% url 'jobs:category_detail' category.slug %}" class="btn btn-outline-primary">
+                        {% trans "Browse" %} {{ category.get_translated_name }}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                {% trans "No categories found." %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

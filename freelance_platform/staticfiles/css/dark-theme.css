@@ -1,0 +1,499 @@
+/* Dark mode styles */
+:root.dark-theme {
+    --body-bg: #121212 !important;
+    --text-color: #f5f5f5 !important;
+    --card-bg: #1e1e1e !important;
+    --card-border: #2c2c2c !important;
+    --navbar-bg: #0a0a0a !important;
+    --footer-bg: #0a0a0a !important;
+    --primary-color: #800020 !important; /* темно-бордовый */
+    --primary-color-hover: #a31332 !important; /* немного светлее при наведении */
+    --secondary-color: #d6c1c1 !important; /* светло-бордовый для акцентов */
+    --accent-color: #b30000 !important; /* яркий акцент для выделения */
+    --success-color: #347c54 !important;
+    --danger-color: #b30000 !important;
+    --warning-color: #a36a00 !important;
+    --info-color: #d6c1c1 !important;
+    --input-bg: #272727 !important;
+    --input-border: #3a3a3a !important;
+    --dropdown-bg: #1e1e1e !important;
+    --dropdown-hover: #333333 !important;
+    --modal-bg: #1e1e1e !important;
+    --table-border: #2c2c2c !important;
+    --table-row-hover: #2c2c2c !important;
+    --bg-light: #1e1e1e !important;
+    --breadcrumb-bg: #1e1e1e !important;
+    --counter-wrapper-bg: #1e1e1e !important;
+    --text-muted: #ababab !important;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
+    --gradient-primary: linear-gradient(135deg, #5a0000, #800020) !important;
+}
+
+/* Body and general elements */
+.dark-theme body {
+    background-color: var(--body-bg) !important;
+    color: var(--text-color) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Navbar */
+.dark-theme .navbar {
+    background-color: var(--navbar-bg) !important;
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--card-border);
+}
+
+.dark-theme .navbar-light {
+    background-color: var(--navbar-bg) !important;
+}
+
+.dark-theme .navbar-brand,
+.dark-theme .navbar-nav .nav-link {
+    color: var(--text-color) !important;
+    transition: color 0.2s ease-in-out;
+}
+
+.dark-theme .navbar-nav .nav-link:hover {
+    color: var(--secondary-color) !important;
+}
+
+.dark-theme .navbar-toggler {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .dropdown-menu {
+    background-color: var(--dropdown-bg);
+    border-color: var(--card-border);
+    box-shadow: var(--shadow-md);
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dark-theme .dropdown-item {
+    color: var(--text-color);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dark-theme .dropdown-item:hover {
+    background-color: var(--dropdown-hover);
+    color: var(--secondary-color);
+}
+
+/* Исправление для bg-light элементов */
+.dark-theme .bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Хлебные крошки */
+.dark-theme .breadcrumb {
+    background-color: var(--breadcrumb-bg);
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+/* Cards */
+.dark-theme .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--text-color) !important;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 8px;
+}
+
+.dark-theme .card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+
+.dark-theme .card-header, 
+.dark-theme .card-footer {
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border-color: var(--card-border) !important;
+}
+
+.dark-theme .card-header {
+    border-bottom: 2px solid var(--primary-color);
+    border-top-left-radius: 8px !important;
+    border-top-right-radius: 8px !important;
+}
+
+/* Tables */
+.dark-theme .table {
+    color: var(--text-color);
+}
+
+.dark-theme .table td, 
+.dark-theme .table th,
+.dark-theme .table thead th {
+    border-color: var(--table-border);
+}
+
+.dark-theme .table-hover tbody tr:hover {
+    background-color: var(--table-row-hover);
+    transition: background-color 0.2s ease;
+}
+
+/* Forms */
+.dark-theme .form-control,
+.dark-theme .form-select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+    border-radius: 6px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.dark-theme .form-control:focus,
+.dark-theme .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(128, 0, 32, 0.25);
+}
+
+.dark-theme .form-control::placeholder {
+    color: #999;
+}
+
+/* Кнопки формы */
+.dark-theme .input-group-text {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+/* Crispy Forms виджеты */
+.dark-theme .form-check-input {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+}
+
+.dark-theme .form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.dark-theme label {
+    color: var(--text-color);
+}
+
+.dark-theme legend {
+    color: var(--text-color);
+}
+
+.dark-theme select option {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* Buttons */
+.dark-theme .btn-primary {
+    background: var(--gradient-primary) !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease !important;
+}
+
+.dark-theme .btn-primary:hover {
+    background: linear-gradient(135deg, #720025, #9c0020) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme .btn-outline-primary {
+    color: var(--secondary-color);
+    border-color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.dark-theme .btn-light {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+/* Modals */
+.dark-theme .modal-content {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    box-shadow: var(--shadow-lg);
+    border-radius: 12px;
+}
+
+.dark-theme .modal-header,
+.dark-theme .modal-footer {
+    border-color: var(--card-border) !important;
+}
+
+.dark-theme .modal-header {
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Footer */
+.dark-theme footer {
+    background-color: var(--footer-bg) !important;
+    color: var(--text-color);
+    border-top: 1px solid var(--card-border);
+    padding: 2rem 0;
+}
+
+/* Links */
+.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link) {
+    color: var(--secondary-color) !important;
+    position: relative;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link)::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link):hover {
+    color: #FFFFFF !important;
+}
+
+.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link):hover::after {
+    width: 100%;
+}
+
+/* Badges */
+.dark-theme .badge.bg-light {
+    background-color: #404040 !important;
+    color: var(--text-color);
+}
+
+.dark-theme .badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+/* Borders */
+.dark-theme .border {
+    border-color: var(--card-border) !important;
+}
+
+.dark-theme .border-top {
+    border-top-color: var(--card-border) !important;
+}
+
+.dark-theme .border-bottom {
+    border-bottom-color: var(--card-border) !important;
+}
+
+/* Alerts */
+.dark-theme .alert-info {
+    background-color: rgba(176, 176, 176, 0.2);
+    border-color: rgba(176, 176, 176, 0.3);
+    color: #FFFFFF;
+    border-radius: 8px;
+}
+
+/* Исправляем counter-wrapper в темной теме */
+.dark-theme .counter-wrapper {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    padding: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.dark-theme .counter-wrapper:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Исправляем текст в counter-label */
+.dark-theme .counter-label {
+    color: var(--text-color) !important;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.dark-theme .counter-value {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+/* Исправляем text-muted */
+.dark-theme .text-muted {
+    color: var(--text-muted) !important;
+}
+
+/* Категории */
+.dark-theme .category-card {
+    transition: all 0.3s ease;
+    background: linear-gradient(145deg, #1a1a1a, #222222);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.dark-theme .category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+}
+
+.dark-theme .category-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--gradient-primary);
+    transition: height 0.3s ease;
+}
+
+.dark-theme .category-card:hover::before {
+    height: 8px;
+}
+
+.dark-theme .category-icon {
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.dark-theme .category-card:hover .category-icon {
+    transform: scale(1.2);
+}
+
+/* Иконки */
+.dark-theme i.fas, 
+.dark-theme i.fab,
+.dark-theme i.bi {
+    color: var(--primary-color);
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.dark-theme i.fas:hover, 
+.dark-theme i.fab:hover,
+.dark-theme i.bi:hover {
+    color: var(--primary-color-hover);
+    transform: scale(1.2);
+}
+
+/* Профиль */
+.dark-theme .profile-header {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-md);
+}
+
+.dark-theme .avatar {
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 15px rgba(128, 0, 32, 0.5);
+    transition: all 0.3s ease;
+}
+
+.dark-theme .avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(128, 0, 32, 0.7);
+}
+
+/* Чат */
+.dark-theme .chat-container {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+}
+
+.dark-theme .chat-message {
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.dark-theme .chat-message:hover {
+    transform: translateY(-2px);
+}
+
+.dark-theme .chat-message:not(.outgoing) {
+    background-color: #2a2a2a;
+    border-bottom-left-radius: 0;
+}
+
+.dark-theme .chat-message.outgoing {
+    background-color: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 0;
+}
+
+/* Анимации */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInRight {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.dark-theme .animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+.dark-theme .animate-slide-in-up {
+    animation: slideInUp 0.5s forwards;
+}
+
+.dark-theme .animate-fade-in-right {
+    animation: fadeInRight 0.5s forwards;
+}
+
+/* Hover эффекты для кнопок */
+.dark-theme .btn {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.dark-theme .btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: left 0.3s ease;
+    z-index: -1;
+}
+
+.dark-theme .btn:hover::before {
+    left: 0;
+}

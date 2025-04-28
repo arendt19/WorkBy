@@ -1,0 +1,17 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Новое сообщение - FreelanceKZ{% endblock %}
+
+{% block header %}Новое сообщение{% endblock %}
+
+{% block content %}
+<h2>Здравствуйте, {{ user.get_full_name|default:user.username }}!</h2>
+
+<p>У вас новое сообщение на платформе FreelanceKZ.</p>
+
+<div class="message-box">
+    {{ notification.content }}
+</div>
+
+<p>Для просмотра и ответа на сообщение, нажмите на кнопку ниже:</p>
+{% endblock %} 
