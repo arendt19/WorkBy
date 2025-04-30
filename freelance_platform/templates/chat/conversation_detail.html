@@ -5,7 +5,7 @@
 {% block title %}{% trans "Conversation with" %} {{ other_participant.get_full_name }} | WorkBy{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-4" id="chat-main-container">
     <div class="row">
         <div class="col-12">
             <div class="card border-0 shadow-sm bg-dark text-light">
@@ -64,8 +64,8 @@
                             {% for message in messages %}
                                 <div class="message mb-3 {% if message.sender == request.user %}message-outgoing{% else %}message-incoming{% endif %}" 
                                      id="message-{{ message.id }}">
-                                    <div class="message-bubble p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-white ml-auto{% else %}bg-dark border border-secondary text-light{% endif %}"
-                                         style="max-width: 85%; {% if message.sender == request.user %}margin-left: auto;{% endif %}">
+                                    <div class="message-bubble p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-white{% else %}bg-dark border border-secondary text-light{% endif %}"
+                                         style="max-width: 75%; {% if message.sender == request.user %}margin-left: auto; margin-right: 0;{% endif %}">
                                         {{ message.content|linebreaksbr }}
                                         {% if message.attachment %}
                                             <div class="message-attachment mt-2">
@@ -138,6 +138,30 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
+        // Очищаем страницу от отладочных сообщений
+        function cleanupDebugMessages() {
+            // Удаляем все текстовые узлы "Message 13", "Message 14" и т.д. 
+            // на уровне body, но не в контейнере чата
+            $('body').contents().each(function() {
+                if (this.nodeType === 3 && /Message \d+/.test(this.nodeValue)) {
+                    $(this).remove();
+                }
+            });
+            
+            // Удаляем также любые элементы, содержащие такие тексты
+            $('body *').each(function() {
+                if ($(this).children().length === 0 && /Message \d+/.test($(this).text())) {
+                    if (!$(this).closest('#chat-main-container').length) {
+                        $(this).remove();
+                    }
+                }
+            });
+        }
+        
+        // Выполняем очистку при загрузке и каждые полсекунды для новых сообщений
+        cleanupDebugMessages();
+        setInterval(cleanupDebugMessages, 500);
+        
         // Прокрутка к последнему сообщению при загрузке страницы
         const messageContainer = document.getElementById('message-container');
         messageContainer.scrollTop = messageContainer.scrollHeight;
@@ -164,7 +188,7 @@
                     // Добавляем новое сообщение в чат
                     const messageHtml = `
                         <div class="message mb-3 message-outgoing" id="message-${response.id}">
-                            <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 85%; margin-left: auto;">
+                            <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 75%; margin-left: auto; margin-right: 0;">
                                 ${response.content.replace(/\n/g, '<br>')}
                                 ${response.attachment ? `
                                     <div class="message-attachment mt-2">
@@ -191,6 +215,9 @@
                     
                     $('.message-group').append(messageHtml);
                     messageContainer.scrollTop = messageContainer.scrollHeight;
+                    
+                    // Очистка отладочных сообщений после отправки нового сообщения
+                    cleanupDebugMessages();
                 },
                 error: function(xhr, status, error) {
                     console.error('Error sending message:', error);
@@ -240,7 +267,7 @@
                             if (message.sender_id !== {{ request.user.id }}) {
                                 newMessagesHtml += `
                                     <div class="message mb-3 message-incoming" id="message-${message.id}">
-                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light" style="max-width: 85%;">
+                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light" style="max-width: 75%;">
                                             ${message.content.replace(/\n/g, '<br>')}
                                             ${message.attachment ? `
                                                 <div class="message-attachment mt-2">
@@ -277,6 +304,9 @@
                                 'csrfmiddlewaretoken': '{{ csrf_token }}'
                             }
                         });
+                        
+                        // Очистка отладочных сообщений после получения новых
+                        cleanupDebugMessages();
                     }
                 }
             });

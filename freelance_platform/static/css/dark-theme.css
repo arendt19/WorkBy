@@ -817,4 +817,38 @@
     background-color: var(--card-bg);
     border-color: var(--border-color);
     color: var(--text-muted);
+}
+
+/* Улучшенные стили для чата в темной теме */
+.dark-theme .message-bubble.bg-primary {
+    background-color: #8B0000 !important; /* Бордовый цвет для исходящих сообщений */
+}
+
+.dark-theme .message-incoming .message-bubble {
+    background-color: #242526 !important;
+    border-color: #4a4a4a !important;
+}
+
+.dark-theme .message-outgoing .message-meta,
+.dark-theme .message-incoming .message-meta {
+    color: #aaa !important;
+}
+
+.dark-theme #message-container {
+    scrollbar-width: thin;
+    scrollbar-color: #444 #1c1c1c;
+}
+
+.dark-theme #message-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dark-theme #message-container::-webkit-scrollbar-track {
+    background: #1c1c1c;
+}
+
+.dark-theme #message-container::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 4px;
+    border: 2px solid #1c1c1c;
 } 
