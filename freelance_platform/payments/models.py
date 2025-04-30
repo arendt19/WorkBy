@@ -40,6 +40,7 @@ class Transaction(models.Model):
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
     reference_id = models.CharField(_('External Reference ID'), max_length=100, blank=True, null=True)
     _meta_data = models.TextField(_('Meta Data'), blank=True, null=True)
+    payment_method = models.CharField(_('Payment Method'), max_length=50, blank=True, null=True)
     
     # Для связи с договором или вехой (опционально)
     contract = models.ForeignKey(Contract, on_delete=models.SET_NULL, null=True, blank=True, related_name='transactions')
@@ -75,6 +76,107 @@ class Transaction(models.Model):
     @meta_data.setter
     def meta_data(self, value):
         self._meta_data = json.dumps(value)
+
+class WithdrawalMethod(models.Model):
+    """
+    Методы вывода средств для пользователей
+    """
+    METHOD_CHOICES = (
+        ('bank_transfer', _('Bank Transfer')),
+        ('yoomoney', _('YooMoney')),
+        ('kaspi', _('Kaspi Bank')),
+        ('paypal', _('PayPal')),
+        ('crypto', _('Cryptocurrency')),
+    )
+    
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='withdrawal_methods'
+    )
+    method_type = models.CharField(_('Method Type'), max_length=20, choices=METHOD_CHOICES)
+    name = models.CharField(_('Name'), max_length=100)  # Имя/название метода вывода
+    details = models.JSONField(_('Details'))  # JSON для хранения деталей (номер счета, email и т.д.)
+    is_default = models.BooleanField(_('Default'), default=False)
+    is_active = models.BooleanField(_('Active'), default=True)
+    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+    
+    class Meta:
+        verbose_name = _('Withdrawal Method')
+        verbose_name_plural = _('Withdrawal Methods')
+        unique_together = ('user', 'name')
+    
+    def __str__(self):
+        return f"{self.get_method_type_display()}: {self.name}"
+    
+    def save(self, *args, **kwargs):
+        # Если метод становится дефолтным, убираем этот статус у других методов
+        if self.is_default:
+            WithdrawalMethod.objects.filter(
+                user=self.user, 
+                is_default=True
+            ).exclude(pk=self.pk).update(is_default=False)
+        
+        super().save(*args, **kwargs)
+
+class WithdrawalRequest(models.Model):
+    """
+    Запросы на вывод средств
+    """
+    STATUS_CHOICES = (
+        ('pending', _('Pending')),
+        ('approved', _('Approved')),
+        ('rejected', _('Rejected')),
+        ('completed', _('Completed')),
+    )
+    
+    request_id = models.CharField(_('Request ID'), max_length=50, unique=True, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='withdrawal_requests'
+    )
+    amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)
+    withdrawal_method = models.ForeignKey(
+        WithdrawalMethod,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='withdrawal_requests'
+    )
+    status = models.CharField(_('Status'), max_length=20, choices=STATUS_CHOICES, default='pending')
+    comment = models.TextField(_('Comment'), blank=True)
+    admin_comment = models.TextField(_('Admin Comment'), blank=True)
+    transaction = models.OneToOneField(
+        Transaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='withdrawal_request'
+    )
+    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+    completed_at = models.DateTimeField(_('Completed At'), null=True, blank=True)
+    
+    class Meta:
+        verbose_name = _('Withdrawal Request')
+        verbose_name_plural = _('Withdrawal Requests')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.request_id} - {self.amount} ({self.get_status_display()})"
+    
+    def save(self, *args, **kwargs):
+        # Генерируем уникальный ID запроса
+        if not self.request_id:
+            uid = str(uuid.uuid4()).replace('-', '')[:10]
+            self.request_id = f"WR-{uid}"
+        
+        # Устанавливаем дату завершения при изменении статуса
+        if self.status == 'completed' and not self.completed_at:
+            self.completed_at = timezone.now()
+        
+        super().save(*args, **kwargs)
 
 class Wallet(models.Model):
     """
@@ -126,7 +228,7 @@ class Wallet(models.Model):
         
         return transaction
     
-    def withdraw(self, amount, description="", related_transaction=None):
+    def withdraw(self, amount, description="", related_transaction=None, contract=None, milestone=None):
         """
         Метод для вывода средств
         """
@@ -143,7 +245,9 @@ class Wallet(models.Model):
             transaction_type='withdrawal',
             status='completed',
             description=description,
-            related_transaction=related_transaction
+            related_transaction=related_transaction,
+            contract=contract,
+            milestone=milestone
         )
         
         # Сохраняем локализованное описание в зависимости от текущего языка

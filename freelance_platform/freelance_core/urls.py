@@ -23,11 +23,23 @@ from django.utils.translation import gettext_lazy as _
 from django.views.i18n import JavaScriptCatalog
 from accounts import views as accounts_views
 from django.contrib.auth import views as auth_views
+from django.views.generic import TemplateView
+from .views import serve_robots_txt, serve_sitemap_xml
+
+# Обработчики ошибок для production
+handler404 = 'freelance_core.views.page_not_found'
+handler500 = 'freelance_core.views.server_error'
+handler403 = 'freelance_core.views.permission_denied'
+handler400 = 'freelance_core.views.bad_request'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('i18n/', include('django.conf.urls.i18n')),  # Для переключения языков
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),  # Для переводов в JS
+    
+    # SEO файлы
+    path('robots.txt', serve_robots_txt),
+    path('sitemap.xml', serve_sitemap_xml),
 ]
 
 # Маршруты с поддержкой языка в URL
@@ -49,3 +61,6 @@ urlpatterns += i18n_patterns(
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+else:
+    # В production режиме добавляем настройки для обслуживания медиа файлов
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

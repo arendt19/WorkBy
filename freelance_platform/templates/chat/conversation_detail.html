@@ -65,7 +65,7 @@
                                 <div class="message mb-3 {% if message.sender == request.user %}message-outgoing{% else %}message-incoming{% endif %}" 
                                      id="message-{{ message.id }}">
                                     <div class="message-bubble p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-white{% else %}bg-dark border border-secondary text-light{% endif %}"
-                                         style="max-width: 75%; {% if message.sender == request.user %}margin-left: auto; margin-right: 0;{% endif %}">
+                                         style="max-width: 90%; width: fit-content; {% if message.sender == request.user %}margin-left: auto; margin-right: 0;{% endif %}">
                                         {{ message.content|linebreaksbr }}
                                         {% if message.attachment %}
                                             <div class="message-attachment mt-2">
@@ -188,7 +188,7 @@
                     // Добавляем новое сообщение в чат
                     const messageHtml = `
                         <div class="message mb-3 message-outgoing" id="message-${response.id}">
-                            <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 75%; margin-left: auto; margin-right: 0;">
+                            <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 90%; width: fit-content; margin-left: auto; margin-right: 0;">
                                 ${response.content.replace(/\n/g, '<br>')}
                                 ${response.attachment ? `
                                     <div class="message-attachment mt-2">
@@ -267,7 +267,7 @@
                             if (message.sender_id !== {{ request.user.id }}) {
                                 newMessagesHtml += `
                                     <div class="message mb-3 message-incoming" id="message-${message.id}">
-                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light" style="max-width: 75%;">
+                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light" style="max-width: 90%; width: fit-content;">
                                             ${message.content.replace(/\n/g, '<br>')}
                                             ${message.attachment ? `
                                                 <div class="message-attachment mt-2">

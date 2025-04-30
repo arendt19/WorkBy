@@ -21,17 +21,33 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-q5@25v@we0#kg8c^h=-!u$!jgf$f@cpezb0c(4guu@%57&2p_x'
+SECRET_KEY = 'django-insecure-m3!7+k_)1g1!iw!#iqo&z6dqj7=^c-8s@(12v&a3l90z#bz%!9'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Определение режима отладки на основе переменной окружения
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '3955-2a03-32c0-0-56b6-14f-f6d9-7050-174c.ngrok-free.app', '.ngrok-free.app', 'workby.onrender.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'workby.onrender.com', '*']
 
 # CSRF настройки для ngrok
-CSRF_TRUSTED_ORIGINS = ['https://3955-2a03-32c0-0-56b6-14f-f6d9-7050-174c.ngrok-free.app', 'https://*.ngrok-free.app', 'https://workby.onrender.com', 'http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = ['https://workby.onrender.com', 'http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000']
 
+# Настройки для локальной разработки с HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Производственные настройки безопасности
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 год
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    X_FRAME_OPTIONS = 'DENY'
 
 # Application definition
 
@@ -55,6 +71,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'rest_framework',
     'channels',
+    'sslserver',  # Для запуска сервера с SSL
     
     # Наши приложения
     'accounts',
@@ -172,10 +189,14 @@ LANGUAGE_COOKIE_SECURE = False
 LANGUAGE_COOKIE_HTTPONLY = True
 LANGUAGE_COOKIE_SAMESITE = 'Lax'
 
+# Настройка для исправления ошибки "Session data corrupted"
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 30  # 30 дней
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
@@ -250,16 +271,7 @@ SITE_URL = 'https://workby.onrender.com'
 MODELTRANSLATION_DEFAULT_LANGUAGE = 'en'
 MODELTRANSLATION_LANGUAGES = ('en', 'ru', 'kk')
 
-# Security Settings
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_SSL_REDIRECT = False  # Отключаем принудительное перенаправление на HTTPS
-SESSION_COOKIE_SECURE = False  # Отключаем для разработки
-CSRF_COOKIE_SECURE = False  # Отключаем для разработки
-X_FRAME_OPTIONS = 'DENY'
-SECURE_HSTS_SECONDS = 0  # Отключаем HSTS для разработки
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-SECURE_HSTS_PRELOAD = False
+# Security Settings (удалены дублирующие настройки)
 
-# 404 and 500 Error pages
-ADMIN_EMAIL = 'admin@workby.kz'
+
+ADMIN_EMAIL = 'admin@workby.com'

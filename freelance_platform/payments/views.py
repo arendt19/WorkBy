@@ -8,9 +8,10 @@ from django.utils import timezone
 from datetime import timedelta
 from django.utils.translation import get_language
 
-from .models import Transaction, Wallet
-from .forms import DepositForm, WithdrawForm, TransactionFilterForm
-from jobs.models import Milestone
+from .models import Transaction, Wallet, WithdrawalMethod, WithdrawalRequest
+from .forms import DepositForm, WithdrawForm, TransactionFilterForm, WithdrawalForm, TopUpForm, PaymentMethodForm
+from jobs.models import Milestone, Contract
+from .yoomoney import YooMoneyAPI
 
 # ЮMoney интеграция
 import json
@@ -236,44 +237,25 @@ def yoomoney_initiate_payment(request):
     if not amount:
         return JsonResponse({'error': 'Amount is required'}, status=400)
     
-    # Создаем уникальный идентификатор платежа
-    payment_id = str(uuid.uuid4())
-    
-    # Формируем данные для запроса к API ЮMoney
-    payment_data = {
-        'amount': {
-            'value': str(amount),
-            'currency': 'KZT'
-        },
-        'confirmation': {
-            'type': 'redirect',
-            'return_url': request.build_absolute_uri(reverse('payments:yoomoney_success_callback'))
-        },
-        'capture': True,
-        'description': f'Payment {payment_id}',
-        'metadata': {
-            'payment_id': payment_id,
-            'milestone_id': milestone_id
-        }
-    }
-    
-    # Отправляем запрос к API ЮMoney
-    headers = {
-        'Authorization': f'Bearer {settings.YOOMONEY_SETTINGS["CLIENT_SECRET"]}',
-        'Content-Type': 'application/json'
-    }
-    
-    response = requests.post(
-        'https://api.yoomoney.ru/v3/payments',
-        headers=headers,
-        json=payment_data
-    )
-    
-    if response.status_code == 200:
-        payment_info = response.json()
+    try:
+        # Используем класс для работы с API ЮMoney
+        yoomoney_api = YooMoneyAPI()
+        
+        # Метаданные для платежа
+        metadata = {'milestone_id': milestone_id} if milestone_id else None
+        
+        # Создаем платеж
+        payment_info = yoomoney_api.create_payment(
+            amount=amount,
+            return_url=request.build_absolute_uri(reverse('payments:yoomoney_success_callback')),
+            description=_("Payment to WorkBy"),
+            metadata=metadata
+        )
+        
+        # Перенаправляем на страницу оплаты
         return redirect(payment_info['confirmation']['confirmation_url'])
-    else:
-        return JsonResponse({'error': 'Failed to initiate payment'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
 
 @require_GET
 def yoomoney_success_callback(request):
@@ -286,19 +268,12 @@ def yoomoney_success_callback(request):
         messages.error(request, _("Invalid payment ID"))
         return redirect('payments:wallet')
     
-    # Проверяем статус платежа через API ЮMoney
-    headers = {
-        'Authorization': f'Bearer {settings.YOOMONEY_SETTINGS["CLIENT_SECRET"]}',
-        'Content-Type': 'application/json'
-    }
-    
-    response = requests.get(
-        f'https://api.yoomoney.ru/v3/payments/{payment_id}',
-        headers=headers
-    )
-    
-    if response.status_code == 200:
-        payment_info = response.json()
+    try:
+        # Используем класс для работы с API ЮMoney
+        yoomoney_api = YooMoneyAPI()
+        
+        # Получаем информацию о платеже
+        payment_info = yoomoney_api.get_payment_status(payment_id)
         
         if payment_info['status'] == 'succeeded':
             # Получаем данные из метаданных
@@ -326,7 +301,7 @@ def yoomoney_success_callback(request):
                     milestone.save()
                 
                 messages.success(request, _("Milestone payment completed successfully"))
-                return redirect('jobs:contract_detail', contract_id=contract.id)
+                return redirect('jobs:contract_detail', pk=contract.pk)
             else:
                 # Если это пополнение кошелька
                 amount = payment_info['amount']['value']
@@ -343,8 +318,8 @@ def yoomoney_success_callback(request):
         else:
             messages.error(request, _("Payment failed"))
             return redirect('payments:wallet')
-    else:
-        messages.error(request, _("Failed to verify payment status"))
+    except Exception as e:
+        messages.error(request, _(f"Error processing payment: {str(e)}"))
         return redirect('payments:wallet')
 
 @csrf_exempt
@@ -353,45 +328,31 @@ def yoomoney_notification_callback(request):
     """
     Обработчик уведомлений от ЮMoney
     """
-    # Проверяем подпись уведомления
-    signature = request.headers.get('X-Payment-Sha1-Hash')
-    if not signature:
-        return HttpResponse(status=400)
-    
-    # Вычисляем подпись
-    expected_signature = hmac.new(
-        settings.YOOMONEY_SETTINGS['CLIENT_SECRET'].encode(),
-        request.body,
-        hashlib.sha1
-    ).hexdigest()
-    
-    if signature != expected_signature:
-        return HttpResponse(status=400)
-    
-    # Обрабатываем уведомление
-    notification = json.loads(request.body)
-    
-    if notification['event'] == 'payment.succeeded':
-        payment_id = notification['object']['id']
+    try:
+        # Проверяем подпись уведомления
+        signature = request.headers.get('X-Payment-Sha1-Hash')
         
-        # Проверяем статус платежа через API ЮMoney
-        headers = {
-            'Authorization': f'Bearer {settings.YOOMONEY_SETTINGS["CLIENT_SECRET"]}',
-            'Content-Type': 'application/json'
-        }
+        # Используем класс для работы с API ЮMoney
+        yoomoney_api = YooMoneyAPI()
         
-        response = requests.get(
-            f'https://api.yoomoney.ru/v3/payments/{payment_id}',
-            headers=headers
-        )
+        # Проверяем подпись
+        if not yoomoney_api.verify_notification(request.body.decode(), signature):
+            return HttpResponse(status=400)
         
-        if response.status_code == 200:
-            payment_info = response.json()
+        # Обрабатываем уведомление
+        notification = json.loads(request.body)
+        
+        if notification['event'] == 'payment.succeeded':
+            payment_id = notification['object']['id']
+            
+            # Получаем информацию о платеже
+            payment_info = yoomoney_api.get_payment_status(payment_id)
             
             if payment_info['status'] == 'succeeded':
                 # Получаем данные из метаданных
                 metadata = payment_info.get('metadata', {})
                 milestone_id = metadata.get('milestone_id')
+                user_id = metadata.get('user_id')
                 
                 if milestone_id:
                     # Если это оплата вехи
@@ -412,15 +373,21 @@ def yoomoney_notification_callback(request):
                         milestone.is_paid = True
                         milestone.paid_at = timezone.now()
                         milestone.save()
-                else:
+                elif user_id:
                     # Если это пополнение кошелька
+                    from accounts.models import User
+                    user = get_object_or_404(User, id=user_id)
                     amount = payment_info['amount']['value']
                     
                     with db_transaction.atomic():
-                        wallet, _ = Wallet.objects.get_or_create(user=request.user)
+                        wallet, _ = Wallet.objects.get_or_create(user=user)
                         wallet.deposit(
                             amount=amount,
                             description=_("Deposit via YooMoney")
                         )
-    
-    return HttpResponse(status=200) 
+        
+        return HttpResponse(status=200)
+    except Exception as e:
+        # Логирование ошибки
+        print(f"Error processing YooMoney notification: {str(e)}")
+        return HttpResponse(status=500) 

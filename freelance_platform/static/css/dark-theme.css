@@ -822,11 +822,23 @@
 /* Улучшенные стили для чата в темной теме */
 .dark-theme .message-bubble.bg-primary {
     background-color: #8B0000 !important; /* Бордовый цвет для исходящих сообщений */
+    width: fit-content;
+    max-width: 90% !important;
 }
 
 .dark-theme .message-incoming .message-bubble {
     background-color: #242526 !important;
     border-color: #4a4a4a !important;
+    width: fit-content;
+    max-width: 90% !important;
+}
+
+.dark-theme .message-outgoing {
+    align-items: flex-end;
+}
+
+.dark-theme .message-incoming {
+    align-items: flex-start;
 }
 
 .dark-theme .message-outgoing .message-meta,
