@@ -35,9 +35,16 @@
                             <a class="nav-link" href="{% url 'jobs:project_create' %}">{% trans "Post a Project" %}</a>
                         </li>
                     {% endif %}
-                        
+                    
+                    <!-- Общие пункты меню для всех авторизованных пользователей -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'jobs:project_list' %}">{% trans "Find Projects" %}</a>
+                        <a class="nav-link" href="{% url 'jobs:project_list' %}"><i class="fas fa-search me-1"></i> {% trans "Find Projects" %}</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'jobs:my_proposals' %}">
+                            <i class="fas fa-paper-plane me-1"></i> {% trans "Proposals" %}
+                        </a>
                     </li>
                     
                     <li class="nav-item">
@@ -134,8 +141,9 @@
                             
                             {% if user.is_freelancer %}
                                 <li><a class="dropdown-item" href="{% url 'accounts:portfolio_list' %}"><i class="fas fa-briefcase me-2"></i> {% trans "Portfolio" %}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'jobs:my_proposals' %}"><i class="fas fa-paper-plane me-2"></i> {% trans "My Proposals" %}</a></li>
                             {% endif %}
+                            
+                            <li><a class="dropdown-item" href="{% url 'jobs:my_proposals' %}"><i class="fas fa-paper-plane me-2"></i> {% trans "Proposals" %}</a></li>
                             
                             {% if user.is_client %}
                                 <li><a class="dropdown-item" href="{% url 'jobs:my_projects' %}"><i class="fas fa-clipboard-list me-2"></i> {% trans "My Projects" %}</a></li>

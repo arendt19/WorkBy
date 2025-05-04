@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load static %}
 <!DOCTYPE html>
-<html lang="{{ LANGUAGE_CODE }}" class="dark-theme h-100">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,13 +18,53 @@
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
     
-    <!-- Основные стили -->
+    <!-- Основные стили (темная тема) -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
     
-    <!-- Стили для темной темы (основная тема сайта) -->
-    <link rel="stylesheet" href="{% static 'css/dark-theme.css' %}?v={% now 'U' %}">
-    
     {% block extra_css %}{% endblock %}
+    <script>
+        // Удаление отладочных сообщений "Message XX" при загрузке страницы и через интервал
+        document.addEventListener('DOMContentLoaded', function() {
+            function removeDebugMessages() {
+                // Находим все текстовые узлы, содержащие "Message"
+                const walker = document.createTreeWalker(
+                    document.body,
+                    NodeFilter.SHOW_TEXT,
+                    { acceptNode: node => /Message \d+/i.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT },
+                    false
+                );
+                
+                const nodesToRemove = [];
+                while (walker.nextNode()) {
+                    nodesToRemove.push(walker.currentNode);
+                }
+                
+                // Удаляем найденные узлы
+                nodesToRemove.forEach(node => node.parentNode && node.parentNode.removeChild(node));
+                
+                // Дополнительная очистка через jQuery
+                if (typeof $ !== 'undefined') {
+                    $("body").contents().filter(function() {
+                        return this.nodeType === 3 && /Message \d+/i.test(this.nodeValue);
+                    }).remove();
+                    
+                    $("*").contents().filter(function() {
+                        return this.nodeType === 3 && /Message \d+/i.test(this.nodeValue);
+                    }).remove();
+                }
+            }
+
+            // Запускаем очистку при загрузке и периодически
+            removeDebugMessages();
+            const cleanupInterval = setInterval(removeDebugMessages, 50);
+            
+            // Через 10 секунд переключаемся на более редкий интервал
+            setTimeout(() => {
+                clearInterval(cleanupInterval);
+                setInterval(removeDebugMessages, 5000);
+            }, 10000);
+        });
+    </script>
 </head>
 <body>
     <!-- Хедер -->

@@ -50,6 +50,16 @@ class User(AbstractUser):
         if self.first_name or self.last_name:
             return f"{self.first_name} {self.last_name}".strip()
         return self.username
+        
+    @property
+    def is_client(self):
+        """Проверка, является ли пользователь клиентом"""
+        return self.user_type == 'client'
+        
+    @property
+    def is_freelancer(self):
+        """Проверка, является ли пользователь фрилансером"""
+        return self.user_type == 'freelancer'
 
 class FreelancerProfile(models.Model):
     """

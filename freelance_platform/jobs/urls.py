@@ -36,6 +36,10 @@ urlpatterns = [
     path('milestones/<int:pk>/approve/', views.milestone_approve_view, name='milestone_approve'),
     path('milestones/<int:pk>/reject/', views.milestone_reject_view, name='milestone_reject'),
     
+    # Завершение контракта и оплата
+    path('contracts/<int:pk>/complete/', views.contract_complete_view, name='contract_complete'),
+    path('milestones/<int:pk>/complete/', views.milestone_complete_view, name='milestone_complete'),
+    
     # Категории
     path('categories/<slug:slug>/', views.category_detail_view, name='category_detail'),
     

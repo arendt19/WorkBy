@@ -213,7 +213,8 @@ class Wallet(models.Model):
             transaction_type='deposit',
             status='completed',
             description=description,
-            related_transaction=related_transaction
+            related_transaction=related_transaction,
+            payment_method='system'
         )
         
         # Сохраняем локализованное описание в зависимости от текущего языка
@@ -247,7 +248,8 @@ class Wallet(models.Model):
             description=description,
             related_transaction=related_transaction,
             contract=contract,
-            milestone=milestone
+            milestone=milestone,
+            payment_method='system'
         )
         
         # Сохраняем локализованное описание в зависимости от текущего языка
@@ -280,7 +282,8 @@ class Wallet(models.Model):
             status='completed',
             description=description,
             contract=contract,
-            milestone=milestone
+            milestone=milestone,
+            payment_method='system'
         )
         
         # Сохраняем локализованное описание в зависимости от текущего языка
@@ -297,3 +300,146 @@ class Wallet(models.Model):
         self.save()
         
         return transaction 
+
+class EscrowPayment(models.Model):
+    """
+    Модель для эскроу-платежей (условного депонирования)
+    """
+    STATUS_CHOICES = (
+        ('pending', _('Pending')),           # Ожидает пополнения
+        ('funded', _('Funded')),             # Средства депонированы
+        ('released', _('Released')),         # Средства выплачены фрилансеру
+        ('refunded', _('Refunded')),         # Средства возвращены клиенту
+        ('disputed', _('Disputed')),         # Спорная ситуация
+        ('cancelled', _('Cancelled')),       # Отменен
+    )
+    
+    escrow_id = models.CharField(_('Escrow ID'), max_length=50, unique=True, editable=False)
+    milestone = models.OneToOneField(
+        'jobs.Milestone',
+        on_delete=models.CASCADE,
+        related_name='escrow_payment'
+    )
+    amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)
+    client_transaction = models.ForeignKey(
+        Transaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='client_escrow_payments'
+    )
+    freelancer_transaction = models.ForeignKey(
+        Transaction,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='freelancer_escrow_payments'
+    )
+    status = models.CharField(_('Status'), max_length=20, choices=STATUS_CHOICES, default='pending')
+    funded_at = models.DateTimeField(_('Funded At'), null=True, blank=True)
+    released_at = models.DateTimeField(_('Released At'), null=True, blank=True)
+    refunded_at = models.DateTimeField(_('Refunded At'), null=True, blank=True)
+    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+    
+    class Meta:
+        verbose_name = _('Escrow Payment')
+        verbose_name_plural = _('Escrow Payments')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Escrow {self.escrow_id} for milestone: {self.milestone.title}"
+    
+    def save(self, *args, **kwargs):
+        # Генерируем уникальный ID эскроу, если его нет
+        if not self.escrow_id:
+            uid = str(uuid.uuid4()).replace('-', '')[:10]
+            self.escrow_id = f"ESCROW-{uid}"
+        super().save(*args, **kwargs)
+    
+    def fund(self, client_transaction):
+        """
+        Пополнение эскроу (блокировка средств клиента)
+        """
+        if self.status != 'pending':
+            raise ValueError(_("This escrow payment is already funded or completed"))
+        
+        self.client_transaction = client_transaction
+        self.status = 'funded'
+        self.funded_at = timezone.now()
+        self.save()
+    
+    def release(self, description=""):
+        """
+        Выплата средств фрилансеру
+        """
+        if self.status != 'funded':
+            raise ValueError(_("Cannot release funds: escrow payment is not in funded state"))
+        
+        contract = self.milestone.contract
+        freelancer = contract.freelancer
+        
+        # Создаем транзакцию для фрилансера и пополняем его кошелек
+        wallet, _ = Wallet.objects.get_or_create(user=freelancer)
+        
+        # Ищем transaction_id в связанной транзакции или создаем новый
+        transaction = wallet.deposit(
+            amount=self.amount,
+            description=_("Payment for milestone: {}").format(self.milestone.title) if not description else description,
+            related_transaction=self.client_transaction
+        )
+        
+        # Обновляем модель эскроу
+        self.freelancer_transaction = transaction
+        self.status = 'released'
+        self.released_at = timezone.now()
+        self.save()
+        
+        # Обновляем веху
+        milestone = self.milestone
+        milestone.status = 'approved'
+        milestone.save()
+        
+        return transaction
+    
+    def refund(self, description=""):
+        """
+        Возврат средств клиенту
+        """
+        if self.status not in ['funded', 'disputed']:
+            raise ValueError(_("Cannot refund: escrow payment is not in funded or disputed state"))
+        
+        contract = self.milestone.contract
+        client = contract.client
+        
+        # Создаем транзакцию для клиента и пополняем его кошелек
+        wallet, _ = Wallet.objects.get_or_create(user=client)
+        transaction = wallet.deposit(
+            amount=self.amount,
+            description=_("Refund for milestone: {}").format(self.milestone.title) if not description else description,
+            related_transaction=self.client_transaction,
+            contract=contract,
+            milestone=self.milestone
+        )
+        
+        # Обновляем модель эскроу
+        self.status = 'refunded'
+        self.refunded_at = timezone.now()
+        self.save()
+        
+        # Обновляем веху
+        milestone = self.milestone
+        milestone.status = 'cancelled'
+        milestone.save()
+        
+        return transaction
+    
+    def dispute(self):
+        """
+        Перевод платежа в статус спора
+        """
+        if self.status != 'funded':
+            raise ValueError(_("Cannot dispute: escrow payment is not in funded state"))
+        
+        self.status = 'disputed'
+        self.save() 

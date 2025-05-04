@@ -142,11 +142,25 @@ def project_list_view(request):
         project_count=Count('projects')
     ).order_by('-project_count')[:10]
     
+    # Проверяем, на какие проекты текущий пользователь уже подал заявки
+    user_proposals = {}
+    if request.user.is_authenticated and request.user.user_type == 'freelancer':
+        # Получаем ID всех проектов, на которые пользователь подал предложения
+        user_proposal_projects = Proposal.objects.filter(
+            freelancer=request.user,
+            project__in=projects
+        ).values_list('project_id', flat=True)
+        
+        # Создаем словарь для быстрой проверки
+        for project_id in user_proposal_projects:
+            user_proposals[project_id] = True
+    
     context = {
         'projects': projects,
         'form': form,
         'popular_tags': popular_tags,
         'total_count': projects.count(),
+        'user_proposals': user_proposals,
     }
     
     return render(request, 'jobs/project_list.html', context)
@@ -680,6 +694,155 @@ def milestone_reject_view(request, pk):
     }
     
     return render(request, 'jobs/milestone_reject.html', context)
+
+@login_required
+@transaction.atomic
+def contract_complete_view(request, pk):
+    """
+    Завершение контракта и перевод средств фрилансеру (для клиента)
+    """
+    contract = get_object_or_404(Contract, pk=pk)
+    
+    # Проверяем, что пользователь является клиентом контракта
+    if contract.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to complete this contract'))
+    
+    # Проверяем, что контракт в активном статусе
+    if contract.status != 'active':
+        messages.error(request, _('This contract cannot be completed because it is not active'))
+        return redirect('jobs:contract_detail', pk=contract.pk)
+    
+    if request.method == 'POST':
+        try:
+            # Получаем кошельки клиента и фрилансера
+            from payments.models import Wallet
+            
+            client_wallet = Wallet.objects.get(user=contract.client)
+            freelancer_wallet = Wallet.objects.get(user=contract.freelancer)
+            
+            # Проверяем, достаточно ли средств на счету клиента
+            if client_wallet.balance < contract.amount:
+                messages.error(request, _('Insufficient funds to complete this contract. Please top up your wallet.'))
+                return redirect('payments:wallet')
+            
+            # Расчет комиссии сервиса (например, 5%)
+            service_fee = contract.amount * 0.05
+            freelancer_amount = contract.amount - service_fee
+            
+            # Снимаем средства с кошелька клиента
+            client_wallet.withdraw(
+                contract.amount,
+                description=_(f'Payment for contract "{contract.title}" (#{contract.contract_id})'),
+                contract=contract
+            )
+            
+            # Пополняем кошелек фрилансера (за вычетом комиссии)
+            freelancer_wallet.deposit(
+                freelancer_amount,
+                description=_(f'Payment received for contract "{contract.title}" (#{contract.contract_id})'),
+                contract=contract
+            )
+            
+            # Обновляем статус контракта и проекта
+            contract.status = 'completed'
+            contract.save()
+            
+            contract.project.status = 'completed'
+            contract.project.save()
+            
+            messages.success(request, _('Contract completed successfully. Payment has been sent to the freelancer.'))
+            return redirect('jobs:contract_detail', pk=contract.pk)
+            
+        except Exception as e:
+            messages.error(request, _(f'Error processing payment: {str(e)}'))
+            return redirect('jobs:contract_detail', pk=contract.pk)
+    
+    context = {
+        'contract': contract,
+    }
+    
+    return render(request, 'jobs/contract_complete.html', context)
+
+@login_required
+@transaction.atomic
+def milestone_complete_view(request, pk):
+    """
+    Завершение отдельной вехи с переводом средств (для клиента)
+    """
+    milestone = get_object_or_404(Milestone, pk=pk)
+    
+    # Проверяем, что пользователь является клиентом контракта
+    if milestone.contract.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to complete this milestone'))
+    
+    # Проверяем, что веха в статусе submitted (отправлена на проверку)
+    if milestone.status != 'submitted':
+        messages.error(request, _('This milestone cannot be completed because it is not submitted for review'))
+        return redirect('jobs:contract_detail', pk=milestone.contract.pk)
+    
+    if request.method == 'POST':
+        try:
+            # Получаем кошельки клиента и фрилансера
+            from payments.models import Wallet
+            
+            client_wallet = Wallet.objects.get(user=milestone.contract.client)
+            freelancer_wallet = Wallet.objects.get(user=milestone.contract.freelancer)
+            
+            # Проверяем, достаточно ли средств на счету клиента
+            if client_wallet.balance < milestone.amount:
+                messages.error(request, _('Insufficient funds to complete this milestone. Please top up your wallet.'))
+                return redirect('payments:wallet')
+            
+            # Расчет комиссии сервиса (например, 5%)
+            service_fee = milestone.amount * 0.05
+            freelancer_amount = milestone.amount - service_fee
+            
+            # Снимаем средства с кошелька клиента
+            client_wallet.withdraw(
+                milestone.amount,
+                description=_(f'Payment for milestone "{milestone.title}" in contract #{milestone.contract.contract_id}'),
+                contract=milestone.contract,
+                milestone=milestone
+            )
+            
+            # Пополняем кошелек фрилансера (за вычетом комиссии)
+            freelancer_wallet.deposit(
+                freelancer_amount,
+                description=_(f'Payment received for milestone "{milestone.title}" in contract #{milestone.contract.contract_id}'),
+                contract=milestone.contract,
+                milestone=milestone
+            )
+            
+            # Обновляем статус вехи
+            milestone.status = 'approved'
+            milestone.save()
+            
+            # Проверяем, все ли вехи выполнены
+            all_milestones_completed = all(
+                m.status == 'approved' for m in milestone.contract.milestones.all()
+            )
+            
+            # Если все вехи выполнены, завершаем контракт
+            if all_milestones_completed:
+                milestone.contract.status = 'completed'
+                milestone.contract.save()
+                
+                # Завершаем проект
+                milestone.contract.project.status = 'completed'
+                milestone.contract.project.save()
+            
+            messages.success(request, _('Milestone completed successfully. Payment has been sent to the freelancer.'))
+            return redirect('jobs:contract_detail', pk=milestone.contract.pk)
+            
+        except Exception as e:
+            messages.error(request, _(f'Error processing payment: {str(e)}'))
+            return redirect('jobs:contract_detail', pk=milestone.contract.pk)
+    
+    context = {
+        'milestone': milestone,
+    }
+    
+    return render(request, 'jobs/milestone_complete.html', context)
 
 def about_view(request):
     """View for the About Us page"""

@@ -319,13 +319,32 @@ class Milestone(models.Model):
         default='pending'
     )
     
+    payment_status = models.CharField(
+        _('Payment Status'),
+        max_length=20,
+        choices=(
+            ('not_paid', _('Not Paid')),
+            ('paid', _('Paid')),
+            ('escrow', _('In Escrow')),
+        ),
+        default='not_paid'
+    )
+    
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
     
     class Meta:
+        ordering = ['due_date']
         verbose_name = _('Milestone')
         verbose_name_plural = _('Milestones')
-        ordering = ['due_date']
-        
+    
     def __str__(self):
-        return self.title
+        return f"{self.title} ({self.get_status_display()})"
+    
+    @property
+    def is_escrow_funded(self):
+        """Проверяет, имеет ли веха пополненный эскроу-платеж"""
+        try:
+            return hasattr(self, 'escrow_payment') and self.escrow_payment.status == 'funded'
+        except:
+            return False

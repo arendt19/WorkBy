@@ -28,6 +28,15 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 @register.filter
+def dictkey(dictionary, key):
+    """
+    Проверяет наличие ключа в словаре
+    """
+    if not dictionary:
+        return False
+    return key in dictionary
+
+@register.filter
 def get_range(value):
     """
     Возвращает диапазон от 1 до value

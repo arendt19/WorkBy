@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Conversation, Message, Notification
 from .forms import MessageForm
@@ -45,50 +46,40 @@ def inbox_view(request):
     return render(request, 'chat/inbox.html', context)
 
 @login_required
-def conversation_detail_view(request, pk):
+def conversation_detail_view(request, conversation_id):
     """
-    Отображает конкретный разговор и форму для отправки новых сообщений
+    Представление для детальной страницы чата
     """
-    conversation = get_object_or_404(
-        Conversation.objects.filter(participants=request.user),
-        pk=pk
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    
+    # Проверяем, что пользователь является участником беседы
+    if not conversation.participants.filter(id=request.user.id).exists():
+        return HttpResponseForbidden(_("You don't have permission to view this conversation"))
+    
+    # Получаем сообщения беседы
+    messages = Message.objects.filter(conversation=conversation).order_by('created_at')
+    
+    # Получаем все доступные беседы для текущего пользователя
+    conversations = Conversation.objects.filter(participants=request.user).order_by('-updated_at')
+    
+    # Отмечаем сообщения как прочитанные
+    unread_messages = messages.filter(
+        is_read=False
+    ).exclude(
+        sender=request.user
     )
     
-    # Получаем все сообщения для данного разговора
-    messages = conversation.messages.all()
+    unread_messages.update(is_read=True)
     
-    # Отмечаем непрочитанные сообщения как прочитанные
-    for message in messages:
-        if message.sender != request.user and not message.is_read:
-            message.mark_as_read()
-    
-    # Создаем форму для нового сообщения
-    if request.method == 'POST':
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            message = form.save(commit=False)
-            message.conversation = conversation
-            message.sender = request.user
-            message.save()
-            
-            # Создаем уведомление для получателя
-            Notification.create_message_notification(message)
-            
-            # Обновляем время последнего обновления разговора
-            conversation.save()  # Это автоматически обновит updated_at
-            
-            return redirect('chat:conversation_detail', pk=conversation.pk)
-    else:
-        form = MessageForm()
-    
-    # Получаем другого участника разговора (не текущего пользователя)
-    other_participant = conversation.participants.exclude(id=request.user.id).first()
+    # Получаем собеседника
+    other_participant = conversation.get_other_participant(request.user)
     
     context = {
         'conversation': conversation,
+        'conversations': conversations,
         'messages': messages,
-        'form': form,
         'other_participant': other_participant,
+        'related_project': conversation.related_project,
     }
     
     return render(request, 'chat/conversation_detail.html', context)
@@ -108,7 +99,7 @@ def start_conversation_view(request, user_id):
     # Получаем или создаем разговор между этими пользователями
     conversation = Conversation.get_or_create_conversation(request.user, other_user)
     
-    return redirect('chat:conversation_detail', pk=conversation.pk)
+    return redirect('chat:conversation_detail', conversation_id=conversation.pk)
 
 @login_required
 def notifications_view(request):
@@ -133,7 +124,7 @@ def mark_notification_read_view(request, pk):
     
     # Перенаправляем на связанный объект в зависимости от типа уведомления
     if notification.notification_type == 'message' and notification.related_object_id:
-        return redirect('chat:conversation_detail', pk=notification.related_object_id)
+        return redirect('chat:conversation_detail', conversation_id=notification.related_object_id)
     elif notification.notification_type == 'proposal' and notification.related_object_id:
         return redirect('jobs:proposal_detail', pk=notification.related_object_id)
     elif notification.notification_type == 'contract' and notification.related_object_id:

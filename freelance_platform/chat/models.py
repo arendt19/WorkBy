@@ -14,6 +14,23 @@ class Conversation(models.Model):
     )
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
+    # Связанные объекты
+    related_project = models.ForeignKey(
+        'jobs.Project',
+        on_delete=models.SET_NULL,
+        related_name='conversations',
+        null=True,
+        blank=True,
+        verbose_name=_('Related Project')
+    )
+    related_contract = models.ForeignKey(
+        'jobs.Contract',
+        on_delete=models.SET_NULL,
+        related_name='conversations',
+        null=True,
+        blank=True,
+        verbose_name=_('Related Contract')
+    )
     
     class Meta:
         verbose_name = _('Conversation')

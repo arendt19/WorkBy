@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Contract" %} #{{ contract.contract_id }} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+                <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Contract Details" %}</h5>
+                    
+                    <div class="d-flex align-items-center">
+                        <span class="badge 
+                            {% if contract.status == 'active' %}bg-success
+                            {% elif contract.status == 'paused' %}bg-warning
+                            {% elif contract.status == 'completed' %}bg-primary
+                            {% elif contract.status == 'cancelled' %}bg-danger
+                            {% elif contract.status == 'disputed' %}bg-danger
+                            {% endif %} me-2">
+                            {{ contract.get_status_display }}
+                        </span>
+                        
+                        {% if contract.client == request.user and contract.status == 'active' %}
+                        <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-check-circle me-1"></i> {% trans "Complete & Pay" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5 class="border-bottom border-secondary pb-2 mb-3">{{ contract.title }}</h5>
+                        <p class="text-muted mb-3">{{ contract.description }}</p>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>{% trans "Contract ID:" %}</strong> {{ contract.contract_id }}</p>
+                                <p class="mb-1"><strong>{% trans "Project:" %}</strong> <a href="{% url 'jobs:project_detail' contract.project.pk %}" class="text-primary">{{ contract.project.title }}</a></p>
+                                <p class="mb-1"><strong>{% trans "Amount:" %}</strong> {{ contract.amount }} ₸</p>
+                                <p class="mb-1"><strong>{% trans "Created On:" %}</strong> {{ contract.created_at|date:"d.m.Y H:i" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>{% trans "Client:" %}</strong> {{ contract.client.get_full_name }}</p>
+                                <p class="mb-1"><strong>{% trans "Freelancer:" %}</strong> {{ contract.freelancer.get_full_name }}</p>
+                                <p class="mb-1"><strong>{% trans "Status:" %}</strong> {{ contract.get_status_display }}</p>
+                                <p class="mb-1"><strong>{% trans "Deadline:" %}</strong> {{ contract.deadline|date:"d.m.Y H:i" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h6 class="border-bottom border-secondary pb-2 mb-3">{% trans "Milestones" %}</h6>
+                        
+                        {% if milestones %}
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Title" %}</th>
+                                            <th>{% trans "Amount" %}</th>
+                                            <th>{% trans "Due Date" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                            <th>{% trans "Actions" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for milestone in milestones %}
+                                            <tr>
+                                                <td>{{ milestone.title }}</td>
+                                                <td>{{ milestone.amount }} ₸</td>
+                                                <td>{{ milestone.due_date|date:"d.m.Y" }}</td>
+                                                <td>
+                                                    <span class="badge 
+                                                        {% if milestone.status == 'pending' %}bg-secondary
+                                                        {% elif milestone.status == 'in_progress' %}bg-info
+                                                        {% elif milestone.status == 'submitted' %}bg-warning
+                                                        {% elif milestone.status == 'approved' %}bg-success
+                                                        {% elif milestone.status == 'rejected' %}bg-danger
+                                                        {% elif milestone.status == 'cancelled' %}bg-danger
+                                                        {% endif %}">
+                                                        {{ milestone.get_status_display }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {% if contract.freelancer == request.user and milestone.status == 'in_progress' %}
+                                                        <a href="{% url 'jobs:milestone_submit' milestone.pk %}" class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-paper-plane"></i> {% trans "Submit" %}
+                                                        </a>
+                                                    {% elif contract.client == request.user and milestone.status == 'submitted' %}
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{% url 'jobs:milestone_complete' milestone.pk %}" class="btn btn-success btn-sm">
+                                                                <i class="fas fa-check"></i> {% trans "Approve & Pay" %}
+                                                            </a>
+                                                            <a href="{% url 'jobs:milestone_reject' milestone.pk %}" class="btn btn-outline-danger btn-sm">
+                                                                <i class="fas fa-times"></i> {% trans "Reject" %}
+                                                            </a>
+                                                        </div>
+                                                    {% elif contract.client == request.user and milestone.status == 'pending' %}
+                                                        {% if not milestone.is_escrow_funded %}
+                                                            {% if milestone.escrow_payment.escrow_id %}
+                                                                <a href="{% url 'payments:fund_escrow' escrow_id=milestone.escrow_payment.escrow_id %}" class="btn btn-sm btn-primary">
+                                                                    <i class="fas fa-wallet"></i> {% trans "Fund Escrow" %}
+                                                                </a>
+                                                            {% else %}
+                                                                <a href="{% url 'payments:create_escrow' milestone_id=milestone.id %}" class="btn btn-sm btn-outline-primary">
+                                                                    <i class="fas fa-shield-alt"></i> {% trans "Create Escrow" %}
+                                                                </a>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% elif contract.client == request.user and milestone.is_escrow_funded %}
+                                                        <div class="btn-group btn-group-sm">
+                                                            <a href="{% url 'payments:release_escrow' escrow_id=milestone.escrow_payment.escrow_id %}" class="btn btn-success btn-sm">
+                                                                <i class="fas fa-check"></i> {% trans "Release Funds" %}
+                                                            </a>
+                                                            <a href="{% url 'payments:refund_escrow' escrow_id=milestone.escrow_payment.escrow_id %}" class="btn btn-outline-danger btn-sm">
+                                                                <i class="fas fa-undo"></i> {% trans "Refund" %}
+                                                            </a>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if milestone.is_escrow_funded %}
+                                                        <span class="badge bg-info mt-1 d-block">
+                                                            <i class="fas fa-shield-alt me-1"></i> {% trans "Escrow Funded" %}
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info bg-dark bg-opacity-50 border-info">
+                                {% trans "No milestones defined for this contract." %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+                <div class="card-header bg-dark border-bottom border-secondary">
+                    <h5 class="card-title mb-0">{% trans "Contract Actions" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if contract.client == request.user %}
+                            {% if contract.status == 'active' %}
+                                <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-primary">
+                                    <i class="fas fa-check-circle me-2"></i> {% trans "Complete & Pay" %}
+                                </a>
+                            {% endif %}
+                        {% elif contract.freelancer == request.user %}
+                            {% if contract.status == 'active' %}
+                                {% for milestone in milestones %}
+                                    {% if milestone.status == 'in_progress' %}
+                                        <a href="{% url 'jobs:milestone_submit' milestone.pk %}" class="btn btn-primary mb-2">
+                                            <i class="fas fa-paper-plane me-2"></i> {% trans "Submit Milestone" %}: {{ milestone.title }}
+                                        </a>
+                                    {% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        {% endif %}
+                        
+                        <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-2"></i> {% trans "Message Freelancer" %}
+                        </a>
+                        <a href="{% url 'chat:start_conversation' contract.client.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-2"></i> {% trans "Message Client" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card border-0 shadow-sm bg-dark text-light">
+                <div class="card-header bg-dark border-bottom border-secondary">
+                    <h5 class="card-title mb-0">{% trans "Payment Information" %}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>{% trans "Total Contract Amount:" %}</strong></p>
+                    <h4 class="text-primary mb-3">{{ contract.amount }} ₸</h4>
+                    
+                    <p class="mb-1"><strong>{% trans "Payment Status:" %}</strong></p>
+                    <p>
+                        {% if contract.status == 'completed' %}
+                            <span class="text-success">
+                                <i class="fas fa-check-circle me-1"></i> {% trans "Fully Paid" %}
+                            </span>
+                        {% else %}
+                            <span class="text-warning">
+                                <i class="fas fa-clock me-1"></i> {% trans "Awaiting Completion" %}
+                            </span>
+                        {% endif %}
+                    </p>
+                    
+                    {% if contract.client == request.user %}
+                        <div class="alert alert-info bg-dark bg-opacity-50 border-info mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% trans "Payments will be processed from your wallet balance when you approve milestones or complete the contract." %}
+                            <div class="mt-2">
+                                <strong>{% trans "Current Balance:" %}</strong> {{ request.user.wallet.balance }} ₸
+                                <a href="{% url 'payments:deposit' %}" class="btn btn-sm btn-primary ms-2">
+                                    <i class="fas fa-plus"></i> {% trans "Top Up" %}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

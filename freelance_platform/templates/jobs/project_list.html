@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load jobs_tags %}
 
 {% block title %}{% trans "Find Projects" %}{% endblock %}
 
@@ -106,96 +107,94 @@
             </div>
             
             {% if projects %}
-                <div class="project-list">
+                <div class="row">
                     {% for project in projects %}
-                        <div class="card project-card mb-4">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <h4 class="card-title">
-                                            <a href="{% url 'jobs:project_detail' project.pk %}" class="text-decoration-none">
-                                                {{ project.title }}
-                                            </a>
-                                        </h4>
-                                        
-                                        <div class="project-meta mb-2">
-                                            <span class="me-3 text-muted">
-                                                <i class="fas fa-user me-1"></i> {{ project.client.get_full_name|default:project.client.username }}
-                                            </span>
-                                            
-                                            <span class="me-3 text-muted">
-                                                <i class="fas fa-folder me-1"></i> {{ project.category.name }}
-                                            </span>
-                                            
-                                            <span class="me-3 text-muted">
-                                                <i class="fas fa-calendar me-1"></i> {{ project.created_at|date:"d M Y" }}
-                                            </span>
-                                            
-                                            {% if project.location_required %}
-                                            <span class="me-3 text-muted">
-                                                <i class="fas fa-map-marker-alt me-1"></i> {{ project.location_required }}
-                                            </span>
-                                            {% endif %}
-                                            
-                                            {% if project.is_remote %}
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-globe me-1"></i> {% trans "Remote" %}
-                                            </span>
-                                            {% endif %}
-                                        </div>
+                        <div class="col-lg-6 mb-4">
+                            <div class="card project-card h-100 bg-dark text-light border-secondary">
+                                <!-- Заголовок карточки проекта -->
+                                <div class="card-header d-flex justify-content-between align-items-center py-3">
+                                    <h5 class="mb-0">
+                                        <a href="{% url 'jobs:project_detail' project.pk %}" class="text-light text-decoration-none">
+                                            {{ project.title|truncatechars:40 }}
+                                        </a>
+                                    </h5>
+                                    <span class="badge status-badge status-{{ project.status }}">{{ project.get_status_display }}</span>
+                                </div>
+                                
+                                <!-- Тело карточки проекта -->
+                                <div class="card-body d-flex flex-column">
+                                    <div class="mb-3">
+                                        <p class="card-text">{{ project.description|striptags|truncatewords:25 }}</p>
                                     </div>
                                     
-                                    <div class="text-end">
-                                        <div class="budget mb-2">
-                                            <span class="fs-5 fw-bold text-primary">
-                                                {{ project.budget_min }} - {{ project.budget_max }} ₸
-                                            </span>
-                                            <br>
-                                            <small class="text-muted">
-                                                {{ project.get_budget_type_display }}
-                                            </small>
+                                    <!-- Метаданные проекта -->
+                                    <div class="project-meta mb-3">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-user-circle text-primary me-2"></i>
+                                            <span>{{ project.client.get_full_name|default:project.client.username }}</span>
                                         </div>
                                         
-                                        {% if project.deadline %}
-                                        <div class="deadline">
-                                            <small class="text-{% if project.is_expired %}danger{% else %}muted{% endif %}">
-                                                <i class="fas fa-clock me-1"></i>
-                                                {% if project.is_expired %}
-                                                    {% trans "Deadline passed" %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-folder text-primary me-2"></i>
+                                            <span>{{ project.category.get_translated_name }}</span>
+                                        </div>
+                                        
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                                            <span>
+                                                {% if project.budget_type == 'fixed' %}
+                                                    {{ project.budget_min }} - {{ project.budget_max }} ₸
                                                 {% else %}
-                                                    {% trans "Deadline" %}: {{ project.deadline|date:"d M Y" }}
+                                                    {{ project.budget_min }} - {{ project.budget_max }} ₸/{% trans "hour" %}
                                                 {% endif %}
-                                            </small>
+                                            </span>
                                         </div>
-                                        {% endif %}
+                                        
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                            <span>{{ project.created_at|date:"d.m.Y" }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Теги проекта -->
+                                    {% if project.tags.all %}
+                                        <div class="project-tags mb-3">
+                                            {% for tag in project.tags.all|slice:":4" %}
+                                                <span class="badge bg-dark text-light me-1 mb-1 border border-secondary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                            {% if project.tags.all|length > 4 %}
+                                                <span class="badge bg-dark text-light me-1 mb-1 border border-secondary">+{{ project.tags.all|length|add:"-4" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <!-- Действия с проектом -->
+                                    <div class="mt-auto">
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-3">
+                                            <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-secondary">
+                                                <i class="fas fa-eye me-1"></i> {% trans "Details" %}
+                                            </a>
+                                            
+                                            {% if user.is_authenticated and user.is_freelancer and project.status == 'open' %}
+                                                {% if user_proposals|dictkey:project.id %}
+                                                    <a href="{% url 'jobs:proposal_detail' project.id %}" class="btn btn-outline-primary ms-2">
+                                                        <i class="fas fa-check-circle me-1"></i> {% trans "Proposal Sent" %}
+                                                    </a>
+                                                {% else %}
+                                                    <a href="{% url 'jobs:proposal_create' project.pk %}" class="btn btn-primary ms-2">
+                                                        <i class="fas fa-paper-plane me-1"></i> {% trans "Submit Proposal" %}
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div class="project-description mt-3">
-                                    <p>{{ project.description|truncatewords:50 }}</p>
-                                </div>
-                                
-                                {% if project.tags.exists %}
-                                <div class="project-tags mt-3">
-                                    {% for tag in project.tags.all %}
-                                        <a href="{% url 'jobs:project_list' %}?tags={{ tag.name }}" class="badge bg-light text-dark me-1 mb-1">
-                                            {{ tag.name }}
-                                        </a>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                
-                                <div class="project-actions mt-3">
-                                    <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-primary">
-                                        <i class="fas fa-info-circle me-1"></i> {% trans "View Details" %}
-                                    </a>
-                                    
-                                    {% if user.is_authenticated and user.user_type == 'freelancer' %}
-                                        <a href="{% url 'jobs:proposal_create' project.pk %}" class="btn btn-outline-primary ms-2">
-                                            <i class="fas fa-paper-plane me-1"></i> {% trans "Submit Proposal" %}
-                                        </a>
-                                    {% endif %}
-                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="alert alert-info text-center py-5">
+                                {% trans "No projects match your criteria. Try adjusting your filters." %}
                             </div>
                         </div>
                     {% endfor %}

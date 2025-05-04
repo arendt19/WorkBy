@@ -48,9 +48,11 @@
                                 </div>
                                 <p class="mb-1">{{ notification.content }}</p>
                                 {% if notification.notification_type == 'message' and notification.related_object_id %}
-                                <a href="{% url 'chat:conversation_detail' notification.related_object_id %}" class="btn btn-sm btn-primary mt-2">
-                                    {% trans "View conversation" %}
-                                </a>
+                                <div class="d-flex">
+                                    <a href="{% url 'chat:conversation_detail' conversation_id=notification.related_object_id %}" class="btn btn-sm btn-primary mt-2">
+                                        {% trans "View conversation" %}
+                                    </a>
+                                </div>
                                 {% endif %}
                             </div>
                             {% if not notification.is_read %}

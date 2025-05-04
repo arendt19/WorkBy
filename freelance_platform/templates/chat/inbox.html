@@ -28,7 +28,7 @@
                         <div class="col-md-4 border-end border-secondary">
                             <div class="list-group list-group-flush conversation-list" id="conversation-list">
                                 {% for conversation in conversations %}
-                                <a href="{% url 'chat:conversation_detail' conversation.id %}" 
+                                <a href="{% url 'chat:conversation_detail' conversation_id=conversation.id %}" 
                                    class="list-group-item list-group-item-action d-flex align-items-center p-3 bg-dark {% if conversation.has_unread %}border-start border-4 border-primary{% endif %}" 
                                    data-id="{{ conversation.id }}">
                                     <div class="position-relative me-3">

@@ -317,4 +317,127 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-}); 
+});
+
+// WorkBy Main JavaScript
+
+document.addEventListener('DOMContentLoaded', function() {
+
+
+    // Инициализация всплывающих подсказок
+    initializeTooltips();
+    
+    // Обработка формы поиска
+    setupSearchForm();
+    
+    // Анимации появления элементов
+    animateElements();
+});
+
+
+
+// Инициализация всплывающих подсказок Bootstrap
+function initializeTooltips() {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+}
+
+// Настройка формы поиска
+function setupSearchForm() {
+    const searchForm = document.querySelector('.search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            const searchInput = this.querySelector('input[type="search"]');
+            if (searchInput.value.trim() === '') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+    }
+}
+
+// Анимация появления элементов при прокрутке
+function animateElements() {
+    const animatedElements = document.querySelectorAll('.fade-in');
+    
+    if (animatedElements.length > 0) {
+        // Функция проверки, видны ли элементы
+        function checkVisible() {
+            animatedElements.forEach(element => {
+                const rect = element.getBoundingClientRect();
+                const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+                
+                if (rect.top <= windowHeight * 0.8) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+        
+        // Первичная проверка
+        checkVisible();
+        
+        // Проверка при прокрутке
+        window.addEventListener('scroll', checkVisible);
+    }
+}
+
+// Функция для форматирования денежных значений
+function formatCurrency(amount, currency = '₸') {
+    return amount.toLocaleString('ru-KZ') + ' ' + currency;
+}
+
+// Функция для определения активного раздела меню
+function setActiveNavItem() {
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+    
+    navLinks.forEach(link => {
+        const linkPath = link.getAttribute('href');
+        if (currentPath === linkPath || currentPath.startsWith(linkPath) && linkPath !== '/') {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Обработчик для автоматического увеличения размера текстового поля
+function autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = (textarea.scrollHeight) + 'px';
+}
+
+// Функция для генерации аватара с инициалами
+function generateInitialsAvatar(name, size = 40, bgColor = '#8B0000') {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext('2d');
+    
+    // Рисуем фон
+    context.fillStyle = bgColor;
+    context.beginPath();
+    context.arc(size/2, size/2, size/2, 0, Math.PI * 2);
+    context.fill();
+    
+    // Получаем инициалы
+    const nameParts = name.split(' ');
+    let initials = '';
+    
+    if (nameParts.length >= 2) {
+        initials = nameParts[0].charAt(0) + nameParts[1].charAt(0);
+    } else if (nameParts.length === 1) {
+        initials = nameParts[0].charAt(0);
+    } else {
+        initials = '?';
+    }
+    
+    // Рисуем текст
+    context.fillStyle = 'white';
+    context.font = `bold ${size/2}px Arial`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(initials.toUpperCase(), size/2, size/2);
+    
+    return canvas.toDataURL();
+} 

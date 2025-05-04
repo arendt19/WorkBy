@@ -1,48 +1,57 @@
 /* Dark mode styles */
 :root.dark-theme {
-    --body-bg: #121212 !important;
+    /* Основные цвета */
+    --body-bg: #0f0f0f !important;
     --text-color: #f5f5f5 !important;
     --card-bg: #1e1e1e !important;
-    --card-border: #2c2c2c !important;
-    --navbar-bg: #0a0a0a !important;
-    --footer-bg: #0a0a0a !important;
-    --primary-color: #800020 !important; /* темно-бордовый */
-    --primary-color-hover: #a31332 !important; /* немного светлее при наведении */
-    --secondary-color: #d6c1c1 !important; /* светло-бордовый для акцентов */
-    --accent-color: #b30000 !important; /* яркий акцент для выделения */
-    --success-color: #347c54 !important;
-    --danger-color: #b30000 !important;
-    --warning-color: #a36a00 !important;
-    --info-color: #d6c1c1 !important;
-    --input-bg: #272727 !important;
-    --input-border: #3a3a3a !important;
+    --card-border: #2a2a2a !important;
+    --navbar-bg: #121212 !important;
+    --footer-bg: #121212 !important;
+    
+    /* Акцентные цвета */
+    --primary-color: #800020 !important; /* Бордовый вместо синего */
+    --secondary-color: #d6c1c1 !important; /* Светло-бордовый для акцентов */
+    --success-color: #00b894 !important; /* Зеленый */
+    --danger-color: #e74c3c !important; /* Красный */
+    --warning-color: #f39c12 !important; /* Оранжевый */
+    --info-color: #b30000 !important; /* Темно-бордовый вместо голубого */
+    
+    /* Формы и элементы ввода */
+    --input-bg: #252525 !important;
+    --input-border: #363636 !important;
     --dropdown-bg: #1e1e1e !important;
-    --dropdown-hover: #333333 !important;
+    --dropdown-hover: #2a2a2a !important;
     --modal-bg: #1e1e1e !important;
-    --table-border: #2c2c2c !important;
-    --table-row-hover: #2c2c2c !important;
+    
+    /* Таблицы */
+    --table-border: #2a2a2a !important;
+    --table-row-hover: #2a2a2a !important;
+    --table-header-bg: #1a1a1a !important;
+    
+    /* Дополнительные элементы */
     --bg-light: #1e1e1e !important;
     --breadcrumb-bg: #1e1e1e !important;
     --counter-wrapper-bg: #1e1e1e !important;
-    --text-muted: #ababab !important;
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.7) !important;
-    --gradient-primary: linear-gradient(135deg, #5a0000, #800020) !important;
+    --text-muted: #a0a0a0 !important;
+    --hover-color: #2a2a2a !important;
+    --border-color: #3a3a3a !important;
+    
+    /* Тени */
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    --hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Body and general elements */
 .dark-theme body {
     background-color: var(--body-bg) !important;
     color: var(--text-color) !important;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    font-family: 'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
 }
 
 /* Navbar */
 .dark-theme .navbar {
     background-color: var(--navbar-bg) !important;
-    box-shadow: var(--shadow-sm);
-    border-bottom: 1px solid var(--card-border);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .dark-theme .navbar-light {
@@ -52,7 +61,6 @@
 .dark-theme .navbar-brand,
 .dark-theme .navbar-nav .nav-link {
     color: var(--text-color) !important;
-    transition: color 0.2s ease-in-out;
 }
 
 .dark-theme .navbar-nav .nav-link:hover {
@@ -63,21 +71,19 @@
     border-color: rgba(255, 255, 255, 0.1);
 }
 
+.dark-theme .navbar-brand .logo-text {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
 .dark-theme .dropdown-menu {
     background-color: var(--dropdown-bg);
     border-color: var(--card-border);
-    box-shadow: var(--shadow-md);
-    animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    box-shadow: var(--box-shadow);
 }
 
 .dark-theme .dropdown-item {
     color: var(--text-color);
-    transition: background-color 0.2s, color 0.2s;
 }
 
 .dark-theme .dropdown-item:hover {
@@ -95,7 +101,6 @@
 .dark-theme .breadcrumb {
     background-color: var(--breadcrumb-bg);
     border-radius: 8px;
-    padding: 12px 16px;
 }
 
 /* Cards */
@@ -103,14 +108,13 @@
     background-color: var(--card-bg) !important;
     border-color: var(--card-border) !important;
     color: var(--text-color) !important;
-    box-shadow: var(--shadow-sm);
+    border-radius: 10px !important;
+    box-shadow: var(--box-shadow);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-radius: 8px;
 }
 
 .dark-theme .card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--hover-shadow);
 }
 
 .dark-theme .card-header, 
@@ -120,9 +124,13 @@
 }
 
 .dark-theme .card-header {
-    border-bottom: 2px solid var(--primary-color);
-    border-top-left-radius: 8px !important;
-    border-top-right-radius: 8px !important;
+    border-top-left-radius: 10px !important;
+    border-top-right-radius: 10px !important;
+}
+
+.dark-theme .card-footer {
+    border-bottom-left-radius: 10px !important;
+    border-bottom-right-radius: 10px !important;
 }
 
 /* Tables */
@@ -138,7 +146,22 @@
 
 .dark-theme .table-hover tbody tr:hover {
     background-color: var(--table-row-hover);
-    transition: background-color 0.2s ease;
+}
+
+/* Специально для таблиц с классом table-light */
+.dark-theme .table-light,
+.dark-theme .table-light>td,
+.dark-theme .table-light>th,
+.dark-theme .table>:not(caption)>.table-light>*,
+.dark-theme .table>tbody>tr.table-light>td,
+.dark-theme .table>tbody>tr.table-light>th,
+.dark-theme .table>tfoot>tr.table-light>td,
+.dark-theme .table>tfoot>tr.table-light>th,
+.dark-theme .table>thead>tr.table-light>td,
+.dark-theme .table>thead>tr.table-light>th {
+    background-color: var(--table-header-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--table-border) !important;
 }
 
 /* Forms */
@@ -147,14 +170,15 @@
     background-color: var(--input-bg);
     border-color: var(--input-border);
     color: var(--text-color);
-    border-radius: 6px;
-    transition: border-color 0.3s, box-shadow 0.3s;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
 .dark-theme .form-control:focus,
 .dark-theme .form-select:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 0.25rem rgba(128, 0, 32, 0.25);
+    background-color: rgba(128, 0, 32, 0.05);
 }
 
 .dark-theme .form-control::placeholder {
@@ -181,6 +205,7 @@
 
 .dark-theme label {
     color: var(--text-color);
+    font-weight: 500;
 }
 
 .dark-theme legend {
@@ -193,29 +218,32 @@
 }
 
 /* Buttons */
+.dark-theme .btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
 .dark-theme .btn-primary {
-    background: var(--gradient-primary) !important;
-    border-color: var(--primary-color) !important;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease !important;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .dark-theme .btn-primary:hover {
-    background: linear-gradient(135deg, #720025, #9c0020) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    background-color: #a31332;
+    border-color: #a31332;
+    transform: translateY(-1px);
 }
 
 .dark-theme .btn-outline-primary {
-    color: var(--secondary-color);
+    color: var(--primary-color);
     border-color: var(--primary-color);
-    transition: all 0.3s ease;
 }
 
 .dark-theme .btn-outline-primary:hover {
     background-color: var(--primary-color);
     color: #fff;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
 
 .dark-theme .btn-light {
@@ -224,21 +252,20 @@
     color: var(--text-color);
 }
 
+.dark-theme .btn-light:hover {
+    background-color: var(--dropdown-hover);
+}
+
 /* Modals */
 .dark-theme .modal-content {
     background-color: var(--card-bg) !important;
     border-color: var(--card-border) !important;
-    box-shadow: var(--shadow-lg);
-    border-radius: 12px;
+    border-radius: 12px !important;
 }
 
 .dark-theme .modal-header,
 .dark-theme .modal-footer {
     border-color: var(--card-border) !important;
-}
-
-.dark-theme .modal-header {
-    border-bottom: 2px solid var(--primary-color);
 }
 
 /* Footer */
@@ -250,40 +277,47 @@
 }
 
 /* Links */
-.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link) {
+.dark-theme a:not(.btn):not(.nav-link) {
     color: var(--secondary-color) !important;
-    position: relative;
-    text-decoration: none;
-    transition: color 0.2s;
+    transition: color 0.3s ease;
 }
 
-.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link)::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 1px;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary-color);
-    transition: width 0.3s ease;
-}
-
-.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link):hover {
+.dark-theme a:not(.btn):not(.nav-link):hover {
     color: #FFFFFF !important;
-}
-
-.dark-theme a:not(.btn):not(.navbar-brand):not(.nav-link):hover::after {
-    width: 100%;
+    text-decoration: none;
 }
 
 /* Badges */
+.dark-theme .badge {
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.4em 0.8em;
+}
+
 .dark-theme .badge.bg-light {
-    background-color: #404040 !important;
+    background-color: #383838 !important;
     color: var(--text-color);
 }
 
 .dark-theme .badge.bg-primary {
     background-color: var(--primary-color) !important;
+}
+
+.dark-theme .badge.bg-success {
+    background-color: var(--success-color) !important;
+}
+
+.dark-theme .badge.bg-danger {
+    background-color: var(--danger-color) !important;
+}
+
+.dark-theme .badge.bg-warning {
+    background-color: var(--warning-color) !important;
+    color: #212529;
+}
+
+.dark-theme .badge.bg-info {
+    background-color: var(--info-color) !important;
 }
 
 /* Borders */
@@ -300,200 +334,537 @@
 }
 
 /* Alerts */
-.dark-theme .alert-info {
-    background-color: rgba(176, 176, 176, 0.2);
-    border-color: rgba(176, 176, 176, 0.3);
-    color: #FFFFFF;
+.dark-theme .alert {
     border-radius: 8px;
 }
 
-/* Исправляем counter-wrapper в темной теме */
+.dark-theme .alert-info {
+    background-color: rgba(52, 152, 219, 0.15);
+    border-color: rgba(52, 152, 219, 0.4);
+    color: #a0cfee;
+}
+
+/* Counters */
 .dark-theme .counter-wrapper {
-    background-color: var(--card-bg) !important;
-    border-color: var(--card-border) !important;
+    background-color: var(--counter-wrapper-bg);
     border-radius: 10px;
-    box-shadow: var(--shadow-sm);
     padding: 1.5rem;
-    transition: transform 0.3s ease;
-}
-
-.dark-theme .counter-wrapper:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Исправляем текст в counter-label */
-.dark-theme .counter-label {
-    color: var(--text-color) !important;
-    font-weight: 600;
-    margin-top: 10px;
+    box-shadow: var(--box-shadow);
 }
 
 .dark-theme .counter-value {
     color: var(--primary-color);
-    font-size: 2.5rem;
     font-weight: 700;
 }
 
-/* Исправляем text-muted */
+.dark-theme .counter-label {
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Текст */
 .dark-theme .text-muted {
     color: var(--text-muted) !important;
 }
 
 /* Категории */
 .dark-theme .category-card {
-    transition: all 0.3s ease;
-    background: linear-gradient(145deg, #1a1a1a, #222222);
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dark-theme .category-card:hover {
     transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-}
-
-.dark-theme .category-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: var(--gradient-primary);
-    transition: height 0.3s ease;
-}
-
-.dark-theme .category-card:hover::before {
-    height: 8px;
+    box-shadow: var(--hover-shadow);
 }
 
 .dark-theme .category-icon {
-    color: var(--primary-color);
-    font-size: 2.5rem;
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease;
-}
-
-.dark-theme .category-card:hover .category-icon {
-    transform: scale(1.2);
+    color: var(--secondary-color);
 }
 
 /* Иконки */
 .dark-theme i.fas, 
-.dark-theme i.fab,
+.dark-theme i.far, 
+.dark-theme i.fab, 
 .dark-theme i.bi {
-    color: var(--primary-color);
-    transition: transform 0.2s ease, color 0.2s ease;
-}
-
-.dark-theme i.fas:hover, 
-.dark-theme i.fab:hover,
-.dark-theme i.bi:hover {
-    color: var(--primary-color-hover);
-    transform: scale(1.2);
+    color: inherit;
 }
 
 /* Профиль */
 .dark-theme .profile-header {
     background-color: var(--card-bg);
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: var(--shadow-md);
+    border-radius: 10px;
+    box-shadow: var(--box-shadow);
 }
 
-.dark-theme .avatar {
-    border: 3px solid var(--primary-color);
-    box-shadow: 0 0 15px rgba(128, 0, 32, 0.5);
-    transition: all 0.3s ease;
+.dark-theme .stat-item {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease;
 }
 
-.dark-theme .avatar:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 20px rgba(128, 0, 32, 0.7);
+.dark-theme .stat-item:hover {
+    transform: translateY(-3px);
+}
+
+.dark-theme .stat-item .stat-value {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.dark-theme .stat-item .stat-label {
+    color: var(--text-muted);
+    font-weight: 500;
 }
 
 /* Чат */
 .dark-theme .chat-container {
-    background-color: var(--card-bg);
-    border-color: var(--card-border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-md);
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
 }
 
-.dark-theme .chat-message {
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 10px;
-    position: relative;
-    transition: transform 0.2s ease;
+.dark-theme .message-item .message-time {
+    color: var(--text-muted) !important;
 }
 
-.dark-theme .chat-message:hover {
-    transform: translateY(-2px);
-}
-
-.dark-theme .chat-message:not(.outgoing) {
-    background-color: #2a2a2a;
-    border-bottom-left-radius: 0;
+.dark-theme .chat-message.incoming {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-color) !important;
 }
 
 .dark-theme .chat-message.outgoing {
-    background-color: var(--primary-color);
-    color: white;
-    border-bottom-right-radius: 0;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.dark-theme .list-group-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--text-color) !important;
+}
+
+.dark-theme .list-group-item-action:hover {
+    background-color: var(--dropdown-hover) !important;
+}
+
+.dark-theme .list-group-item.active {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.dark-theme .user-avatar {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.dark-theme .contact-avatar {
+    background-color: var(--primary-color) !important;
+    color: white !important;
 }
 
 /* Анимации */
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+.dark-theme .card,
+.dark-theme .btn,
+.dark-theme .form-control,
+.dark-theme .category-card,
+.dark-theme .stat-item {
+    transition: all 0.3s ease;
 }
 
-@keyframes slideInUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes fadeInRight {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-.dark-theme .animate-pulse {
-    animation: pulse 2s infinite;
-}
-
-.dark-theme .animate-slide-in-up {
-    animation: slideInUp 0.5s forwards;
-}
-
-.dark-theme .animate-fade-in-right {
-    animation: fadeInRight 0.5s forwards;
-}
-
-/* Hover эффекты для кнопок */
-.dark-theme .btn {
-    position: relative;
+/* Список проектов */
+.dark-theme .project-item {
+    border-radius: 10px;
     overflow: hidden;
-    z-index: 1;
+    box-shadow: var(--box-shadow);
 }
 
-.dark-theme .btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    transition: left 0.3s ease;
-    z-index: -1;
+.dark-theme .project-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--hover-shadow);
 }
 
-.dark-theme .btn:hover::before {
-    left: 0;
+/* Пагинация */
+.dark-theme .pagination .page-link {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
 }
+
+.dark-theme .pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.dark-theme .pagination .page-link:hover {
+    background-color: var(--dropdown-hover);
+}
+
+/* Подсказки */
+.dark-theme .tooltip .tooltip-inner {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--card-border);
+}
+
+/* Similar projects section - fix white backgrounds */
+.dark-theme .bg-white,
+.dark-theme div[class*='bg-white'],
+.dark-theme section[class*='bg-white'] {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Fix any remaining light elements */
+.dark-theme .bg-light, 
+.dark-theme .bg-white, 
+.dark-theme .bg-body,
+.dark-theme .bg-body-tertiary,
+.dark-theme .bg-body-secondary {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Improve text colors for dark theme */
+.dark-theme .text-black, 
+.dark-theme .text-body,
+.dark-theme .text-dark {
+    color: var(--text-color) !important;
+}
+
+/* Form controls in dark theme */
+.dark-theme textarea,
+.dark-theme input[type="text"],
+.dark-theme input[type="email"],
+.dark-theme input[type="password"],
+.dark-theme input[type="number"],
+.dark-theme input[type="search"],
+.dark-theme input[type="tel"],
+.dark-theme input[type="url"],
+.dark-theme input[type="date"],
+.dark-theme input[type="datetime-local"],
+.dark-theme input[type="month"],
+.dark-theme input[type="time"],
+.dark-theme input[type="week"],
+.dark-theme select,
+.dark-theme .form-control {
+    background-color: var(--input-bg) !important;
+    border-color: var(--input-border) !important;
+    color: var(--text-color) !important;
+}
+
+/* Fix white backgrounds in tables */
+.dark-theme table,
+.dark-theme .table {
+    background-color: transparent !important;
+}
+
+.dark-theme .table-light,
+.dark-theme .table-white {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Additional styling for list groups in the chat */
+.dark-theme .messages-list a.list-group-item {
+    border-left: none !important;
+    border-right: none !important;
+    transition: all 0.2s ease-in-out;
+}
+
+.dark-theme .messages-list a.list-group-item:hover {
+    transform: translateX(5px);
+}
+
+/* Модификации для секции похожих проектов */
+.dark-theme .list-group-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--text-color) !important;
+}
+
+.dark-theme .list-group-item-action:hover {
+    background-color: var(--dropdown-hover) !important;
+}
+
+.dark-theme .list-group-item.active {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Исправления для секций с белым фоном */
+.dark-theme .bg-light, 
+.dark-theme section.bg-light,
+.dark-theme div.bg-light,
+.dark-theme .py-5.bg-light {
+    background-color: var(--body-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Исправления для текста и ссылок */
+.dark-theme .text-black, 
+.dark-theme .text-dark {
+    color: var(--text-color) !important;
+}
+
+/* Исправления для форм и ввода */
+.dark-theme textarea,
+.dark-theme input[type="text"],
+.dark-theme input[type="email"],
+.dark-theme input[type="password"],
+.dark-theme input[type="number"],
+.dark-theme input[type="tel"],
+.dark-theme select,
+.dark-theme .form-control {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--input-border) !important;
+}
+
+/* Исправления для таблиц */
+.dark-theme table,
+.dark-theme tbody,
+.dark-theme tr {
+    background-color: var(--card-bg) !important;
+}
+
+.dark-theme .table-light,
+.dark-theme .table-light > td,
+.dark-theme .table-light > th {
+    background-color: var(--table-header-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Исправления для чата */
+.dark-theme .messages-list a.list-group-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+}
+
+.dark-theme .messages-list a.list-group-item:hover {
+    background-color: var(--dropdown-hover) !important;
+}
+
+/* Исправления для похожих проектов */
+.dark-theme .card-body .list-group-flush .list-group-item {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--card-border) !important;
+}
+
+.dark-theme .card-body .list-group-flush .list-group-item-action:hover {
+    background-color: var(--dropdown-hover) !important;
+}
+
+.dark-theme .list-group-flush {
+    background-color: var(--card-bg) !important;
+}
+
+.dark-theme .list-group-item-action .text-muted {
+    color: var(--text-muted) !important;
+}
+
+.dark-theme a h6.mb-1 {
+    color: var(--text-color) !important;
+}
+
+/* Стили для страницы уведомлений */
+.dark-theme .list-group-item {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+.dark-theme .list-group-item.unread {
+    background-color: rgba(13, 110, 253, 0.05) !important;
+}
+
+.dark-theme .list-group-item.active {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.dark-theme .list-group-item-action:hover,
+.dark-theme .list-group-item-action:focus {
+    background-color: var(--hover-color) !important;
+    color: var(--text-color) !important;
+}
+
+.dark-theme .badge.bg-danger {
+    background-color: var(--danger-color) !important;
+}
+
+.dark-theme .badge.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.dark-theme .notification-icon {
+    background-color: var(--hover-color) !important;
+}
+
+.dark-theme .btn-light {
+    background-color: var(--input-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dark-theme .btn-light:hover,
+.dark-theme .btn-light:focus {
+    background-color: var(--hover-color) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Конец стилей для страницы уведомлений */
+
+/* Исправления для светлых фонов в темной теме */
+.dark-theme .table-light {
+    --bs-table-bg: var(--table-header-bg) !important;
+    --bs-table-striped-bg: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+.dark-theme .table-light th,
+.dark-theme .table-light td,
+.dark-theme .table-light thead th {
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+.dark-theme .bg-light {
+    background-color: var(--card-bg) !important;
+}
+
+.dark-theme .text-dark {
+    color: var(--text-color) !important;
+}
+
+.dark-theme .bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+.dark-theme .border,
+.dark-theme .border-top,
+.dark-theme .border-bottom,
+.dark-theme .border-start,
+.dark-theme .border-end {
+    border-color: var(--border-color) !important;
+}
+
+/* Аккордеоны */
+.dark-theme .accordion-item,
+.dark-theme .accordion-header,
+.dark-theme .accordion-button {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.dark-theme .accordion-button:not(.collapsed) {
+    background-color: var(--hover-color);
+    color: var(--text-color);
+}
+
+.dark-theme .accordion-button::after {
+    filter: invert(1);
+}
+
+/* Модальные окна */
+.dark-theme .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.dark-theme .modal-header,
+.dark-theme .modal-footer {
+    border-color: var(--border-color);
+}
+
+/* Формы и селекты */
+.dark-theme .form-select {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+.dark-theme .form-select option {
+    background-color: var(--input-bg);
+    color: var(--text-color);
+}
+
+/* Кастомные элементы форм */
+.dark-theme .custom-control-label::before {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+}
+
+/* Пагинация */
+.dark-theme .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.dark-theme .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.dark-theme .page-item.disabled .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-muted);
+}
+
+/* Улучшенные стили для чата в темной теме */
+.dark-theme .message-bubble.bg-primary {
+    background-color: #8B2942 !important;  /* Бордовый цвет для сообщений пользователя */
+    color: #fff;
+}
+
+.dark-theme .message-incoming .message-bubble {
+    background-color: #2b2b2b !important;
+    border-color: #444 !important;
+    color: #e1e1e1;
+}
+
+/* Исправление отступов в контейнере сообщений */
+.dark-theme .message-container {
+    padding-right: 0.5rem !important;
+    background-color: #1b1b1b;
+}
+
+.dark-theme .message-outgoing {
+    align-items: flex-end;
+}
+
+.dark-theme .message-incoming {
+    align-items: flex-start;
+}
+
+.dark-theme .message-outgoing .message-meta,
+.dark-theme .message-incoming .message-meta {
+    color: #aaa !important;
+}
+
+.dark-theme #message-container {
+    scrollbar-width: thin;
+    scrollbar-color: #444 #1c1c1c;
+}
+
+.dark-theme #message-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dark-theme #message-container::-webkit-scrollbar-track {
+    background: #1c1c1c;
+}
+
+.dark-theme #message-container::-webkit-scrollbar-thumb {
+    background-color: #444;
+    border-radius: 4px;
+    border: 2px solid #1c1c1c;
+} 

@@ -2,118 +2,201 @@
 {% load i18n %}
 {% load static %}
 
-{% block title %}{% trans "Conversation with" %} {{ other_participant.get_full_name }} | WorkBy{% endblock %}
+{% block title %}{{ conversation.get_other_participant.user.get_full_name }} - {% trans "Chat" %} - WorkBy{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Исправляем цвета темной темы */
+    .bg-dark {
+        background-color: var(--dark-bg) !important;
+    }
+    
+    .bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+    }
+    
+    .btn-outline-secondary {
+        color: var(--text-color) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    .border-secondary {
+        border-color: var(--border-color) !important;
+    }
+    
+    /* Исправляем стили для чата */
+    .message-outgoing {
+        padding-left: 20% !important; /* Отступ слева для исходящих сообщений */
+        padding-right: 0 !important; /* Убираем правый отступ для исходящих сообщений */
+        text-align: right !important; /* Выравнивание текста по правому краю */
+        margin-left: auto !important; /* Сдвигаем блок вправо */
+    }
+    
+    .message-incoming {
+        padding-right: 0 !important; /* Убираем отступ справа для входящих сообщений */
+        text-align: left !important; /* Выравнивание текста по левому краю */
+        margin-right: auto !important; /* Сдвигаем блок влево */
+    }
+    
+    .message-bubble {
+        max-width: 100% !important; /* Максимальная ширина пузыря */
+        word-break: break-word !important; /* Перенос слов для длинных слов */
+        display: inline-block !important; /* Позволяет блоку занимать только необходимое пространство */
+    }
+
+    .message-group {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    
+    .message {
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+    
+    /* Улучшаем контрастность и внешний вид сообщений */
+    .message-bubble.bg-primary {
+        background-color: var(--primary-color) !important;
+    }
+    
+    .message-bubble.bg-dark {
+        background-color: var(--card-bg) !important;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-4" id="chat-main-container">
+<div class="container-fluid py-4">
     <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm bg-dark text-light">
-                <div class="card-header d-flex justify-content-between align-items-center bg-dark">
+        <!-- Список чатов (на мобильных будет скрыт) -->
+        <div class="col-md-4 col-lg-3 d-none d-md-block">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center p-3">
+                    <h5 class="mb-0">{% trans "Messages" %}</h5>
+                    <a href="{% url 'chat:inbox' %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-list"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0" style="height: calc(100vh - 180px); overflow-y: auto;">
+                    <div class="list-group list-group-flush border-0">
+                        {% include 'chat/partials/conversation_list.html' with conversations=conversations active_conversation=conversation %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Основной чат -->
+        <div class="col-md-8 col-lg-9" id="chat-main-container">
+            <div class="card border-0 shadow-sm h-100">
+                <!-- Заголовок чата с информацией о собеседнике -->
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center p-3">
                     <div class="d-flex align-items-center">
-                        <a href="{% url 'chat:inbox' %}" class="btn btn-sm btn-outline-light me-3">
+                        <!-- На мобильных добавляем кнопку возврата к списку чатов -->
+                        <a href="{% url 'chat:inbox' %}" class="btn btn-outline-light btn-sm me-2 d-md-none">
                             <i class="fas fa-arrow-left"></i>
                         </a>
-                        <div class="position-relative d-flex align-items-center">
-                            {% if other_participant.profile.avatar %}
-                            <img src="{{ other_participant.profile.avatar.url }}" 
-                                 alt="{{ other_participant.get_full_name }}" 
-                                 class="rounded-circle me-2" width="40" height="40">
-                            {% else %}
-                            <div class="user-initial-avatar rounded-circle bg-primary d-flex align-items-center justify-content-center me-2" 
-                                 style="width: 40px; height: 40px;">
-                                <span class="text-white fw-bold">{{ other_participant.get_full_name|slice:":1" }}</span>
+                        
+                        {% with other_user=conversation.get_other_participant.user %}
+                            <div class="position-relative me-2">
+                                {% if other_user.profile.avatar %}
+                                    <img src="{{ other_user.profile.avatar.url }}" alt="{{ other_user.get_full_name }}" class="rounded-circle" width="40" height="40">
+                                {% else %}
+                                    <div class="user-initial-avatar rounded-circle bg-primary d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <span class="text-white">{{ other_user.get_full_name|slice:":1" }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                {% if other_user.profile.is_online %}
+                                    <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-light rounded-circle" style="width: 12px; height: 12px;"></span>
+                                {% endif %}
                             </div>
-                            {% endif %}
+                            
                             <div>
-                                <h5 class="mb-0 text-light">{{ other_participant.get_full_name }}</h5>
-                                <small class="text-light opacity-75">
-                                    {% if other_participant.profile.is_online %}
-                                    <span class="text-success">
-                                        <i class="fas fa-circle me-1" style="font-size: 8px;"></i>{% trans "Online" %}
-                                    </span>
+                                <h5 class="mb-0">{{ other_user.get_full_name }}</h5>
+                                <small class="text-light-50">
+                                    {% if other_user.profile.is_online %}
+                                        <span class="text-success">{% trans "Online" %}</span>
                                     {% else %}
-                                    <span class="text-muted">
-                                        {% trans "Last seen" %} {{ other_participant.profile.last_activity|date:"d.m.Y H:i" }}
-                                    </span>
+                                        {% if other_user.profile.last_seen %}
+                                            {% trans "Last seen" %} {{ other_user.profile.last_seen|timesince }} {% trans "ago" %}
+                                        {% else %}
+                                            {% trans "Offline" %}
+                                        {% endif %}
                                     {% endif %}
                                 </small>
                             </div>
-                        </div>
+                        {% endwith %}
                     </div>
+                    
                     <div>
-                        {% if other_participant.is_freelancer %}
-                        <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-outline-light btn-sm" title="{% trans 'View profile' %}">
-                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
-                        </a>
-                        {% else %}
-                        <a href="{% url 'accounts:client_detail' other_participant.username %}" class="btn btn-outline-light btn-sm" title="{% trans 'View profile' %}">
-                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
-                        </a>
-                        {% endif %}
-                        {% if related_job %}
-                        <a href="{% url 'jobs:job_detail' related_job.pk %}" class="btn btn-primary btn-sm ms-2" title="{% trans 'View related job' %}">
-                            <i class="fas fa-briefcase me-1"></i> {% trans "View Job" %}
-                        </a>
+                        {% if conversation.related_contract %}
+                            <a href="{% url 'jobs:contract_detail' pk=conversation.related_contract.pk %}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-file-contract me-1"></i> {% trans "View Contract" %}
+                            </a>
+                        {% elif conversation.related_project %}
+                            <a href="{% url 'jobs:project_detail' conversation.related_project.pk %}" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-briefcase me-1"></i> {% trans "View Project" %}
+                            </a>
                         {% endif %}
                     </div>
                 </div>
-                <div class="card-body bg-dark" style="height: 65vh; max-height: 65vh; overflow-y: auto;" id="message-container">
-                    {% if messages %}
-                        <div class="message-group">
-                            {% for message in messages %}
-                                <div class="message mb-3 {% if message.sender == request.user %}message-outgoing{% else %}message-incoming{% endif %}" 
-                                     id="message-{{ message.id }}">
-                                    <div class="message-bubble p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-white{% else %}bg-dark border border-secondary text-light{% endif %}"
-                                         style="max-width: 90%; width: fit-content; {% if message.sender == request.user %}margin-left: auto; margin-right: 0;{% endif %}">
-                                        {{ message.content|linebreaksbr }}
-                                        {% if message.attachment %}
-                                            <div class="message-attachment mt-2">
-                                                {% if message.is_image %}
-                                                    <a href="{{ message.attachment.url }}" target="_blank" class="d-block">
-                                                        <img src="{{ message.attachment.url }}" alt="{% trans 'Attachment' %}" class="img-fluid rounded-3" style="max-height: 200px;">
-                                                    </a>
-                                                {% else %}
-                                                    <a href="{{ message.attachment.url }}" target="_blank" class="d-flex align-items-center p-2 rounded-3 bg-dark bg-opacity-25">
-                                                        <i class="fas fa-file-alt me-2 text-light"></i>
-                                                        <span class="text-truncate text-light">{{ message.attachment.name|slice:"14:" }}</span>
-                                                        <i class="fas fa-download ms-2 text-light"></i>
-                                                    </a>
-                                                {% endif %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="message-meta d-flex align-items-center {% if message.sender == request.user %}justify-content-end{% endif %} mt-1">
-                                        <small class="text-muted">{{ message.created_at|date:"H:i" }}</small>
-                                        {% if message.sender == request.user %}
-                                            {% if message.is_read %}
-                                                <i class="fas fa-check-double ms-1 text-primary" title="{% trans 'Read' %}"></i>
+                
+                <!-- Основной контейнер сообщений -->
+                <div id="message-container" class="card-body p-3" style="height: calc(100vh - 250px); overflow-y: auto; background-color: #1a1a1a;">
+                    <div class="message-group">
+                        {% for message in messages %}
+                            <div class="message mb-3 {% if message.sender == request.user %}message-outgoing{% else %}message-incoming{% endif %}" id="message-{{ message.id }}">
+                                <div class="message-bubble p-3 rounded-3 {% if message.sender == request.user %}bg-primary text-white{% else %}bg-dark border border-secondary text-light{% endif %}">
+                                    {{ message.content|linebreaksbr }}
+                                    
+                                    {% if message.attachment %}
+                                        <div class="message-attachment mt-2">
+                                            {% if message.is_image %}
+                                                <a href="{{ message.attachment.url }}" target="_blank" class="d-block">
+                                                    <img src="{{ message.attachment.url }}" alt="{% trans 'Attachment' %}" class="img-fluid rounded-3" style="max-height: 200px;">
+                                                </a>
                                             {% else %}
-                                                <i class="fas fa-check ms-1 text-muted" title="{% trans 'Sent' %}"></i>
+                                                <a href="{{ message.attachment.url }}" target="_blank" class="d-flex align-items-center p-2 rounded-3 bg-dark bg-opacity-25">
+                                                    <i class="fas fa-file-alt me-2 text-light"></i>
+                                                    <span class="text-truncate text-light">{{ message.attachment.name }}</span>
+                                                    <i class="fas fa-download ms-2 text-light"></i>
+                                                </a>
                                             {% endif %}
-                                        {% endif %}
-                                    </div>
+                                        </div>
+                                    {% endif %}
                                 </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center my-5 py-5">
-                            <img src="{% static 'img/start-conversation.svg' %}" alt="{% trans 'Start conversation' %}" class="img-fluid mb-4" style="max-width: 150px; opacity: 0.7;">
-                            <h5 class="text-light">{% trans "Start your conversation with" %} {{ other_participant.get_full_name }}</h5>
-                            <p class="text-muted">{% trans "Send your first message below" %}</p>
-                        </div>
-                    {% endif %}
+                                <div class="message-meta d-flex align-items-center {% if message.sender == request.user %}justify-content-end{% endif %} mt-1">
+                                    <small class="text-muted">{{ message.created_at|date:"H:i" }}</small>
+                                    {% if message.sender == request.user %}
+                                        <i class="fas fa-check ms-1 text-muted" title="{% if message.is_read %}{% trans 'Read' %}{% else %}{% trans 'Sent' %}{% endif %}"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="text-center p-5">
+                                <i class="fas fa-comments text-muted mb-3" style="font-size: 3rem;"></i>
+                                <p class="text-muted">{% trans "No messages yet. Start the conversation!" %}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="card-footer bg-dark border-top border-secondary p-3">
-                    <form id="message-form" method="post" enctype="multipart/form-data" class="message-form">
-                        {% csrf_token %}
+                
+                <!-- Форма отправки сообщения -->
+                <div class="card-footer bg-dark border-0 p-3">
+                    <form id="message-form" class="d-flex flex-column">
                         <div class="input-group">
-                            <input type="file" id="attachment" name="attachment" class="d-none">
-                            <button type="button" class="btn btn-outline-secondary border-secondary text-light" id="attach-button">
+                            <textarea id="id_content" name="content" class="form-control bg-dark bg-opacity-50 text-light border-secondary" placeholder="{% trans 'Type a message...' %}" style="resize: none; height: 38px;"></textarea>
+                            <button type="button" id="attach-button" class="btn btn-outline-secondary">
                                 <i class="fas fa-paperclip"></i>
                             </button>
-                            <textarea id="id_content" name="content" class="form-control bg-dark bg-opacity-50 text-light border-secondary" 
-                                      placeholder="{% trans 'Type your message...' %}" rows="1" required></textarea>
+                            <input type="file" id="attachment" name="attachment" class="d-none">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
@@ -138,29 +221,44 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
-        // Очищаем страницу от отладочных сообщений
+        // Очищаем страницу от отладочных сообщений при загрузке
         function cleanupDebugMessages() {
-            // Удаляем все текстовые узлы "Message 13", "Message 14" и т.д. 
-            // на уровне body, но не в контейнере чата
-            $('body').contents().each(function() {
-                if (this.nodeType === 3 && /Message \d+/.test(this.nodeValue)) {
-                    $(this).remove();
-                }
-            });
+            // Удаляем все текстовые узлы, содержащие "Message" и число во всем DOM
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                { acceptNode: node => /Message \d+/i.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT },
+                false
+            );
             
-            // Удаляем также любые элементы, содержащие такие тексты
-            $('body *').each(function() {
-                if ($(this).children().length === 0 && /Message \d+/.test($(this).text())) {
-                    if (!$(this).closest('#chat-main-container').length) {
-                        $(this).remove();
-                    }
-                }
-            });
+            const nodesToRemove = [];
+            while (walker.nextNode()) {
+                nodesToRemove.push(walker.currentNode);
+            }
+            
+            // Удаляем найденные узлы
+            nodesToRemove.forEach(node => node.parentNode && node.parentNode.removeChild(node));
+            
+            // Дополнительная очистка через jQuery
+            $("body").contents().filter(function() {
+                return this.nodeType === 3 && /Message \d+/i.test(this.nodeValue);
+            }).remove();
+            
+            $("*").contents().filter(function() {
+                return this.nodeType === 3 && /Message \d+/i.test(this.nodeValue);
+            }).remove();
         }
         
-        // Выполняем очистку при загрузке и каждые полсекунды для новых сообщений
+        // Запускаем очистку при загрузке и часто (каждые 50 мс)
         cleanupDebugMessages();
-        setInterval(cleanupDebugMessages, 500);
+        const cleanupInterval = setInterval(cleanupDebugMessages, 50);
+        
+        // Останавливаем интервал после 10 секунд, чтобы не нагружать браузер
+        setTimeout(() => {
+            clearInterval(cleanupInterval);
+            // После этого запускаем реже
+            setInterval(cleanupDebugMessages, 5000);
+        }, 10000);
         
         // Прокрутка к последнему сообщению при загрузке страницы
         const messageContainer = document.getElementById('message-container');
@@ -188,7 +286,7 @@
                     // Добавляем новое сообщение в чат
                     const messageHtml = `
                         <div class="message mb-3 message-outgoing" id="message-${response.id}">
-                            <div class="message-bubble p-3 rounded-3 bg-primary text-white" style="max-width: 90%; width: fit-content; margin-left: auto; margin-right: 0;">
+                            <div class="message-bubble p-3 rounded-3 bg-primary text-white">
                                 ${response.content.replace(/\n/g, '<br>')}
                                 ${response.attachment ? `
                                     <div class="message-attachment mt-2">
@@ -215,8 +313,7 @@
                     
                     $('.message-group').append(messageHtml);
                     messageContainer.scrollTop = messageContainer.scrollHeight;
-                    
-                    // Очистка отладочных сообщений после отправки нового сообщения
+                    // Удаляем отладочные сообщения после добавления нового сообщения
                     cleanupDebugMessages();
                 },
                 error: function(xhr, status, error) {
@@ -267,7 +364,7 @@
                             if (message.sender_id !== {{ request.user.id }}) {
                                 newMessagesHtml += `
                                     <div class="message mb-3 message-incoming" id="message-${message.id}">
-                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light" style="max-width: 90%; width: fit-content;">
+                                        <div class="message-bubble p-3 rounded-3 bg-dark border border-secondary text-light">
                                             ${message.content.replace(/\n/g, '<br>')}
                                             ${message.attachment ? `
                                                 <div class="message-attachment mt-2">
@@ -295,6 +392,7 @@
                         
                         $('.message-group').append(newMessagesHtml);
                         messageContainer.scrollTop = messageContainer.scrollHeight;
+                        cleanupDebugMessages(); // Удаляем отладочные сообщения после добавления новых
                         
                         // Отмечаем сообщения как прочитанные
                         $.ajax({
@@ -304,9 +402,6 @@
                                 'csrfmiddlewaretoken': '{{ csrf_token }}'
                             }
                         });
-                        
-                        // Очистка отладочных сообщений после получения новых
-                        cleanupDebugMessages();
                     }
                 }
             });

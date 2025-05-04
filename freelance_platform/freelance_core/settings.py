@@ -27,18 +27,22 @@ SECRET_KEY = 'django-insecure-m3!7+k_)1g1!iw!#iqo&z6dqj7=^c-8s@(12v&a3l90z#bz%!9
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Определение режима отладки на основе переменной окружения
-DEBUG = os.environ.get('DJANGO_DEBUG', 'False').lower() == 'true'
+DEBUG = True  # Для локальной разработки всегда True
+
+# Определяем, запущен ли сервер на локальной машине
+IS_LOCAL = os.environ.get('SERVER_ENV', 'local') == 'local'
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'workby.onrender.com', '*']
 
-# CSRF настройки для ngrok
+# CSRF настройки для ngrok и других внешних сервисов
 CSRF_TRUSTED_ORIGINS = ['https://workby.onrender.com', 'http://127.0.0.1:8000', 'http://localhost:8000', 'https://127.0.0.1:8000', 'https://localhost:8000']
 
-# Настройки для локальной разработки с HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Настройка прокси-заголовка для определения протокола (для production)
+if not IS_LOCAL:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Производственные настройки безопасности
-if not DEBUG:
+# Производственные настройки безопасности - только для production
+if not DEBUG and not IS_LOCAL:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -48,6 +52,11 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     X_FRAME_OPTIONS = 'DENY'
+else:
+    # Для локальной разработки отключаем редирект на HTTPS
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # Application definition
 

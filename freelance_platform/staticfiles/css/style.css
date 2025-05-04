@@ -5,21 +5,56 @@
     /* Основная цветовая схема */
     --primary-color: #8B0000;
     --secondary-color: #6c757d;
-    --background-color: #FFFFFF;
-    --text-color: #1A1A1A;
+    --background-color: #121212;
+    --text-color: #f5f5f5;
+    --dark-bg: #1a1a1a;
+    --border-color: #333;
     
     /* Семантические цвета UI */
     --danger-color: #dc3545;
     --warning-color: #ffc107;
     --info-color: #17a2b8;
     --success-color: #28a745;
+    
+    /* Дополнительные переменные для темной темы */
+    --body-bg: #0f0f0f;
+    --card-bg: #1e1e1e;
+    --card-border: #2a2a2a;
+    --navbar-bg: #121212;
+    --footer-bg: #121212;
+    --hover-color: #2a2a2a;
+    
+    /* Формы и элементы ввода */
+    --input-bg: #252525;
+    --input-border: #363636;
+    --dropdown-bg: #1e1e1e;
+    --dropdown-hover: #2a2a2a;
+    
+    /* Кнопки и интерактивные элементы */
+    --btn-hover-bg: #700000;
+    
+    /* Таблицы */
+    --table-border: #2a2a2a;
+    --table-row-hover: #2a2a2a;
+    --table-header-bg: #1a1a1a;
+    
+    /* Дополнительные элементы */
+    --bg-light: #1e1e1e;
+    --breadcrumb-bg: #1e1e1e;
+    --counter-wrapper-bg: #1e1e1e;
+    --text-muted: #a0a0a0;
+    
+    /* Тени */
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
 }
 
+/* Принудительное применение темной темы */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    color: var(--text-color);
-    background-color: var(--background-color);
+    color: var(--text-color) !important;
+    background-color: var(--background-color) !important;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -27,10 +62,12 @@ body {
 
 main {
     flex: 1;
+    background-color: var(--background-color) !important;
 }
 
 footer {
     flex-shrink: 0;
+    background-color: var(--footer-bg);
 }
 
 /* Стили для карточек проектов */
@@ -150,24 +187,23 @@ footer {
 
 /* Стили для профилей пользователей */
 .profile-header {
-    padding: 30px;
-    border-radius: 8px;
-    margin-bottom: 30px;
-    background-color: #fff;
+    background-color: var(--card-bg) !important;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 .profile-avatar {
-    width: 160px;
-    height: 160px;
+    width: 150px;
+    height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 64px;
+    border: 5px solid var(--card-border) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+    background-color: var(--primary-color) !important;
 }
 
 .profile-stats {
@@ -177,21 +213,24 @@ footer {
 }
 
 .stat-item {
+    background-color: var(--card-bg) !important;
+    border-radius: 10px;
+    padding: 1rem;
     text-align: center;
-    padding: 15px;
-    border-radius: 8px;
-    background-color: rgba(52, 152, 219, 0.1);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
 }
 
 .stat-item .count {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--primary-color);
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-color) !important;
 }
 
 .stat-item .stat-label {
-    color: #777;
-    font-size: 14px;
+    color: var(--text-muted) !important;
+    font-weight: 500;
 }
 
 /* Стили для индикаторов счетчиков */
@@ -254,24 +293,22 @@ footer {
 
 /* Стили для счетчиков на главной странице */
 .counter-wrapper {
-    padding: 3rem 0;
-    background-color: #f8f9fa;
+    background-color: var(--dark-bg) !important;
+    color: var(--text-color) !important;
 }
 
 .counter-item {
-    padding: 1.5rem;
+    background-color: var(--card-bg) !important;
+    border-radius: 8px;
+    border: 1px solid var(--border-color) !important;
 }
 
 .counter-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
+    color: var(--primary-color) !important;
 }
 
 .counter-label {
-    font-size: 1.1rem;
-    color: #333;
+    color: var(--text-muted) !important;
 }
 
 /* Основные стили сайта */
@@ -300,10 +337,13 @@ footer {
 
 /* Стили для профиля */
 .profile-header {
-    background-color: #f8f9fa;
+    background-color: var(--card-bg) !important;
     border-radius: 10px;
     padding: 2rem;
     margin-bottom: 2rem;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
 }
 
 .profile-avatar {
@@ -311,22 +351,25 @@ footer {
     height: 150px;
     object-fit: cover;
     border-radius: 50%;
-    border: 5px solid #fff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 5px solid var(--card-border) !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+    background-color: var(--primary-color) !important;
 }
 
 .stat-item {
-    background-color: #fff;
+    background-color: var(--card-bg) !important;
     border-radius: 10px;
     padding: 1rem;
     text-align: center;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
 }
 
 .stat-item .count {
     font-size: 2rem;
     font-weight: bold;
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
 }
 
 /* Стили для чата */
@@ -430,25 +473,25 @@ footer {
 
 /* Кнопки */
 .btn-primary {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
-}
-
-.btn-primary:hover {
-    background-color: #700000;
-    border-color: #700000;
-}
-
-.btn-outline-primary {
-    color: var(--primary-color) !important;
-    border-color: var(--primary-color) !important;
-}
-
-.btn-outline-primary:hover {
     background-color: var(--primary-color) !important;
     border-color: var(--primary-color) !important;
     color: white !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--btn-hover-bg) !important;
+    border-color: var(--btn-hover-bg) !important;
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
 }
 
 .btn-success {
@@ -498,10 +541,6 @@ body {
     min-height: 100vh;
 }
 
-main {
-    flex: 1;
-}
-
 /* Logo styling */
 .logo-text {
     font-weight: 700;
@@ -533,18 +572,19 @@ main {
 
 /* Navbar styling */
 .navbar {
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    background-color: var(--navbar-bg) !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 /* Общие стили для ссылок */
 a {
-    color: #700000;
+    color: var(--primary-color);
     text-decoration: none;
     transition: color 0.3s ease, transform 0.2s ease;
 }
 
 a:hover {
-    color: #500000;
+    color: var(--btn-hover-bg);
 }
 
 /* Стиль для навигационных ссылок */
@@ -555,7 +595,7 @@ a:hover {
     transition: all 0.3s ease;
     font-size: 1.05rem;
     font-weight: 600;
-    color: #444444;
+    color: var(--text-color);
 }
 
 .navbar .nav-link:hover {
@@ -731,7 +771,7 @@ table {
 
 /* Повышаем контрастность текста в темных секциях */
 .bg-dark {
-    background-color: #222 !important;
+    background-color: var(--dark-bg) !important;
 }
 
 .bg-dark .text-muted {
@@ -1072,8 +1112,6 @@ table {
     margin: 0 auto;
 }
 
-}
-
 .requiredField {
     font-weight: 600;
 }
@@ -1231,4 +1269,481 @@ table {
     .table-mobile-hide {
         display: none;
     }
+}
+
+/* Улучшенные стили для чата */
+.message-outgoing {
+    padding-left: 20% !important; /* Отступ слева для исходящих сообщений */
+    padding-right: 0 !important; /* Убираем правый отступ для исходящих сообщений */
+    text-align: right !important; /* Выравнивание текста по правому краю */
+    margin-left: auto !important; /* Сдвигаем блок вправо */
+}
+
+.message-incoming {
+    padding-right: 0 !important; /* Убираем отступ справа для входящих сообщений */
+    text-align: left !important; /* Выравнивание текста по левому краю */
+    margin-right: auto !important; /* Сдвигаем блок влево */
+}
+
+.message-bubble {
+    max-width: 100% !important; /* Максимальная ширина пузыря */
+    word-break: break-word !important; /* Перенос слов для длинных слов */
+    display: inline-block !important; /* Позволяет блоку занимать только необходимое пространство */
+}
+
+.message-container {
+    padding-right: 0 !important; /* Убираем отступ справа */
+    background-color: #1b1b1b !important;
+}
+
+/* Улучшаем контрастность и внешний вид сообщений */
+.message-bubble.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.message-bubble.bg-dark {
+    background-color: var(--card-bg) !important;
+}
+
+/* Фиксируем цвета темной темы */
+.bg-dark {
+    background-color: var(--dark-bg) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.btn-outline-secondary {
+    color: #999 !important;
+    border-color: #444 !important;
+}
+
+.border-secondary {
+    border-color: var(--border-color) !important;
+}
+
+/* Корректируем стили для карточек в темной теме */
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-color);
+}
+
+/* Стили для полей ввода в темной теме */
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-control:focus {
+    background-color: rgba(128, 0, 32, 0.05);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(128, 0, 32, 0.25);
+}
+
+/* Стили для select в темной теме */
+.form-select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+/* Фиксируем цвет текста и фона для дропдаунов */
+.dropdown-menu {
+    background-color: var(--dropdown-bg);
+    border-color: var(--card-border);
+}
+
+.dropdown-item {
+    color: var(--text-color);
+}
+
+.dropdown-item:hover {
+    background-color: var(--dropdown-hover);
+    color: var(--primary-color);
+}
+
+/* Корректируем читаемость текста в навигации */
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #fff;
+}
+
+/* Скрываем отладочные сообщения */
+body > *:not(.container, .container-fluid, header, footer, main, nav) {
+    display: none !important;
+}
+
+/* Исправляем отображение текстовых сообщений */
+.message-group > .message > .message-bubble {
+    word-break: break-word;
+}
+
+/* Стили для навигации */
+.navbar {
+    background-color: var(--navbar-bg);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar .nav-link {
+    color: var(--text-color);
+}
+
+.navbar .nav-link:hover {
+    color: var(--primary-color);
+}
+
+.dropdown-menu {
+    background-color: var(--dropdown-bg);
+    border-color: var(--card-border);
+}
+
+.dropdown-item {
+    color: var(--text-color);
+}
+
+.dropdown-item:hover {
+    background-color: var(--dropdown-hover);
+    color: var(--primary-color);
+}
+
+/* Стили для кнопок */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--btn-hover-bg);
+    border-color: var(--btn-hover-bg);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Стили для карточек */
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--card-border);
+    color: var(--text-color);
+}
+
+.card-header, .card-footer {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-color: var(--card-border);
+}
+
+/* Формы и поля ввода */
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-control:focus {
+    background-color: rgba(128, 0, 32, 0.05);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+    box-shadow: 0 0 0 0.25rem rgba(128, 0, 32, 0.25);
+}
+
+.form-select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-color);
+}
+
+.form-check-input {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Стили для фоновых цветов */
+.bg-dark {
+    background-color: var(--dark-bg) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Стили для таблиц */
+.table {
+    color: var(--text-color);
+}
+
+.table td, .table th {
+    border-color: var(--border-color);
+}
+
+/* Текстовые стили */
+.text-light {
+    color: var(--text-color) !important;
+}
+
+.text-muted {
+    color: #a0a0a0 !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+/* Стили для ссылок */
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--btn-hover-bg);
+    text-decoration: none;
+}
+
+/* Скрываем отладочные сообщения */
+body > *:not(.container, .container-fluid, header, footer, main, nav) {
+    display: none !important;
+}
+
+/* Исправляем отображение текстовых сообщений */
+.message-group > .message > .message-bubble {
+    word-break: break-word;
+}
+
+/* Улучшенные стили для чата в темной теме */
+.message-bubble.bg-primary {
+    background-color: var(--primary-color) !important;  /* Бордовый цвет для сообщений пользователя */
+    color: #fff;
+}
+
+.message-incoming .message-bubble {
+    background-color: #2b2b2b !important;
+    border-color: #444 !important;
+    color: #e1e1e1;
+}
+
+/* Исправление отступов в контейнере сообщений */
+.message-container {
+    padding-right: 0.5rem !important;
+    background-color: #1b1b1b;
+}
+
+/* Стили из dark-theme.css, которые не были в style.css */
+#message-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+#message-container::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+#message-container::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+/* Принудительные стили для элементов интерфейса */
+.bg-dark {
+    background-color: var(--dark-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--btn-hover-bg) !important;
+    border-color: var(--btn-hover-bg) !important;
+}
+
+/* Переопределяем важные стили для корректного отображения в темной теме */
+.card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--card-border) !important;
+    color: var(--text-color) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-light {
+    color: var(--text-color) !important;
+}
+
+.navbar {
+    background-color: var(--navbar-bg) !important;
+}
+
+/* Переопределение светлых элементов для темной темы */
+.bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.text-dark {
+    color: var(--text-color) !important;
+}
+
+.bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+.badge.bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.badge.text-dark {
+    color: var(--text-color) !important;
+}
+
+/* Исправление тегов в проектах */
+.tag-badge {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+/* Исправление фона светлых таблиц */
+.table-light, 
+.table-light > th, 
+.table-light > td {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Для всех элементов с белым фоном */
+[class*="bg-light"],
+[class*="bg-white"] {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+}
+
+/* Исправление для информационных значков */
+.badge.bg-info.text-dark {
+    color: #fff !important;
+}
+
+.badge.bg-warning.text-dark {
+    color: #212529 !important; /* Темный текст на желтом фоне для лучшей читаемости */
+}
+
+/* Убираем все светлые фоны */
+.bg-white, 
+.bg-light, 
+div[class*="bg-white"], 
+div[class*="bg-light"],
+section[class*="bg-white"],
+section[class*="bg-light"] {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* Исправляем цвета счетчиков на главной странице */
+.counter-wrapper {
+    background-color: var(--dark-bg) !important;
+    color: var(--text-color) !important;
+}
+
+.counter-item {
+    background-color: var(--card-bg) !important;
+    border-radius: 8px;
+    border: 1px solid var(--border-color) !important;
+}
+
+.counter-value {
+    color: var(--primary-color) !important;
+}
+
+.counter-label {
+    color: var(--text-muted) !important;
+}
+
+/* Сильно усиливаем правила для всех карточек */
+.card, 
+div[class*="card"], 
+.list-group-item,
+div[class*="list-group-item"] {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Исправление цветового оформления на страницах профиля */
+#client-details .card,
+#freelancer-details .card,
+#profile-tabs .card,
+#account-stats .card,
+#active-projects .card,
+#completed-projects .card,
+#contact-information .card,
+#company-information .card,
+div[id*="profile"] .card,
+div[id*="account"] .card,
+div[id*="projects"] .card,
+div[id*="contact"] .card,
+div[id*="company"] .card {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+/* Головорезные методы - заставляем все карточки и белые элементы быть темными */
+body .card,
+body .card-body,
+body .card-header,
+body .card-footer,
+body div[class*="bg-light"],
+body div[class*="bg-white"],
+body section[class*="bg-light"],
+body section[class*="bg-white"] {
+    background-color: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
 } 

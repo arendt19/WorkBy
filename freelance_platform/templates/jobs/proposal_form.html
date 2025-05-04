@@ -82,7 +82,7 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-dark text-light border-secondary">₸</span>
-                                        {{ form.bid_amount|add_class:"form-control bg-dark bg-opacity-50 text-light border-secondary" }}
+                                        <input type="number" name="{{ form.bid_amount.name }}" id="{{ form.bid_amount.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" value="{{ form.bid_amount.value|default:'' }}" step="0.01" min="0">
                                     </div>
                                     {% if form.bid_amount.errors %}
                                     <div class="invalid-feedback d-block">
@@ -98,7 +98,11 @@
                                     <label for="{{ form.delivery_time.id_for_label }}" class="form-label">
                                         {% trans "Delivery Time" %}
                                     </label>
-                                    {{ form.delivery_time|add_class:"form-select bg-dark bg-opacity-50 text-light border-secondary" }}
+                                    <select name="{{ form.delivery_time.name }}" id="{{ form.delivery_time.id_for_label }}" class="form-select bg-dark bg-opacity-50 text-light border-secondary">
+                                        {% for value, text in form.delivery_time.field.choices %}
+                                            <option value="{{ value }}" {% if form.delivery_time.value == value|stringformat:"i" %}selected{% endif %}>{{ text }}</option>
+                                        {% endfor %}
+                                    </select>
                                     {% if form.delivery_time.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.delivery_time.errors }}
@@ -112,7 +116,7 @@
                                     </label>
                                     <div class="input-group">
                                         <span class="input-group-text bg-dark text-light border-secondary">₸</span>
-                                        {{ form.bid_amount|add_class:"form-control bg-dark bg-opacity-50 text-light border-secondary" }}
+                                        <input type="number" name="{{ form.bid_amount.name }}" id="{{ form.bid_amount.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" value="{{ form.bid_amount.value|default:'' }}" step="0.01" min="0">
                                         <span class="input-group-text bg-dark text-light border-secondary">/hr</span>
                                     </div>
                                     {% if form.bid_amount.errors %}
@@ -130,7 +134,7 @@
                                         {% trans "Estimated Hours" %}
                                     </label>
                                     <div class="input-group">
-                                        {{ form.estimated_hours|add_class:"form-control bg-dark bg-opacity-50 text-light border-secondary" }}
+                                        <input type="number" name="{{ form.estimated_hours.name }}" id="{{ form.estimated_hours.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" value="{{ form.estimated_hours.value|default:'' }}" step="1" min="1">
                                         <span class="input-group-text bg-dark text-light border-secondary">{% trans "hours" %}</span>
                                     </div>
                                     {% if form.estimated_hours.errors %}
@@ -145,7 +149,7 @@
                                     <label for="{{ form.attachment.id_for_label }}" class="form-label">
                                         {% trans "Attachment" %} ({% trans "Optional" %})
                                     </label>
-                                    {{ form.attachment|add_class:"form-control bg-dark bg-opacity-50 text-light border-secondary" }}
+                                    <input type="file" name="{{ form.attachment.name }}" id="{{ form.attachment.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary">
                                     {% if form.attachment.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.attachment.errors }}
@@ -227,8 +231,21 @@
 {% block extra_js %}
 <script>
     $(document).ready(function() {
+        // jQuery для улучшения интерфейса формы
         $('#id_cover_letter').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
         $('#id_cover_letter').attr('rows', 8);
+        
+        {% if project.budget_type == 'fixed' %}
+        // Для фиксированной цены
+        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_delivery_time').addClass('form-select bg-dark bg-opacity-50 text-light border-secondary');
+        {% else %}
+        // Для почасовой ставки
+        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_estimated_hours').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        {% endif %}
+        
+        $('#id_attachment').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
         
         // Character counter for cover letter
         $('#id_cover_letter').on('input', function() {
