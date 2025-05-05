@@ -2,152 +2,211 @@
 {% load i18n %}
 {% load static %}
 
-{% block title %}{% trans "Messages" %} | WorkBy{% endblock %}
+{% block title %}{% trans "Messages" %} - WorkBy{% endblock %}
 
-{% block content %}
-<div class="container py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 shadow-sm mb-4 bg-dark text-light">
-                <div class="card-header d-flex justify-content-between align-items-center bg-dark">
-                    <h3 class="mb-0 text-light">{% trans "Messages" %}</h3>
-                    {% if conversations %}
-                    <div class="input-group w-auto">
-                        <input type="text" id="conversation-search" class="form-control bg-dark bg-opacity-50 text-light border-secondary" 
-                               placeholder="{% trans 'Search conversations' %}" style="max-width: 250px;">
-                        <span class="input-group-text bg-dark bg-opacity-50 border-secondary">
-                            <i class="fas fa-search text-light"></i>
-                        </span>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-body p-0">
-                    {% if conversations %}
-                    <div class="row g-0">
-                        <!-- Список чатов -->
-                        <div class="col-md-4 border-end border-secondary">
-                            <div class="list-group list-group-flush conversation-list" id="conversation-list">
-                                {% for conversation in conversations %}
-                                <a href="{% url 'chat:conversation_detail' conversation_id=conversation.id %}" 
-                                   class="list-group-item list-group-item-action d-flex align-items-center p-3 bg-dark {% if conversation.has_unread %}border-start border-4 border-primary{% endif %}" 
-                                   data-id="{{ conversation.id }}">
-                                    <div class="position-relative me-3">
-                                        {% if conversation.other_participant.profile.avatar %}
-                                        <img src="{{ conversation.other_participant.profile.avatar.url }}" 
-                                             alt="{{ conversation.other_participant.get_full_name }}" 
-                                             class="rounded-circle" width="50" height="50">
-                                        {% else %}
-                                        <div class="user-initial-avatar rounded-circle bg-primary d-flex align-items-center justify-content-center" 
-                                             style="width: 50px; height: 50px;">
-                                            <span class="text-white fw-bold">{{ conversation.other_participant.get_full_name|slice:":1" }}</span>
-                                        </div>
-                                        {% endif %}
-                                        {% if conversation.other_participant.profile.is_online %}
-                                        <span class="position-absolute bottom-0 end-0 translate-middle badge border border-white rounded-circle bg-success p-1"
-                                              style="width: 12px; height: 12px;">
-                                            <span class="visually-hidden">{% trans "Online" %}</span>
-                                        </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex-grow-1 text-truncate">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <h6 class="mb-0 text-light">{{ conversation.other_participant.get_full_name }}</h6>
-                                            <small class="text-muted">{{ conversation.last_message.created_at|date:"H:i" }}</small>
-                                        </div>
-                                        <p class="text-truncate mb-0 small {% if conversation.has_unread %}fw-bold text-light{% else %}text-muted{% endif %}">
-                                            {% if conversation.last_message.sender == request.user %}
-                                            <span class="text-muted me-1">{% trans "You:" %}</span>
-                                            {% endif %}
-                                            {{ conversation.last_message.content }}
-                                        </p>
-                                    </div>
-                                    {% if conversation.has_unread %}
-                                    <span class="badge bg-primary rounded-circle ms-2" style="width: 24px; height: 24px;">
-                                        {{ conversation.unread_count }}
-                                    </span>
-                                    {% endif %}
-                                </a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        
-                        <!-- Пустой чат -->
-                        <div class="col-md-8 d-flex align-items-center justify-content-center" id="empty-chat">
-                            <div class="text-center py-5">
-                                <img src="{% static 'img/empty-chat.svg' %}" alt="{% trans 'Select a conversation' %}" 
-                                     class="img-fluid mb-4" style="max-width: 200px; opacity: 0.7;">
-                                <h4 class="text-light">{% trans "Select a conversation" %}</h4>
-                                <p class="text-muted">{% trans "Choose a conversation from the list to view messages" %}</p>
-                                <a href="{% url 'jobs:project_list' %}" class="btn btn-primary mt-2">
-                                    <i class="fas fa-user-plus me-2"></i>{% trans "Find new people" %}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-5">
-                        <img src="{% static 'img/empty-inbox.svg' %}" alt="{% trans 'No conversations' %}" 
-                             class="img-fluid mb-4" style="max-width: 200px; opacity: 0.7;">
-                        <h4 class="text-light">{% trans "You don't have any conversations yet" %}</h4>
-                        <p class="text-muted">{% trans "Start connecting with other users to begin conversations" %}</p>
-                        <div class="mt-4">
-                            <a href="{% url 'jobs:project_list' %}" class="btn btn-primary me-2">
-                                <i class="fas fa-user-tie me-2"></i>{% trans "Browse freelancers" %}
-                            </a>
-                            <a href="{% url 'jobs:project_list' %}" class="btn btn-outline-light">
-                                <i class="fas fa-briefcase me-2"></i>{% trans "Browse projects" %}
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+    body {
+        background-color: #121212;
+    }
+    
+    .chat-container {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        background-color: #1a1a1a;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .chat-header {
+        background-color: #252525;
+        padding: 15px 20px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .chat-header h4 {
+        color: white;
+        margin: 0;
+    }
+    
+    .chat-list {
+        padding: 0;
+    }
+    
+    .chat-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #333;
+        text-decoration: none;
+        color: #eee;
+        transition: background-color 0.2s;
+    }
+    
+    .chat-item:hover {
+        background-color: #252525;
+    }
+    
+    .avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #0084ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        margin-right: 15px;
+        flex-shrink: 0;
+    }
+    
+    .avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .chat-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .chat-name {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: white;
+    }
+    
+    .chat-preview {
+        color: #aaa;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .chat-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-left: 10px;
+    }
+    
+    .chat-time {
+        font-size: 0.8rem;
+        color: #aaa;
+        margin-bottom: 5px;
+    }
+    
+    .badge-unread {
+        background-color: #0084ff;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: #aaa;
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        color: #555;
+        margin-bottom: 20px;
+    }
+</style>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-    $(document).ready(function() {
-        // Поиск по чатам
-        $('#conversation-search').on('keyup', function() {
-            const searchText = $(this).val().toLowerCase();
-            
-            $('.conversation-list a').each(function() {
-                const username = $(this).find('h6').text().toLowerCase();
-                const messageText = $(this).find('p').text().toLowerCase();
-                
-                if (username.includes(searchText) || messageText.includes(searchText)) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
+{% block full_content %}
+<!-- Хедер включается из базового шаблона -->
+{% include 'includes/header.html' %}
+
+<div class="container py-4">
+    <div class="chat-container">
+        <div class="chat-header">
+            <h4>{% trans "Messages" %}</h4>
+            <a href="{% url 'jobs:project_list' %}" class="btn btn-sm btn-outline-light">
+                <i class="fas fa-search me-1"></i> {% trans "Find Projects" %}
+            </a>
+        </div>
         
-        // Обновление списка чатов каждые 30 секунд
-        function updateConversations() {
-            $.ajax({
-                url: '{% url "chat:api_conversations" %}',
-                type: 'GET',
-                success: function(data) {
-                    // Получаем ID активного разговора, если такой есть
-                    const activeConversationId = $('.conversation-list a.active').data('id');
+        <div class="chat-list">
+            {% for item in conversations %}
+                <a href="{% url 'chat:conversation_detail' conversation_id=item.conversation.pk %}" class="chat-item">
+                    <div class="avatar">
+                        {% if item.other_participant.avatar %}
+                            <img src="{{ item.other_participant.avatar.url }}" alt="{{ item.other_participant.get_full_name }}">
+                        {% else %}
+                            {{ item.other_participant.get_full_name|slice:":1" }}
+                        {% endif %}
+                    </div>
                     
-                    // Обновляем список чатов
-                    $('#conversation-list').html(data);
+                    <div class="chat-content">
+                        <div class="chat-name">{{ item.other_participant.get_full_name }}</div>
+                        <div class="chat-preview">
+                            {% if item.last_message %}
+                                {% if item.last_message.sender == request.user %}
+                                    <span>{% trans "You" %}: </span>
+                                {% endif %}
+                                {{ item.last_message.content|truncatechars:50 }}
+                            {% else %}
+                                <em>{% trans "No messages yet" %}</em>
+                            {% endif %}
+                        </div>
+                    </div>
                     
-                    // Восстанавливаем активный разговор
-                    if (activeConversationId) {
-                        $(`.conversation-list a[data-id="${activeConversationId}"]`).addClass('active');
-                    }
-                }
-            });
-        }
-        
-        // Запускаем обновление каждые 30 секунд
-        setInterval(updateConversations, 30000);
-    });
-</script>
+                    <div class="chat-meta">
+                        <div class="chat-time">{{ item.updated_at|date:"d M, H:i" }}</div>
+                        {% if item.unread_count > 0 %}
+                            <div class="badge-unread">{{ item.unread_count }}</div>
+                        {% endif %}
+                    </div>
+                </a>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h5 class="text-white">{% trans "No conversations yet" %}</h5>
+                    <p>{% trans "Find projects and start chatting with clients or freelancers" %}</p>
+                    <a href="{% url 'jobs:project_list' %}" class="btn btn-primary mt-3">
+                        <i class="fas fa-search me-1"></i> {% trans "Find Projects" %}
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if debug %}
+    <!-- Для отладки -->
+    <div class="mt-5 text-white">
+        <h4>Debug Info:</h4>
+        <pre class="bg-dark p-3 text-light">
+Total conversations: {{ conversations|length }}
+
+{% for item in conversations %}
+Conversation {{ forloop.counter }}:
+  ID: {{ item.conversation.id }}
+  Participants: {{ item.conversation.participants.all|length }}
+  Other participant: {{ item.other_participant.username }}
+  Unread count: {{ item.unread_count }}
+{% endfor %}
+        </pre>
+    </div>
+    {% endif %}
+</div>
 {% endblock %} 

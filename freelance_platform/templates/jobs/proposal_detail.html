@@ -67,7 +67,7 @@
             
             <!-- Кнопки действий -->
             <div class="d-flex gap-2">
-                {% if proposal.status == 'pending' %}
+                {% if user == proposal.freelancer and proposal.status == 'pending' %}
                     <a href="{% url 'jobs:proposal_edit' proposal.id %}" class="btn btn-primary">
                         <i class="fas fa-edit me-1"></i> {% trans "Edit Proposal" %}
                     </a>
@@ -76,9 +76,24 @@
                     </a>
                 {% endif %}
                 
-                <a href="{% url 'jobs:my_proposals' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> {% trans "Back to My Proposals" %}
-                </a>
+                {% if user == proposal.project.client and proposal.status == 'pending' %}
+                    <a href="{% url 'jobs:proposal_accept' proposal.id %}" class="btn btn-success">
+                        <i class="fas fa-check-circle me-1"></i> {% trans "Accept Proposal" %}
+                    </a>
+                    <a href="{% url 'jobs:proposal_reject' proposal.id %}" class="btn btn-outline-danger">
+                        <i class="fas fa-times-circle me-1"></i> {% trans "Reject" %}
+                    </a>
+                {% endif %}
+                
+                {% if user == proposal.freelancer %}
+                    <a href="{% url 'jobs:my_proposals' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> {% trans "Back to My Proposals" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'jobs:project_proposals' proposal.project.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Proposals" %}
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

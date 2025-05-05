@@ -172,6 +172,19 @@ class Project(models.Model):
         if self.deadline:
             return self.deadline < timezone.now()
         return False
+    
+    def get_status_class(self):
+        """
+        Возвращает CSS-класс для отображения статуса проекта
+        """
+        status_classes = {
+            'draft': 'secondary',
+            'open': 'success',
+            'in_progress': 'info',
+            'completed': 'primary',
+            'cancelled': 'danger'
+        }
+        return status_classes.get(self.status, 'secondary')
 
 class Proposal(models.Model):
     """
@@ -214,10 +227,22 @@ class Proposal(models.Model):
         
     def __str__(self):
         return f"Proposal for {self.project.title} by {self.freelancer.username}"
+    
+    def get_status_class(self):
+        """
+        Возвращает CSS-класс для отображения статуса предложения
+        """
+        status_classes = {
+            'pending': 'warning',
+            'accepted': 'success',
+            'rejected': 'danger',
+            'withdrawn': 'secondary'
+        }
+        return status_classes.get(self.status, 'secondary')
 
 class Contract(models.Model):
     """
-    Контракт между фрилансером и клиентом
+    Модель контракта между клиентом и фрилансером
     """
     STATUS_CHOICES = (
         ('active', _('Active')),
@@ -227,67 +252,57 @@ class Contract(models.Model):
         ('disputed', _('Disputed')),
     )
     
+    contract_id = models.CharField(_('Contract ID'), max_length=20, unique=True, editable=False)
+    title = models.CharField(_('Title'), max_length=200)
+    description = models.TextField(_('Description'))
     client = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         related_name='client_contracts'
     )
     freelancer = models.ForeignKey(
-        settings.AUTH_USER_MODEL, 
-        on_delete=models.CASCADE, 
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         related_name='freelancer_contracts'
     )
-    project = models.ForeignKey(
-        Project, 
-        on_delete=models.CASCADE, 
-        related_name='contracts'
-    )
-    proposal = models.OneToOneField(
-        Proposal,
-        on_delete=models.SET_NULL,
-        related_name='contract',
-        null=True,
-        blank=True
-    )
-    title = models.CharField(_('Title'), max_length=200)
-    description = models.TextField(_('Description'))
-    
-    amount = models.DecimalField(_('Contract Amount'), max_digits=10, decimal_places=2)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='contracts')
+    proposal = models.OneToOneField(Proposal, on_delete=models.SET_NULL, null=True, related_name='contract')
+    amount = models.DecimalField(_('Amount'), max_digits=10, decimal_places=2)
     deadline = models.DateTimeField(_('Deadline'))
-    
-    status = models.CharField(
-        _('Status'), 
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='active'
-    )
-    
+    status = models.CharField(_('Status'), max_length=20, choices=STATUS_CHOICES, default='active')
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated At'), auto_now=True)
-    
-    # Автоматически сгенерированный уникальный номер контракта
-    contract_id = models.CharField(
-        _('Contract ID'), 
-        max_length=20, 
-        unique=True,
-        editable=False
-    )
     
     class Meta:
         verbose_name = _('Contract')
         verbose_name_plural = _('Contracts')
         ordering = ['-created_at']
-        
+    
     def __str__(self):
-        return f"Contract between {self.client.username} and {self.freelancer.username}"
+        return f"{self.contract_id} - {self.title}"
     
     def save(self, *args, **kwargs):
-        # Генерация уникального ID контракта если его нет
+        # Генерируем уникальный ID контракта, если его нет
         if not self.contract_id:
-            uid = str(uuid.uuid4()).split('-')[0]
-            year = timezone.now().strftime('%Y')
-            self.contract_id = f"KZ-{year}-{uid}"
+            uid = str(uuid.uuid4()).replace('-', '')[:8]
+            self.contract_id = f"CT-{uid}"
         super().save(*args, **kwargs)
+    
+    @property
+    def is_active(self):
+        return self.status == 'active'
+    
+    @property
+    def is_completed(self):
+        return self.status == 'completed'
+        
+    @property
+    def review(self):
+        """
+        Возвращает отзыв, связанный с контрактом (если есть)
+        """
+        from accounts.models import Review
+        return Review.objects.filter(contract=self).first()
 
 class Milestone(models.Model):
     """

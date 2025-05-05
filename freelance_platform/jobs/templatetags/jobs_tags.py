@@ -41,4 +41,11 @@ def get_range(value):
     """
     Возвращает диапазон от 1 до value
     """
-    return range(1, int(value) + 1) 
+    return range(1, int(value) + 1)
+
+@register.filter(name='jobs_add_class')
+def jobs_add_class(field, css_class):
+    """Добавляет CSS класс к виджету поля формы (Jobs app версия)"""
+    return field.as_widget(attrs={
+        "class": " ".join((field.field.widget.attrs.get('class', ''), css_class))
+    }) 

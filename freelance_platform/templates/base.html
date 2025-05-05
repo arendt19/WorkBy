@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}WorkBy{% endblock %} | WorkBy</title>
+    <title>{% block title %}WorkBy{% endblock %}</title>
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
     <link rel="alternate icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
     
@@ -22,51 +22,9 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
     
     {% block extra_css %}{% endblock %}
-    <script>
-        // Удаление отладочных сообщений "Message XX" при загрузке страницы и через интервал
-        document.addEventListener('DOMContentLoaded', function() {
-            function removeDebugMessages() {
-                // Находим все текстовые узлы, содержащие "Message"
-                const walker = document.createTreeWalker(
-                    document.body,
-                    NodeFilter.SHOW_TEXT,
-                    { acceptNode: node => /Message \d+/i.test(node.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT },
-                    false
-                );
-                
-                const nodesToRemove = [];
-                while (walker.nextNode()) {
-                    nodesToRemove.push(walker.currentNode);
-                }
-                
-                // Удаляем найденные узлы
-                nodesToRemove.forEach(node => node.parentNode && node.parentNode.removeChild(node));
-                
-                // Дополнительная очистка через jQuery
-                if (typeof $ !== 'undefined') {
-                    $("body").contents().filter(function() {
-                        return this.nodeType === 3 && /Message \d+/i.test(this.nodeValue);
-                    }).remove();
-                    
-                    $("*").contents().filter(function() {
-                        return this.nodeType === 3 && /Message \d+/i.test(this.nodeValue);
-                    }).remove();
-                }
-            }
-
-            // Запускаем очистку при загрузке и периодически
-            removeDebugMessages();
-            const cleanupInterval = setInterval(removeDebugMessages, 50);
-            
-            // Через 10 секунд переключаемся на более редкий интервал
-            setTimeout(() => {
-                clearInterval(cleanupInterval);
-                setInterval(removeDebugMessages, 5000);
-            }, 10000);
-        });
-    </script>
 </head>
 <body>
+    {% block full_content %}
     <!-- Хедер -->
     {% include 'includes/header.html' %}
 
@@ -75,11 +33,28 @@
         {% if messages %}
             <div class="messages">
                 {% for message in messages %}
-                    <div class="mb-3 p-3 bg-{{ message.tags }} rounded text-white">
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                         {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}
             </div>
+        {% endif %}
+        
+        {% if debug %}
+        <div class="container mb-4">
+            <div class="alert alert-warning">
+                <h3>Debug Mode</h3>
+                <p>Debug mode is active. This page is visible for administrators only.</p>
+                <hr>
+                <h4>Request Objects:</h4>
+                <ul>
+                    <li>User: {{ request.user }}</li>
+                    <li>Path: {{ request.path }}</li>
+                    <li>Method: {{ request.method }}</li>
+                </ul>
+            </div>
+        </div>
         {% endif %}
         
         {% block content %}{% endblock %}
@@ -87,17 +62,59 @@
 
     <!-- Футер -->
     {% include 'includes/footer.html' %}
+    {% endblock full_content %}
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <script src="{% static 'js/main.js' %}"></script>
     
-    {% if user.is_authenticated %}
     <script>
-        // Функционал уведомлений отключен по требованию заказчика
+        // Функция для удаления отладочных сообщений
+        function removeDebugMessages() {
+            // Регулярное выражение для поиска отладочных сообщений с номерами
+            const debugRegex = /\s*Message\s+\d+\s*/gi;
+            
+            // Получаем все текстовые узлы в DOM
+            const textNodes = [];
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.nodeValue && node.nodeValue.trim()) {
+                    // Проверяем и удаляем отладочные сообщения
+                    if (debugRegex.test(node.nodeValue)) {
+                        node.nodeValue = node.nodeValue.replace(debugRegex, '');
+                    }
+                    
+                    // Дополнительно проверяем другие форматы отладочных сообщений
+                    // Например, "DEBUG: что-то там"
+                    if (/DEBUG:.*$/gim.test(node.nodeValue)) {
+                        node.nodeValue = node.nodeValue.replace(/DEBUG:.*$/gim, '');
+                    }
+                }
+            }
+            
+            // Удаляем блоки с отладочной информацией
+            document.querySelectorAll('.debug-info').forEach(el => {
+                el.style.display = 'none';
+            });
+        }
+        
+        // Запускаем очистку при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Даём немного времени для загрузки всего контента
+            setTimeout(removeDebugMessages, 100);
+            
+            // Периодическая очистка для динамически добавляемого контента
+            setInterval(removeDebugMessages, 2000);
+        });
     </script>
-    {% endif %}
     
     {% block extra_js %}{% endblock %}
 </body>

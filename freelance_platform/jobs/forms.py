@@ -92,36 +92,47 @@ class ContractForm(forms.ModelForm):
 
 class MilestoneForm(forms.ModelForm):
     """
-    Форма для создания этапов контракта
+    Форма для создания и редактирования вех (milestones) контракта
     """
     class Meta:
         model = Milestone
         fields = ['title', 'description', 'amount', 'due_date']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-            'due_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'amount': forms.NumberInput(attrs={'step': '0.01'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'due_date': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
         }
 
 class MilestoneFormSet(forms.BaseInlineFormSet):
     """
-    Формсет для работы с несколькими этапами одновременно
+    Формсет для вех (milestones)
     """
     def clean(self):
+        """
+        Проверка, что общая сумма вех не превышает сумму контракта
+        и что есть хотя бы одна веха
+        """
         super().clean()
         
-        # Проверить, что общая сумма этапов не превышает сумму контракта
-        total_amount = 0
-        for form in self.forms:
-            if self.can_delete and self._should_delete_form(form):
-                continue
-            if form.cleaned_data.get('amount'):
-                total_amount += form.cleaned_data.get('amount')
+        # Проверяем, что есть хотя бы одна веха
+        if any(self.errors):
+            return
+            
+        if not self.forms:
+            raise forms.ValidationError(_('At least one milestone is required'))
+            
+        # Проверяем, что общая сумма вех не превышает сумму контракта
+        total_amount = sum(form.cleaned_data.get('amount', 0) for form in self.forms 
+                          if form.cleaned_data.get('amount') and not form.cleaned_data.get('DELETE', False))
         
-        contract_amount = self.instance.amount if hasattr(self, 'instance') else 0
-        if total_amount > contract_amount:
+        # Получаем сумму контракта из родительской формы
+        contract_amount = self.instance.amount if hasattr(self.instance, 'amount') else None
+        
+        if contract_amount and total_amount > contract_amount:
             raise forms.ValidationError(
-                _('The total amount of all milestones cannot exceed the contract amount.')
+                _('The total amount of milestones (%(total_amount)s) exceeds the contract amount (%(contract_amount)s)'),
+                params={'total_amount': total_amount, 'contract_amount': contract_amount},
             )
 
 # Форма для поиска проектов

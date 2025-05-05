@@ -6,6 +6,7 @@ from django.utils.translation import get_language
 from jobs.models import Contract, Milestone
 import uuid
 import json
+from decimal import Decimal
 
 class Transaction(models.Model):
     """
@@ -292,14 +293,14 @@ class Wallet(models.Model):
             setattr(transaction, f'description_{current_language}', description)
             transaction.save(update_fields=[f'description_{current_language}'])
         
-        # Расчет комиссии сервиса (например, 5%)
-        service_fee = amount * 0.05
+        # Расчет комиссии сервиса (5%)
+        service_fee = amount * Decimal('0.05')
         
         # Обновляем баланс текущего пользователя (клиента)
         self.balance -= amount
         self.save()
         
-        return transaction 
+        return transaction
 
 class EscrowPayment(models.Model):
     """

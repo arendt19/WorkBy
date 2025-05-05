@@ -3,11 +3,13 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Case, When, Value, IntegerField, Count
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.forms import inlineformset_factory
 from django.utils import timezone
 from django.urls import reverse
 from django.db import transaction
+from decimal import Decimal
+from django.db import models
 
 from .models import Project, Category, Proposal, Contract, Milestone, Tag
 from .forms import (
@@ -15,6 +17,11 @@ from .forms import (
     MilestoneFormSet, ProjectSearchForm
 )
 from accounts.models import User, Review
+from .notifications import (
+    send_proposal_submitted_notification,
+    send_proposal_accepted_notification,
+    send_proposal_rejected_notification
+)
 
 def home_view(request):
     """
@@ -295,8 +302,27 @@ def proposal_create_view(request, project_pk):
             proposal.project = project
             proposal.save()
             
+            # Отправляем уведомление клиенту о новом предложении
+            send_proposal_submitted_notification(proposal)
+            
             messages.success(request, _('Proposal submitted successfully'))
+            
+            # Проверяем, является ли запрос AJAX
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': _('Proposal submitted successfully'),
+                    'redirect_url': reverse('jobs:my_proposals')
+                })
+            
             return redirect('jobs:proposal_detail', pk=proposal.pk)
+        else:
+            # Если форма не валидна и запрос AJAX, возвращаем ошибки
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors.as_json()
+                }, status=400)
     else:
         form = ProposalForm(project)
     
@@ -470,6 +496,9 @@ def proposal_accept_view(request, pk):
             
             # Отклоняем остальные предложения
             Proposal.objects.filter(project=proposal.project).exclude(pk=proposal.pk).update(status='rejected')
+            
+            # Отправляем уведомление фрилансеру о принятии предложения
+            send_proposal_accepted_notification(proposal)
             
             messages.success(request, _('Proposal accepted successfully'))
             return redirect(reverse('jobs:contract_create') + f'?proposal={proposal.pk}')
@@ -725,8 +754,8 @@ def contract_complete_view(request, pk):
                 messages.error(request, _('Insufficient funds to complete this contract. Please top up your wallet.'))
                 return redirect('payments:wallet')
             
-            # Расчет комиссии сервиса (например, 5%)
-            service_fee = contract.amount * 0.05
+            # Расчет комиссии сервиса (5%)
+            service_fee = contract.amount * Decimal('0.05')
             freelancer_amount = contract.amount - service_fee
             
             # Снимаем средства с кошелька клиента
@@ -784,6 +813,7 @@ def milestone_complete_view(request, pk):
         try:
             # Получаем кошельки клиента и фрилансера
             from payments.models import Wallet
+            from decimal import Decimal
             
             client_wallet = Wallet.objects.get(user=milestone.contract.client)
             freelancer_wallet = Wallet.objects.get(user=milestone.contract.freelancer)
@@ -793,8 +823,8 @@ def milestone_complete_view(request, pk):
                 messages.error(request, _('Insufficient funds to complete this milestone. Please top up your wallet.'))
                 return redirect('payments:wallet')
             
-            # Расчет комиссии сервиса (например, 5%)
-            service_fee = milestone.amount * 0.05
+            # Расчет комиссии сервиса (5%)
+            service_fee = milestone.amount * Decimal('0.05')
             freelancer_amount = milestone.amount - service_fee
             
             # Снимаем средства с кошелька клиента
@@ -935,3 +965,137 @@ def freelancer_list_view(request):
     }
     
     return render(request, 'jobs/freelancer_list.html', context)
+
+@login_required
+def proposal_reject_view(request, pk):
+    """
+    Отклонение предложения (только для клиента, владельца проекта)
+    """
+    proposal = get_object_or_404(Proposal, pk=pk)
+    
+    # Проверяем, что пользователь является владельцем проекта
+    if proposal.project.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to reject this proposal'))
+    
+    # Проверяем, что предложение в статусе ожидания
+    if proposal.status != 'pending':
+        messages.error(request, _('This proposal is not pending and cannot be rejected'))
+        return redirect('jobs:proposal_detail', pk=proposal.pk)
+    
+    if request.method == 'POST':
+        rejection_reason = request.POST.get('rejection_reason', '')
+        
+        proposal.status = 'rejected'
+        proposal.save()
+        
+        # Отправляем уведомление фрилансеру об отклонении предложения
+        send_proposal_rejected_notification(proposal, rejection_reason)
+        
+        messages.success(request, _('Proposal rejected successfully'))
+        return redirect('jobs:project_detail', pk=proposal.project.pk)
+    
+    context = {
+        'proposal': proposal,
+    }
+    
+    return render(request, 'jobs/proposal_confirm_reject.html', context)
+
+@login_required
+def project_proposals_view(request, pk):
+    """
+    Отображение списка предложений для конкретного проекта (только для владельца проекта)
+    """
+    project = get_object_or_404(Project, pk=pk)
+    
+    # Проверяем, что пользователь является владельцем проекта
+    if project.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to view proposals for this project'))
+    
+    # Получаем предложения для проекта
+    proposals = Proposal.objects.filter(project=project)
+    
+    # Сортировка предложений
+    sort = request.GET.get('sort', 'recent')
+    if sort == 'recent':
+        proposals = proposals.order_by('-created_at')
+    elif sort == 'oldest':
+        proposals = proposals.order_by('created_at')
+    elif sort == 'bid-low':
+        proposals = proposals.order_by('bid_amount')
+    elif sort == 'bid-high':
+        proposals = proposals.order_by('-bid_amount')
+    elif sort == 'delivery-short':
+        proposals = proposals.order_by('delivery_time')
+    
+    context = {
+        'project': project,
+        'proposals': proposals,
+        'proposals_count': proposals.count(),
+        'sort': sort,
+    }
+    
+    return render(request, 'jobs/project_proposals.html', context)
+
+@login_required
+def leave_review_view(request, pk):
+    """
+    Оставление отзыва о фрилансере после завершения контракта
+    """
+    contract = get_object_or_404(Contract, pk=pk)
+    
+    # Проверяем, что пользователь является клиентом контракта
+    if contract.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to leave a review'))
+    
+    # Проверяем, что контракт завершен
+    if contract.status != 'completed':
+        messages.error(request, _('You can only leave reviews for completed contracts'))
+        return redirect('jobs:contract_detail', pk=contract.pk)
+    
+    # Проверяем, что отзыв еще не оставлен
+    from accounts.models import Review
+    existing_review = Review.objects.filter(contract=contract).first()
+    if existing_review:
+        messages.error(request, _('You have already left a review for this contract'))
+        return redirect('jobs:contract_detail', pk=contract.pk)
+    
+    if request.method == 'POST':
+        try:
+            # Получаем данные из формы
+            rating = int(request.POST.get('rating', 0))
+            text = request.POST.get('text', '')
+            
+            if not (1 <= rating <= 5):
+                messages.error(request, _('Rating must be between 1 and 5'))
+                return redirect('jobs:contract_detail', pk=contract.pk)
+            
+            # Создаем отзыв
+            review = Review.objects.create(
+                reviewer=request.user,
+                reviewed_user=contract.freelancer,
+                contract=contract,
+                project=contract.project,
+                rating=rating,
+                text=text
+            )
+            
+            # Обновляем рейтинг фрилансера
+            freelancer_profile = contract.freelancer.freelancer_profile
+            
+            # Получаем все отзывы о фрилансере
+            all_reviews = Review.objects.filter(reviewed_user=contract.freelancer)
+            avg_rating = all_reviews.aggregate(models.Avg('rating'))['rating__avg'] or 0
+            
+            freelancer_profile.rating = avg_rating
+            freelancer_profile.reviews_count = all_reviews.count()
+            freelancer_profile.save()
+            
+            messages.success(request, _('Thank you for your review!'))
+            
+        except Exception as e:
+            messages.error(request, _(f'Error creating review: {str(e)}'))
+        
+        return redirect('jobs:contract_detail', pk=contract.pk)
+    
+    # GET запрос не должен происходить, так как форма встроена в страницу контракта
+    return redirect('jobs:contract_detail', pk=contract.pk)

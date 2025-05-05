@@ -98,36 +98,53 @@
                         </div>
                     {% endif %}
                     
-                    <!-- Кнопки действий -->
-                    <div class="project-actions mt-4">
-                        {% if request.user.is_authenticated %}
-                            {% if request.user == project.client %}
-                                <!-- Если пользователь - владелец проекта -->
-                                <div class="btn-group">
-                                    <a href="{% url 'jobs:project_edit' project.pk %}" class="btn btn-primary">
-                                        <i class="fas fa-edit me-2"></i> {% trans "Edit Project" %}
+                    <!-- Actions buttons -->
+                    <div class="card-footer bg-dark d-flex gap-2">
+                        {% if user.is_authenticated %}
+                            {% if user.user_type == 'freelancer' %}
+                                {% if user_proposal %}
+                                    <a href="{% url 'jobs:proposal_detail' pk=user_proposal.pk %}" class="btn btn-primary">
+                                        <i class="fas fa-file-contract me-1"></i> {% trans "View My Proposal" %}
                                     </a>
-                                    <a href="{% url 'jobs:project_delete' project.pk %}" class="btn btn-danger">
-                                        <i class="fas fa-trash-alt me-2"></i> {% trans "Delete Project" %}
-                                    </a>
-                                </div>
-                            {% else %}
-                                <!-- Для всех остальных авторизованных пользователей -->
-                                {% if project.status == 'open' %}
-                                    {% if user_proposal %}
-                                        <a href="{% url 'jobs:proposal_detail' user_proposal.pk %}" class="btn btn-primary">
-                                            <i class="fas fa-eye me-2"></i> {% trans "View My Proposal" %}
-                                        </a>
-                                    {% else %}
-                                        <a href="{% url 'jobs:proposal_create' project.pk %}" class="btn btn-primary">
-                                            <i class="fas fa-paper-plane me-2"></i> {% trans "Submit a Proposal" %}
+                                {% else %}
+                                    {% if project.status == 'open' %}
+                                        <a href="{% url 'jobs:proposal_create' project_pk=project.pk %}" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane me-1"></i> {% trans "Submit a Proposal" %}
                                         </a>
                                     {% endif %}
                                 {% endif %}
+                                
+                                <!-- Добавляем кнопку для связи с клиентом -->
+                                <a href="{% url 'chat:start_conversation' user_id=project.client.id %}" class="btn btn-outline-light">
+                                    <i class="fas fa-comment me-1"></i> {% trans "Contact Client" %}
+                                </a>
                             {% endif %}
+                            
+                            {% if user == project.client %}
+                                <a href="{% url 'jobs:project_edit' pk=project.pk %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i> {% trans "Edit Project" %}
+                                </a>
+                                
+                                <a href="{% url 'jobs:project_delete' pk=project.pk %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash-alt me-1"></i> {% trans "Delete Project" %}
+                                </a>
+                                
+                                {% if project.status == 'open' %}
+                                    <!-- Кнопка для просмотра всех предложений -->
+                                    <a href="{% url 'jobs:project_proposals' pk=project.pk %}" class="btn btn-outline-light">
+                                        <i class="fas fa-list me-1"></i> {% trans "View All Proposals" %} 
+                                        <span class="badge bg-primary ms-1">{{ project.proposals.count }}</span>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <!-- Добавляем кнопку для сохранения проекта в избранное (будет реализовано позже) -->
+                            <button type="button" class="btn btn-outline-warning ms-auto bookmark-button" data-project-id="{{ project.id }}">
+                                <i class="far fa-bookmark me-1"></i> {% trans "Save" %}
+                            </button>
                         {% else %}
                             <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt me-2"></i> {% trans "Login to Submit a Proposal" %}
+                                <i class="fas fa-sign-in-alt me-1"></i> {% trans "Login to Submit a Proposal" %}
                             </a>
                         {% endif %}
                     </div>

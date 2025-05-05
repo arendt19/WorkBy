@@ -132,11 +132,11 @@
                                             
                                             {% if contract.status == 'active' %}
                                                 {% if request.user == contract.client %}
-                                                <a href="{% url 'chat:start_conversation' contract.freelancer.username %}" class="btn btn-sm btn-outline-primary">
+                                                <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-comment me-1"></i> {% trans "Message Freelancer" %}
                                                 </a>
                                                 {% else %}
-                                                <a href="{% url 'chat:start_conversation' contract.client.username %}" class="btn btn-sm btn-outline-primary">
+                                                <a href="{% url 'chat:start_conversation' contract.client.id %}" class="btn btn-sm btn-outline-primary">
                                                     <i class="fas fa-comment me-1"></i> {% trans "Message Client" %}
                                                 </a>
                                                 {% endif %}

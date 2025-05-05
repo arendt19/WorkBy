@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from django.utils.translation import gettext_lazy as _
+from django.contrib.messages import constants as messages
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -261,6 +262,7 @@ YOOMONEY_SETTINGS = {
 }
 
 # Email settings (для разработки)
+EMAIL_ENABLED = False  # Установите True для включения отправки писем
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'noreply@freelancekz.com'
 SERVER_EMAIL = 'server@freelancekz.com'
@@ -284,3 +286,13 @@ MODELTRANSLATION_LANGUAGES = ('en', 'ru', 'kk')
 
 
 ADMIN_EMAIL = 'admin@workby.com'
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+MESSAGE_TAGS = {
+    messages.DEBUG: 'info',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}

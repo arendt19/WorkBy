@@ -78,28 +78,68 @@ function initLanguageForms() {
 // Функция для анимации числовых счетчиков
 function animateCounters() {
     const counters = document.querySelectorAll('.counter-value');
+    if (!counters.length) return;
     
-    counters.forEach(counter => {
-        const target = parseInt(counter.getAttribute('data-target'));
-        const duration = 2000; // 2 секунды
-        const step = target / (duration / 16); // 16ms - примерно один кадр при 60fps
-        
-        let count = 0;
-        const updateCounter = () => {
-            count += step;
+    let animated = false;
+    
+    // Функция проверки видимости элементов
+    function checkCountersVisibility() {
+        // Проверяем, видимы ли счетчики в области просмотра
+        if (!animated && isElementInViewport(counters[0])) {
+            animated = true; // Отмечаем, что анимация запущена
             
-            // Когда достигаем целевого значения, останавливаем анимацию
-            if (count >= target) {
-                counter.textContent = target.toLocaleString();
-                return;
-            }
-            
-            counter.textContent = Math.floor(count).toLocaleString();
-            requestAnimationFrame(updateCounter);
-        };
-        
-        updateCounter();
-    });
+            counters.forEach(counter => {
+                // Получаем целевое значение из атрибута 
+                const target = parseInt(counter.getAttribute('data-target') || '0');
+                const duration = 1500; // Длительность анимации в миллисекундах
+                
+                // Начальное значение
+                let start = 0;
+                // Время начала анимации
+                const startTime = performance.now();
+                
+                // Функция анимации
+                function animate(currentTime) {
+                    // Прошедшее время с начала анимации
+                    const elapsedTime = currentTime - startTime;
+                    // Прогресс анимации (от 0 до 1)
+                    const progress = Math.min(elapsedTime / duration, 1);
+                    
+                    // Расчет текущего значения с эффектом замедления в конце
+                    const value = Math.floor(progress * target);
+                    
+                    // Обновляем текст счетчика
+                    counter.textContent = value.toLocaleString();
+                    
+                    // Если анимация не завершена, запрашиваем следующий кадр
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        // Финальное значение для уверенности
+                        counter.textContent = target.toLocaleString();
+                    }
+                }
+                
+                // Запускаем анимацию
+                requestAnimationFrame(animate);
+            });
+        }
+    }
+    
+    // Запускаем проверку при загрузке и прокрутке страницы
+    checkCountersVisibility();
+    window.addEventListener('scroll', checkCountersVisibility);
+}
+
+// Вспомогательная функция для проверки видимости элемента
+function isElementInViewport(el) {
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
 }
 
 // Функция для обработки переключения типа метода оплаты
@@ -300,6 +340,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initProjectFilters();
     initMilestoneFormset();
     initChatWebSocket();
+    initFlatpickr(); // Инициализация улучшенного выбора даты
+    enhanceProposalForm(); // Улучшаем форму отправки предложений
     
     // Обновление счетчиков непрочитанных сообщений и уведомлений
     updateUnreadCounters();
@@ -440,4 +482,274 @@ function generateInitialsAvatar(name, size = 40, bgColor = '#8B0000') {
     context.fillText(initials.toUpperCase(), size/2, size/2);
     
     return canvas.toDataURL();
+}
+
+// Инициализация улучшенного выбора даты
+function initFlatpickr() {
+    // Проверяем наличие библиотеки flatpickr
+    if (typeof flatpickr === 'undefined') {
+        // Если библиотека не найдена, подключаем ее
+        const head = document.querySelector('head');
+        
+        // Подключаем стили
+        const linkCSS = document.createElement('link');
+        linkCSS.rel = 'stylesheet';
+        linkCSS.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+        head.appendChild(linkCSS);
+        
+        // Подключаем локализацию для русского языка
+        const scriptRu = document.createElement('script');
+        scriptRu.src = 'https://npmcdn.com/flatpickr/dist/l10n/ru.js';
+        head.appendChild(scriptRu);
+        
+        // Подключаем скрипт
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+        script.onload = function() {
+            // Ждем загрузки локализации
+            setTimeout(initDatepickers, 100);
+        };
+        head.appendChild(script);
+    } else {
+        // Если библиотека уже подключена, инициализируем все поля выбора даты
+        initDatepickers();
+    }
+}
+
+// Инициализация всех полей выбора даты
+function initDatepickers() {
+    // Настройки по умолчанию
+    const dateConfig = {
+        dateFormat: "Y-m-d",
+        enableTime: false,
+        altInput: true,
+        altFormat: "d M Y",
+        disableMobile: true, // Отключаем нативные элементы на мобильных
+        locale: "ru",
+        allowInput: true,
+        position: "auto"
+    };
+    
+    // Инициализация полей с типом date
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(input => {
+        // Сохраняем текущее значение поля
+        const currentValue = input.value;
+        
+        // Создаем скрытое поле для хранения исходного значения
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = input.name;
+        hiddenInput.value = currentValue;
+        input.parentNode.insertBefore(hiddenInput, input.nextSibling);
+        
+        // Изменяем тип поля и удаляем name атрибут, чтобы избежать дублирования
+        input.type = 'text';
+        input.removeAttribute('name');
+        input.classList.add('flatpickr-input');
+        
+        // Инициализируем flatpickr и привязываем обновление скрытого поля
+        const fp = flatpickr(input, {
+            ...dateConfig,
+            defaultDate: currentValue || null,
+            onChange: function(selectedDates, dateStr) {
+                hiddenInput.value = dateStr;
+            }
+        });
+    });
+    
+    // Настройки для полей дата-время
+    const dateTimeConfig = {
+        ...dateConfig,
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        altFormat: "d M Y, H:i",
+        time_24hr: true
+    };
+    
+    // Инициализация полей с типом datetime-local
+    const dateTimeInputs = document.querySelectorAll('input[type="datetime-local"]');
+    dateTimeInputs.forEach(input => {
+        // Сохраняем текущее значение поля
+        const currentValue = input.value;
+        
+        // Создаем скрытое поле для хранения исходного значения
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = input.name;
+        hiddenInput.value = currentValue;
+        input.parentNode.insertBefore(hiddenInput, input.nextSibling);
+        
+        // Изменяем тип поля и удаляем name атрибут
+        input.type = 'text';
+        input.removeAttribute('name');
+        input.classList.add('flatpickr-input');
+        
+        // Инициализируем flatpickr
+        const fp = flatpickr(input, {
+            ...dateTimeConfig,
+            defaultDate: currentValue || null,
+            onChange: function(selectedDates, dateStr) {
+                hiddenInput.value = dateStr;
+            }
+        });
+    });
+    
+    // Находим все поля даты, которые использует Django admin
+    const djangoDateInputs = document.querySelectorAll('.vDateField, input[name*="date"]:not([type="hidden"])');
+    djangoDateInputs.forEach(input => {
+        if (input.type !== 'date' && input.type !== 'datetime-local' && !input.classList.contains('flatpickr-input')) {
+            flatpickr(input, input.classList.contains('vTimeField') ? dateTimeConfig : dateConfig);
+        }
+    });
+    
+    // Запускаем обработчик для Bootstrap datepicker если он используется
+    const bootstrapDatepickers = document.querySelectorAll('.datepicker');
+    if (bootstrapDatepickers.length > 0 && typeof $.fn !== 'undefined' && typeof $.fn.datepicker !== 'undefined') {
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true,
+            language: 'ru'
+        });
+    }
+}
+
+// Улучшение формы отправки предложений 
+function enhanceProposalForm() {
+    const proposalForm = document.querySelector('form[action*="proposal"]');
+    if (!proposalForm) return;
+
+    // Создаем элемент для отображения всплывающего уведомления
+    const confirmationDiv = document.createElement('div');
+    confirmationDiv.className = 'proposal-confirmation';
+    confirmationDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i> Предложение успешно отправлено!';
+    document.body.appendChild(confirmationDiv);
+
+    // Создаем элемент для отображения ошибок
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'proposal-error';
+    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Ошибка при отправке предложения';
+    document.body.appendChild(errorDiv);
+
+    // Обрабатываем отправку формы
+    proposalForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Скрываем сообщения об ошибках
+        const errorElements = proposalForm.querySelectorAll('.invalid-feedback');
+        errorElements.forEach(el => el.remove());
+        
+        proposalForm.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+        });
+        
+        // Показываем индикатор загрузки на кнопке
+        const submitBtn = proposalForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Отправка...';
+        submitBtn.disabled = true;
+        
+        // Получаем токен CSRF
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Отправляем форму с помощью AJAX
+        const formData = new FormData(proposalForm);
+        fetch(proposalForm.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json().then(data => {
+                    // Показываем уведомление об успешной отправке
+                    confirmationDiv.classList.add('show');
+                    
+                    // Скрываем уведомление через 3 секунды
+                    setTimeout(() => {
+                        confirmationDiv.classList.add('hide');
+                        
+                        // После завершения анимации скрытия, перенаправляем на страницу my_proposals
+                        setTimeout(() => {
+                            if (data.redirect_url) {
+                                window.location.href = data.redirect_url;
+                            } else {
+                                window.location.href = '/jobs/my-proposals/';
+                            }
+                        }, 300);
+                    }, 3000);
+                });
+            } else {
+                // Обрабатываем ошибки
+                return response.json().then(errorData => {
+                    // Возвращаем кнопку в исходное состояние
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    
+                    // Проверяем, есть ли ошибки валидации формы
+                    if (errorData.errors) {
+                        try {
+                            const errors = JSON.parse(errorData.errors);
+                            
+                            // Отображаем ошибки в соответствующих полях
+                            Object.keys(errors).forEach(fieldName => {
+                                const field = proposalForm.querySelector(`[name="${fieldName}"]`);
+                                if (field) {
+                                    field.classList.add('is-invalid');
+                                    
+                                    // Создаем элемент с сообщением об ошибке
+                                    const errorMessage = document.createElement('div');
+                                    errorMessage.className = 'invalid-feedback';
+                                    errorMessage.textContent = errors[fieldName][0].message;
+                                    
+                                    // Добавляем сообщение после поля
+                                    field.parentNode.appendChild(errorMessage);
+                                }
+                            });
+                        } catch (e) {
+                            // Если не удалось разобрать JSON с ошибками, показываем общее сообщение
+                            errorDiv.textContent = 'Пожалуйста, проверьте правильность заполнения формы';
+                            errorDiv.classList.add('show');
+                            
+                            setTimeout(() => {
+                                errorDiv.classList.remove('show');
+                            }, 5000);
+                        }
+                    } else {
+                        // Показываем общее сообщение об ошибке
+                        errorDiv.classList.add('show');
+                        
+                        setTimeout(() => {
+                            errorDiv.classList.remove('show');
+                        }, 5000);
+                    }
+                }).catch(() => {
+                    // Если не удалось получить JSON с ошибками
+                    submitBtn.innerHTML = originalBtnText;
+                    submitBtn.disabled = false;
+                    
+                    errorDiv.classList.add('show');
+                    setTimeout(() => {
+                        errorDiv.classList.remove('show');
+                    }, 5000);
+                });
+            }
+        })
+        .catch(error => {
+            // Возвращаем кнопку в исходное состояние
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+            
+            // Показываем ошибку
+            console.error('Error:', error);
+            errorDiv.classList.add('show');
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        });
+    });
 } 

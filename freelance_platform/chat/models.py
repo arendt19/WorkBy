@@ -2,6 +2,9 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from django.contrib.auth import get_user_model
+from django.utils import timezone
+import random
 
 class Conversation(models.Model):
     """
@@ -38,7 +41,7 @@ class Conversation(models.Model):
         ordering = ['-updated_at']
     
     def __str__(self):
-        return f"Conversation {self.id}"
+        return f"Conversation {self.id} between {', '.join([p.get_full_name() for p in self.participants.all()])}"
     
     def get_absolute_url(self):
         return reverse('chat:conversation_detail', args=[self.pk])
@@ -48,16 +51,10 @@ class Conversation(models.Model):
         """Возвращает последнее сообщение в разговоре"""
         return self.messages.order_by('-created_at').first()
     
-    def get_other_participant(self, user=None):
+    def get_other_participant(self, user):
         """
-        Возвращает другого участника разговора (не текущего пользователя)
-        Если пользователь не указан, возвращает первого участника, который не является текущим пользователем
+        Возвращает другого участника беседы, не являющегося текущим пользователем
         """
-        if user is None:
-            # Если пользователь не указан, вернем первого участника
-            return self.participants.first()
-        
-        # Иначе возвращаем первого участника, который не является указанным пользователем
         return self.participants.exclude(id=user.id).first()
     
     def get_unread_count(self, user=None):
@@ -95,6 +92,47 @@ class Conversation(models.Model):
         conversation.participants.add(user1, user2)
         return conversation
 
+    @classmethod
+    def add_test_message(cls, conversation_id):
+        """
+        Добавляет тестовое сообщение в указанный разговор
+        Возвращает информацию о созданном сообщении
+        """
+        try:
+            conversation = cls.objects.get(id=conversation_id)
+            participants = list(conversation.participants.all())
+            
+            if len(participants) < 2:
+                return {'success': False, 'error': 'Недостаточно участников для создания тестового сообщения'}
+            
+            # Выбираем случайного отправителя из участников
+            sender = random.choice(participants)
+            
+            # Генерируем случайный текст сообщения
+            test_content = f"Это автоматическое тестовое сообщение. Время создания: {timezone.now().strftime('%H:%M:%S')}"
+            
+            # Создаем новое сообщение
+            from .models import Message
+            message = Message.objects.create(
+                conversation=conversation,
+                sender=sender,
+                content=test_content
+            )
+            
+            return {
+                'success': True, 
+                'message_id': message.id,
+                'sender_id': sender.id,
+                'sender_name': sender.get_full_name(),
+                'content': test_content,
+                'created_at': message.created_at.isoformat()
+            }
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Ошибка при создании тестового сообщения: {str(e)}")
+            return {'success': False, 'error': str(e)}
+
 class Message(models.Model):
     """
     Модель для сообщения в разговоре
@@ -122,7 +160,9 @@ class Message(models.Model):
         ordering = ['created_at']
     
     def __str__(self):
-        return f"Message {self.id}"
+        if len(self.content) > 30:
+            return f"{self.content[:30]}..."
+        return self.content
     
     def mark_as_read(self):
         """Отмечает сообщение как прочитанное"""
