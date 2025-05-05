@@ -6,142 +6,215 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2 text-light">{% trans "Proposals for" %} "{{ project.title }}"</h1>
-        <a href="{% url 'jobs:project_detail' pk=project.pk %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>{% trans "Back to Project" %}
-        </a>
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Breadcrumbs -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}">{% trans "My Projects" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:project_detail' project.pk %}">{{ project.title }}</a></li>
+                    <li class="breadcrumb-item active">{% trans "Proposals" %}</li>
+                </ol>
+            </nav>
+            
+            <!-- Заголовок -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">{% trans "Proposals for" %}: {{ project.title }}</h1>
+                <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>{% trans "Back to Project" %}
+                </a>
+            </div>
+            
+            <!-- Блок с информацией о проекте -->
+            <div class="card border-0 bg-dark text-light shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">{% trans "Budget" %}</h6>
+                            <p class="h5 text-primary mb-3">{{ project.budget_min }} - {{ project.budget_max }} ₸</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">{% trans "Deadline" %}</h6>
+                            <p class="h5 mb-3">
+                                {% if project.deadline %}
+                                    {{ project.deadline|date:"d M Y" }}
+                                {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted mb-1">{% trans "Status" %}</h6>
+                            <p class="mb-0">
+                                <span class="badge status-badge status-{{ project.status }}">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
-    <div class="card border-0 bg-dark text-light shadow-sm mb-4">
-        <div class="card-header bg-dark">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{% trans "Project Details" %}</h5>
-                <span class="badge rounded-pill bg-{{ project.get_status_class }}">{{ project.get_status_display }}</span>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="mb-3">
-                        <strong>{% trans "Budget" %}:</strong>
-                        <span class="text-primary">{{ project.budget_min }} - {{ project.budget_max }} ₸</span>
-                        <span class="text-muted ms-2">({{ project.get_budget_type_display }})</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>{% trans "Deadline" %}:</strong>
-                        {% if project.deadline %}
-                            <span {% if project.is_expired %}class="text-danger"{% endif %}>
-                                {{ project.deadline|date:"d M Y" }}
-                                {% if project.is_expired %}({% trans "Expired" %}){% endif %}
-                            </span>
-                        {% else %}
-                            <span class="text-muted">{% trans "Not specified" %}</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="mb-3">
-                        <strong>{% trans "Category" %}:</strong>
-                        <span>{{ project.category.get_translated_name }}</span>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <strong>{% trans "Proposals" %}:</strong>
-                        <span class="badge rounded-pill bg-primary">{{ proposals_count }}</span>
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Блок с фильтрами -->
+            <div class="card border-0 bg-dark text-light shadow-sm mb-4">
+                <div class="card-header bg-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{% trans "Proposals" %} ({{ proposals_count }})</h5>
+                        
+                        <!-- Сортировка предложений -->
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-sort me-1"></i>
+                                {% if sort == 'recent' %}
+                                    {% trans "Recent First" %}
+                                {% elif sort == 'oldest' %}
+                                    {% trans "Oldest First" %}
+                                {% elif sort == 'bid-low' %}
+                                    {% trans "Lowest Bid" %}
+                                {% elif sort == 'bid-high' %}
+                                    {% trans "Highest Bid" %}
+                                {% elif sort == 'delivery-short' %}
+                                    {% trans "Shortest Delivery" %}
+                                {% else %}
+                                    {% trans "Sort" %}
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item {% if sort == 'recent' %}active{% endif %}" href="?sort=recent">{% trans "Recent First" %}</a></li>
+                                <li><a class="dropdown-item {% if sort == 'oldest' %}active{% endif %}" href="?sort=oldest">{% trans "Oldest First" %}</a></li>
+                                <li><a class="dropdown-item {% if sort == 'bid-low' %}active{% endif %}" href="?sort=bid-low">{% trans "Lowest Bid" %}</a></li>
+                                <li><a class="dropdown-item {% if sort == 'bid-high' %}active{% endif %}" href="?sort=bid-high">{% trans "Highest Bid" %}</a></li>
+                                <li><a class="dropdown-item {% if sort == 'delivery-short' %}active{% endif %}" href="?sort=delivery-short">{% trans "Shortest Delivery" %}</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="card border-0 bg-dark text-light shadow-sm">
-        <div class="card-header bg-dark">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{% trans "Submitted Proposals" %}</h5>
-                <div>
-                    <form method="get" class="d-inline-flex">
-                        <select name="sort" class="form-select me-2" onchange="this.form.submit()">
-                            <option value="recent" {% if sort == 'recent' %}selected{% endif %}>{% trans "Recent first" %}</option>
-                            <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>{% trans "Oldest first" %}</option>
-                            <option value="bid-low" {% if sort == 'bid-low' %}selected{% endif %}>{% trans "Lowest bid" %}</option>
-                            <option value="bid-high" {% if sort == 'bid-high' %}selected{% endif %}>{% trans "Highest bid" %}</option>
-                            <option value="delivery-short" {% if sort == 'delivery-short' %}selected{% endif %}>{% trans "Shortest delivery" %}</option>
-                        </select>
-                    </form>
-                </div>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            {% if proposals %}
-                <div class="table-responsive">
-                    <table class="table table-dark table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>{% trans "Freelancer" %}</th>
-                                <th>{% trans "Bid" %}</th>
-                                <th>{% trans "Delivery Time" %}</th>
-                                <th>{% trans "Date" %}</th>
-                                <th>{% trans "Status" %}</th>
-                                <th>{% trans "Actions" %}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for proposal in proposals %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            {% if proposal.freelancer.avatar %}
-                                                <img src="{{ proposal.freelancer.avatar.url }}" alt="{{ proposal.freelancer.get_full_name }}" class="rounded-circle me-2" width="40" height="40">
-                                            {% else %}
-                                                <div class="bg-primary text-white rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                    {{ proposal.freelancer.first_name|first }}{{ proposal.freelancer.last_name|first }}
+                
+                <div class="list-group list-group-flush">
+                    {% for proposal in proposals %}
+                        <div class="list-group-item bg-dark border-light border-opacity-10">
+                            <div class="row">
+                                <!-- Информация о фрилансере -->
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        {% if proposal.freelancer.avatar %}
+                                            <img src="{{ proposal.freelancer.avatar.url }}" alt="{{ proposal.freelancer.get_full_name }}" class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                                <span class="text-white fw-bold">{{ proposal.freelancer.get_full_name|slice:":1"|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div>
+                                            <h6 class="mb-0">
+                                                <a href="{% url 'accounts:freelancer_detail' proposal.freelancer.username %}" class="text-decoration-none text-light">
+                                                    {{ proposal.freelancer.get_full_name|default:proposal.freelancer.username }}
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">
+                                                {% if proposal.freelancer.location %}
+                                                    <i class="fas fa-map-marker-alt me-1"></i> {{ proposal.freelancer.location }}
+                                                {% else %}
+                                                    <i class="fas fa-globe me-1"></i> {% trans "Remote" %}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="freelancer-skills mb-3">
+                                        {% for skill in proposal.freelancer.skills.all|slice:":3" %}
+                                            <span class="badge bg-secondary me-1 mb-1">{{ skill.name }}</span>
+                                        {% endfor %}
+                                        {% if proposal.freelancer.skills.count > 3 %}
+                                            <span class="badge bg-secondary">+{{ proposal.freelancer.skills.count|add:"-3" }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'chat:start_conversation' proposal.freelancer.id %}" class="btn btn-sm btn-outline-light">
+                                            <i class="fas fa-comment me-1"></i> {% trans "Message" %}
+                                        </a>
+                                        <a href="{% url 'accounts:freelancer_detail' proposal.freelancer.username %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Содержание предложения -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <span class="badge status-badge status-{{ proposal.status }} mb-2">{{ proposal.get_status_display }}</span>
+                                        <p>{{ proposal.cover_letter|linebreaksbr|truncatewords:50 }}</p>
+                                    </div>
+                                    
+                                    {% if proposal.attachment %}
+                                        <div class="mb-3">
+                                            <a href="{{ proposal.attachment.url }}" class="btn btn-sm btn-outline-light" target="_blank">
+                                                <i class="fas fa-paperclip me-1"></i> {% trans "View Attachment" %}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="text-muted small">
+                                        <i class="fas fa-clock me-1"></i> {% trans "Submitted" %}: {{ proposal.created_at|date:"d M Y, H:i" }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Ставка и действия -->
+                                <div class="col-md-3">
+                                    <div class="card bg-dark-gray h-100">
+                                        <div class="card-body">
+                                            <div class="bid-amount mb-3">
+                                                <span class="text-muted small">{% trans "Bid Amount" %}</span>
+                                                <h4 class="text-primary mb-0">{{ proposal.bid_amount }} ₸</h4>
+                                            </div>
+                                            
+                                            <div class="delivery-time mb-3">
+                                                <span class="text-muted small">{% trans "Delivery Time" %}</span>
+                                                <div>{{ proposal.delivery_time }} {% trans "days" %}</div>
+                                            </div>
+                                            
+                                            {% if proposal.status == 'pending' %}
+                                                <div class="d-grid gap-2">
+                                                    <form method="post" action="{% url 'jobs:proposal_accept' pk=proposal.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-success w-100 mb-2">
+                                                            <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
+                                                        </button>
+                                                    </form>
+                                                    
+                                                    <a href="{% url 'jobs:proposal_reject' pk=proposal.pk %}" class="btn btn-outline-danger">
+                                                        <i class="fas fa-times me-1"></i> {% trans "Decline" %}
+                                                    </a>
+                                                </div>
+                                            {% elif proposal.status == 'accepted' %}
+                                                <div class="alert alert-success mb-0">
+                                                    <i class="fas fa-check-circle me-1"></i> {% trans "Accepted" %}
+                                                </div>
+                                            {% elif proposal.status == 'rejected' %}
+                                                <div class="alert alert-danger mb-0">
+                                                    <i class="fas fa-times-circle me-1"></i> {% trans "Declined" %}
                                                 </div>
                                             {% endif %}
-                                            <div>
-                                                <div class="fw-bold">{{ proposal.freelancer.get_full_name }}</div>
-                                                <small class="text-muted">@{{ proposal.freelancer.username }}</small>
-                                            </div>
                                         </div>
-                                    </td>
-                                    <td class="text-primary fw-bold">{{ proposal.bid_amount }} ₸</td>
-                                    <td>{{ proposal.delivery_time }} {% trans "days" %}</td>
-                                    <td>{{ proposal.created_at|date:"d M Y" }}</td>
-                                    <td>
-                                        <span class="badge {% if proposal.status == 'pending' %}bg-warning text-dark{% elif proposal.status == 'accepted' %}bg-success{% elif proposal.status == 'rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
-                                            {{ proposal.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="btn-group">
-                                            <a href="{% url 'jobs:proposal_detail' pk=proposal.pk %}" class="btn btn-sm btn-outline-light">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            {% if proposal.status == 'pending' %}
-                                                <a href="{% url 'jobs:proposal_accept' pk=proposal.pk %}" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-check"></i>
-                                                </a>
-                                                <a href="{% url 'jobs:proposal_reject' pk=proposal.pk %}" class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-times"></i>
-                                                </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="list-group-item bg-dark text-center py-5">
+                            <img src="{% static 'img/empty-proposals.svg' %}" alt="{% trans 'No proposals' %}" class="img-fluid mb-3" style="max-width: 120px; opacity: 0.7;">
+                            <h5>{% trans "No proposals yet" %}</h5>
+                            <p class="text-muted">{% trans "Your project hasn't received any proposals yet. Check back later." %}</p>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <div class="mb-3">
-                        <i class="fas fa-inbox fa-3x text-muted"></i>
-                    </div>
-                    <h5>{% trans "No proposals yet" %}</h5>
-                    <p class="text-muted">{% trans "There are no proposals for this project yet." %}</p>
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>

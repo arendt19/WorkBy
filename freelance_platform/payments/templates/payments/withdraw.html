@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Withdraw Funds" %}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card bg-dark text-white border-secondary shadow">
+                <div class="card-header bg-dark border-secondary">
+                    <h4 class="mb-0">
+                        <i class="fas fa-money-bill-wave text-danger me-2"></i>
+                        {% trans "Withdraw Funds" %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Текущий баланс -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">{% trans "Current Balance" %}</h5>
+                        <div class="bg-darker p-3 rounded d-flex justify-content-between align-items-center">
+                            <div>
+                                <h3 class="mb-0 text-danger">{{ wallet.balance }} ₸</h3>
+                                <small class="text-muted">{% trans "Available for Withdrawal" %}</small>
+                            </div>
+                            <div>
+                                <a href="{% url 'payments:wallet' %}" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-wallet me-1"></i> {% trans "Back to Wallet" %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if has_withdrawal_methods %}
+                        <!-- Форма вывода средств -->
+                        <form method="post" id="withdrawForm">
+                            {% csrf_token %}
+                            
+                            <div class="mb-4">
+                                <h5 class="mb-3">{% trans "Withdrawal Method" %}</h5>
+                                <div class="bg-darker p-3 rounded">
+                                    {{ form.withdrawal_method|as_crispy_field }}
+                                    
+                                    <div class="text-end mt-2">
+                                        <a href="{% url 'payments:add_withdrawal_method' %}" class="btn btn-outline-light btn-sm">
+                                            <i class="fas fa-plus me-1"></i> {% trans "Add New Method" %}
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <h5 class="mb-3">{% trans "Amount" %}</h5>
+                                <div class="bg-darker p-3 rounded">
+                                    <div class="mb-3">
+                                        {{ form.amount|as_crispy_field }}
+                                        
+                                        <div class="d-flex justify-content-end mt-2">
+                                            <button type="button" class="btn btn-sm btn-outline-light me-2" id="halfAmount">
+                                                {% trans "Half" %}
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-light" id="maxAmount">
+                                                {% trans "Max" %}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-0">
+                                        {{ form.comment|as_crispy_field }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Информация о процессе вывода -->
+                            <div class="alert alert-info">
+                                <h5 class="alert-heading">{% trans "Withdrawal Information" %}</h5>
+                                <ul class="mb-0">
+                                    <li>{% trans "Minimum withdrawal amount is 1000 ₸" %}</li>
+                                    <li>{% trans "Withdrawals are typically processed within 2-3 business days" %}</li>
+                                    <li>{% trans "A service fee of 2% applies to all withdrawals" %}</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-danger" {% if wallet.balance <= 0 %}disabled{% endif %}>
+                                    <i class="fas fa-money-bill-wave me-2"></i> {% trans "Request Withdrawal" %}
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <!-- Сообщение, если нет методов вывода -->
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading">{% trans "No Withdrawal Methods" %}</h5>
+                            <p>{% trans "You need to add at least one withdrawal method before you can withdraw funds." %}</p>
+                            <hr>
+                            <div class="text-center">
+                                <a href="{% url 'payments:add_withdrawal_method' %}" class="btn btn-danger">
+                                    <i class="fas fa-plus me-2"></i> {% trans "Add Withdrawal Method" %}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- История выводов -->
+                    {% if withdrawal_history %}
+                    <div class="mt-5">
+                        <h5 class="mb-3">{% trans "Recent Withdrawal Requests" %}</h5>
+                        <div class="bg-darker p-3 rounded">
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "Date" %}</th>
+                                            <th>{% trans "Amount" %}</th>
+                                            <th>{% trans "Method" %}</th>
+                                            <th>{% trans "Status" %}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for withdrawal in withdrawal_history %}
+                                        <tr>
+                                            <td>{{ withdrawal.created_at|date:"d M Y" }}</td>
+                                            <td>{{ withdrawal.amount }} ₸</td>
+                                            <td>{{ withdrawal.withdrawal_method.get_method_type_display }}</td>
+                                            <td>
+                                                {% if withdrawal.status == 'pending' %}
+                                                    <span class="badge bg-warning">{{ withdrawal.get_status_display }}</span>
+                                                {% elif withdrawal.status == 'completed' %}
+                                                    <span class="badge bg-success">{{ withdrawal.get_status_display }}</span>
+                                                {% elif withdrawal.status == 'rejected' %}
+                                                    <span class="badge bg-danger">{{ withdrawal.get_status_display }}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{{ withdrawal.get_status_display }}</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% if withdrawal_history.count > 5 %}
+                            <div class="text-center mt-3">
+                                <a href="{% url 'payments:withdrawal_history' %}" class="btn btn-sm btn-outline-light">
+                                    {% trans "View All History" %}
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const maxAmountBtn = document.getElementById('maxAmount');
+        const halfAmountBtn = document.getElementById('halfAmount');
+        const amountInput = document.getElementById('id_amount');
+        const maxAvailable = {{ max_available }};
+        
+        if (maxAmountBtn && halfAmountBtn && amountInput) {
+            // Установка максимальной суммы
+            maxAmountBtn.addEventListener('click', function () {
+                amountInput.value = maxAvailable;
+            });
+            
+            // Установка половины максимальной суммы
+            halfAmountBtn.addEventListener('click', function () {
+                amountInput.value = (maxAvailable / 2).toFixed(2);
+            });
+            
+            // Валидация ввода
+            amountInput.addEventListener('input', function () {
+                const value = parseFloat(this.value);
+                if (isNaN(value) || value <= 0) {
+                    this.setCustomValidity('{% trans "Please enter a positive number" %}');
+                } else if (value > maxAvailable) {
+                    this.setCustomValidity('{% trans "Amount exceeds available balance" %}');
+                } else if (value < 1000) {
+                    this.setCustomValidity('{% trans "Minimum withdrawal amount is 1000 ₸" %}');
+                } else {
+                    this.setCustomValidity('');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

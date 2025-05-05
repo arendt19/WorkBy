@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from .models import Transaction, WithdrawalMethod
+from decimal import Decimal
 
 class DepositForm(forms.Form):
     """
@@ -19,30 +20,38 @@ class DepositForm(forms.Form):
 
 class WithdrawForm(forms.Form):
     """
-    Базовая форма для вывода средств
+    Форма для вывода средств
     """
     amount = forms.DecimalField(
         label=_('Amount'),
-        min_value=100,
-        max_value=100000,
+        max_digits=10,
         decimal_places=2,
-        widget=forms.NumberInput(attrs={
-            'class': 'form-control',
-            'placeholder': _('Enter amount')
-        })
+        min_value=Decimal('1000.00'),
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+    
+    withdrawal_method = forms.ModelChoiceField(
+        label=_('Withdrawal Method'),
+        queryset=WithdrawalMethod.objects.none(),
+        empty_label=None,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    comment = forms.CharField(
+        label=_('Comment (optional)'),
+        max_length=200,
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': _('Additional information for the withdrawal')}),
     )
     
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-    
-    def clean_amount(self):
-        amount = self.cleaned_data['amount']
-        if self.user:
-            wallet = self.user.wallet
-            if amount > wallet.balance:
-                raise forms.ValidationError(_("Insufficient funds in your wallet"))
-        return amount
+        
+        if user:
+            self.fields['withdrawal_method'].queryset = WithdrawalMethod.objects.filter(
+                user=user, is_active=True
+            )
 
 class WithdrawalForm(forms.Form):
     """
@@ -256,3 +265,176 @@ class TransactionFilterForm(forms.Form):
             self.add_error('date_to', _('End date should be greater than start date.'))
             
         return cleaned_data 
+
+class WithdrawalMethodForm(forms.ModelForm):
+    """
+    Форма для добавления методов вывода средств
+    """
+    class Meta:
+        model = WithdrawalMethod
+        fields = ['method_type', 'name', 'is_default']
+        widgets = {
+            'method_type': forms.Select(attrs={'class': 'form-select'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_default': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+    
+    # Динамические поля для разных типов вывода средств
+    yoomoney_account = forms.CharField(
+        label=_('YooMoney Account'),
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('YooMoney wallet number or email')}),
+    )
+    
+    kaspi_account = forms.CharField(
+        label=_('Kaspi Account'),
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Phone number linked to Kaspi account')}),
+    )
+    
+    bank_name = forms.CharField(
+        label=_('Bank Name'),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    
+    bank_account = forms.CharField(
+        label=_('Bank Account Number'),
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('IBAN or account number')}),
+    )
+    
+    swift_code = forms.CharField(
+        label=_('SWIFT/BIC Code'),
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    
+    paypal_email = forms.EmailField(
+        label=_('PayPal Email'),
+        max_length=100,
+        required=False,
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+    )
+    
+    crypto_type = forms.ChoiceField(
+        label=_('Cryptocurrency'),
+        choices=(
+            ('btc', _('Bitcoin')),
+            ('eth', _('Ethereum')),
+            ('usdt', _('USDT')),
+        ),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+    
+    crypto_address = forms.CharField(
+        label=_('Wallet Address'),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+    )
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Если это редактирование существующего метода, заполняем поля
+        if self.instance.pk and self.instance.details:
+            details = self.instance.details
+            
+            if self.instance.method_type == 'yoomoney':
+                self.fields['yoomoney_account'].initial = details.get('account', '')
+            
+            elif self.instance.method_type == 'kaspi':
+                self.fields['kaspi_account'].initial = details.get('account', '')
+            
+            elif self.instance.method_type == 'bank_transfer':
+                self.fields['bank_name'].initial = details.get('bank_name', '')
+                self.fields['bank_account'].initial = details.get('account', '')
+                self.fields['swift_code'].initial = details.get('swift_code', '')
+            
+            elif self.instance.method_type == 'paypal':
+                self.fields['paypal_email'].initial = details.get('email', '')
+            
+            elif self.instance.method_type == 'crypto':
+                self.fields['crypto_type'].initial = details.get('crypto_type', 'btc')
+                self.fields['crypto_address'].initial = details.get('address', '')
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        method_type = cleaned_data.get('method_type')
+        
+        # Валидация данных в зависимости от типа вывода
+        if method_type == 'yoomoney' and not cleaned_data.get('yoomoney_account'):
+            self.add_error('yoomoney_account', _('YooMoney account is required'))
+        
+        elif method_type == 'kaspi' and not cleaned_data.get('kaspi_account'):
+            self.add_error('kaspi_account', _('Kaspi account is required'))
+        
+        elif method_type == 'bank_transfer':
+            if not cleaned_data.get('bank_name'):
+                self.add_error('bank_name', _('Bank name is required'))
+            if not cleaned_data.get('bank_account'):
+                self.add_error('bank_account', _('Bank account number is required'))
+        
+        elif method_type == 'paypal' and not cleaned_data.get('paypal_email'):
+            self.add_error('paypal_email', _('PayPal email is required'))
+        
+        elif method_type == 'crypto':
+            if not cleaned_data.get('crypto_type'):
+                self.add_error('crypto_type', _('Cryptocurrency type is required'))
+            if not cleaned_data.get('crypto_address'):
+                self.add_error('crypto_address', _('Wallet address is required'))
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        method_type = self.cleaned_data.get('method_type')
+        
+        # Создаем JSON с деталями в зависимости от типа вывода
+        details = {}
+        
+        if method_type == 'yoomoney':
+            details = {
+                'account': self.cleaned_data.get('yoomoney_account'),
+                'provider': 'YooMoney',
+            }
+        
+        elif method_type == 'kaspi':
+            details = {
+                'account': self.cleaned_data.get('kaspi_account'),
+                'provider': 'Kaspi Bank',
+            }
+        
+        elif method_type == 'bank_transfer':
+            details = {
+                'bank_name': self.cleaned_data.get('bank_name'),
+                'account': self.cleaned_data.get('bank_account'),
+                'swift_code': self.cleaned_data.get('swift_code'),
+            }
+        
+        elif method_type == 'paypal':
+            details = {
+                'email': self.cleaned_data.get('paypal_email'),
+                'provider': 'PayPal',
+            }
+        
+        elif method_type == 'crypto':
+            details = {
+                'crypto_type': self.cleaned_data.get('crypto_type'),
+                'address': self.cleaned_data.get('crypto_address'),
+                'provider': dict(self.fields['crypto_type'].choices).get(self.cleaned_data.get('crypto_type')),
+            }
+        
+        instance.details = details
+        
+        if commit:
+            instance.save()
+        
+        return instance 

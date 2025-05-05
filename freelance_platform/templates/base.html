@@ -41,22 +41,6 @@
             </div>
         {% endif %}
         
-        {% if debug %}
-        <div class="container mb-4">
-            <div class="alert alert-warning">
-                <h3>Debug Mode</h3>
-                <p>Debug mode is active. This page is visible for administrators only.</p>
-                <hr>
-                <h4>Request Objects:</h4>
-                <ul>
-                    <li>User: {{ request.user }}</li>
-                    <li>Path: {{ request.path }}</li>
-                    <li>Method: {{ request.method }}</li>
-                </ul>
-            </div>
-        </div>
-        {% endif %}
-        
         {% block content %}{% endblock %}
     </main>
 
@@ -103,6 +87,26 @@
             // Удаляем блоки с отладочной информацией
             document.querySelectorAll('.debug-info').forEach(el => {
                 el.style.display = 'none';
+            });
+            
+            // Скрываем Django error-traceback если он есть
+            document.querySelectorAll('.traceback').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Удаляем комментарии с отладочной информацией
+            document.querySelectorAll('*').forEach(el => {
+                const commentNodes = [];
+                for (let i = 0; i < el.childNodes.length; i++) {
+                    if (el.childNodes[i].nodeType === 8) { // 8 = комментарий
+                        commentNodes.push(el.childNodes[i]);
+                    }
+                }
+                commentNodes.forEach(node => {
+                    if (node.nodeValue.includes('DEBUG') || node.nodeValue.includes('debug')) {
+                        el.removeChild(node);
+                    }
+                });
             });
         }
         

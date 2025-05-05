@@ -11,10 +11,20 @@ class YooMoneyAPI:
     """
     def __init__(self):
         self.base_url = 'https://api.yoomoney.ru/v3'
-        self.client_id = settings.YOOMONEY_SETTINGS['CLIENT_ID']
-        self.client_secret = settings.YOOMONEY_SETTINGS['CLIENT_SECRET']
-        self.redirect_uri = settings.YOOMONEY_SETTINGS['REDIRECT_URI']
-        self.notification_uri = settings.YOOMONEY_SETTINGS['NOTIFICATION_URI']
+        
+        # Проверяем наличие настроек YooMoney
+        if not hasattr(settings, 'YOOMONEY_SETTINGS'):
+            raise Exception('YOOMONEY_SETTINGS not found in your settings.py')
+        
+        yoomoney_settings = getattr(settings, 'YOOMONEY_SETTINGS', {})
+        self.client_id = yoomoney_settings.get('CLIENT_ID', '')
+        self.client_secret = yoomoney_settings.get('CLIENT_SECRET', '')
+        self.redirect_uri = yoomoney_settings.get('REDIRECT_URI', '')
+        self.notification_uri = yoomoney_settings.get('NOTIFICATION_URI', '')
+        
+        # Проверяем, что обязательные параметры заданы
+        if not (self.client_id and self.client_secret):
+            raise ValueError('YooMoney CLIENT_ID and CLIENT_SECRET must be set in your settings')
     
     def get_auth_headers(self):
         """
@@ -22,7 +32,8 @@ class YooMoneyAPI:
         """
         return {
             'Authorization': f'Bearer {self.client_secret}',
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         }
     
     def create_payment(self, amount, return_url=None, description=None, metadata=None):
@@ -41,7 +52,7 @@ class YooMoneyAPI:
         # Формируем данные для запроса
         payment_data = {
             'amount': {
-                'value': str(amount),
+                'value': str(float(amount)),  # Преобразуем в строку обязательно через float
                 'currency': 'KZT'
             },
             'confirmation': {
@@ -49,7 +60,7 @@ class YooMoneyAPI:
                 'return_url': return_url
             },
             'capture': True,
-            'description': description[:128],  # Ограничение YooMoney
+            'description': str(description)[:128],  # Ограничение YooMoney
             'metadata': metadata or {
                 'payment_id': payment_id
             }
@@ -62,21 +73,26 @@ class YooMoneyAPI:
                 'event_types': ['payment.succeeded', 'payment.canceled']
             }
         
-        # Отправляем запрос к API
-        response = requests.post(
-            f'{self.base_url}/payments',
-            headers=self.get_auth_headers(),
-            json=payment_data
-        )
-        
-        if response.status_code == 200:
+        try:
+            # Отправляем запрос к API
+            response = requests.post(
+                f'{self.base_url}/payments',
+                headers=self.get_auth_headers(),
+                json=payment_data,
+                timeout=10  # Добавляем таймаут для запроса
+            )
+            
+            response.raise_for_status()  # Вызывает исключение при ошибках HTTP
+            
             return response.json()
-        else:
-            try:
-                error_data = response.json()
-                error_message = error_data.get('message', 'Unknown error')
-            except:
-                error_message = f'Failed to initiate payment. Status: {response.status_code}'
+        except requests.exceptions.RequestException as e:
+            error_message = f'Failed to connect to YooMoney API: {str(e)}'
+            if hasattr(e, 'response') and e.response:
+                try:
+                    error_data = e.response.json()
+                    error_message = f"YooMoney API error: {error_data.get('description', error_data.get('message', str(e)))}"
+                except:
+                    error_message = f'YooMoney API error: {e.response.status_code} {e.response.reason}'
             
             raise Exception(error_message)
     
@@ -84,19 +100,24 @@ class YooMoneyAPI:
         """
         Проверяет статус платежа
         """
-        response = requests.get(
-            f'{self.base_url}/payments/{payment_id}',
-            headers=self.get_auth_headers()
-        )
-        
-        if response.status_code == 200:
+        try:
+            response = requests.get(
+                f'{self.base_url}/payments/{payment_id}',
+                headers=self.get_auth_headers(),
+                timeout=10  # Добавляем таймаут для запроса
+            )
+            
+            response.raise_for_status()  # Вызывает исключение при ошибках HTTP
+            
             return response.json()
-        else:
-            try:
-                error_data = response.json()
-                error_message = error_data.get('message', 'Unknown error')
-            except:
-                error_message = f'Failed to get payment status. Status: {response.status_code}'
+        except requests.exceptions.RequestException as e:
+            error_message = f'Failed to get payment status: {str(e)}'
+            if hasattr(e, 'response') and e.response:
+                try:
+                    error_data = e.response.json()
+                    error_message = f"YooMoney API error: {error_data.get('description', error_data.get('message', str(e)))}"
+                except:
+                    error_message = f'YooMoney API error: {e.response.status_code} {e.response.reason}'
             
             raise Exception(error_message)
     
@@ -122,10 +143,13 @@ class YooMoneyAPI:
         """
         # Получаем данные из платежа
         metadata = payment_info.get('metadata', {})
-        amount = payment_info['amount']['value']
+        amount_data = payment_info.get('amount', {})
+        amount = amount_data.get('value', '0')
         
         return {
             'status': 'succeeded',
             'amount': amount,
-            'metadata': metadata
+            'metadata': metadata,
+            'payment_id': payment_info.get('id'),
+            'created_at': payment_info.get('created_at')
         } 

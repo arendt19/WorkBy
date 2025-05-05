@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Fund Escrow Payment" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 bg-dark text-light shadow-sm">
+                <div class="card-header bg-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">{% trans "Fund Escrow Payment" %}</h4>
+                        <span class="badge bg-primary">{{ escrow.escrow_id }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Информация о транзакции -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">{% trans "Project" %}</h6>
+                                <p class="h5">{{ milestone.contract.project.title }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">{% trans "Milestone" %}</h6>
+                                <p class="h5">{{ milestone.title }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">{% trans "Amount" %}</h6>
+                                <p class="h4 text-primary">{{ escrow.amount }} ₸</p>
+                            </div>
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-1">{% trans "Status" %}</h6>
+                                <span class="badge bg-{{ escrow.status }}">{{ escrow.get_status_display }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Информация об участниках -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-darker">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">{% trans "Client" %}</h6>
+                                    <div class="d-flex align-items-center">
+                                        {% if contract.client.avatar %}
+                                            <img src="{{ contract.client.avatar.url }}" alt="{{ contract.client.get_full_name }}" class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                                <span class="text-white fw-bold">{{ contract.client.get_full_name|slice:":1"|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ contract.client.get_full_name|default:contract.client.username }}</h6>
+                                            <small class="text-muted">{% trans "You" %}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-darker">
+                                <div class="card-body">
+                                    <h6 class="text-muted mb-3">{% trans "Freelancer" %}</h6>
+                                    <div class="d-flex align-items-center">
+                                        {% if contract.freelancer.avatar %}
+                                            <img src="{{ contract.freelancer.avatar.url }}" alt="{{ contract.freelancer.get_full_name }}" class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                                <span class="text-white fw-bold">{{ contract.freelancer.get_full_name|slice:":1"|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h6>
+                                            <small class="text-muted">{% trans "Recipient" %}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Баланс кошелька -->
+                    <div class="card bg-darker mb-4">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <h6 class="text-muted mb-1">{% trans "Your Wallet Balance" %}</h6>
+                                    <div class="d-flex align-items-center">
+                                        <span class="h3 text-primary mb-0 me-2">{{ wallet.balance }} ₸</span>
+                                        {% if wallet.balance < escrow.amount %}
+                                            <span class="badge bg-danger">{% trans "Insufficient funds" %}</span>
+                                        {% else %}
+                                            <span class="badge bg-success">{% trans "Sufficient funds" %}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    {% if wallet.balance < escrow.amount %}
+                                        <a href="{% url 'payments:deposit' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus-circle me-2"></i> {% trans "Add Funds" %}
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Сводка и предупреждения -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <i class="fas fa-info-circle fa-2x me-3 text-info"></i>
+                            <div>
+                                <h5 class="alert-heading">{% trans "About to Fund Escrow" %}</h5>
+                                <p>{% trans "You are about to fund the escrow account for this milestone. The funds will be held securely until you approve the freelancer's work." %}</p>
+                                <p class="mb-0">{% trans "The funds will be deducted from your wallet balance and held in escrow until you release them to the freelancer." %}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Форма подтверждения -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" name="confirm_funding" id="confirmFunding" value="yes" required>
+                            <label class="form-check-label" for="confirmFunding">
+                                {% trans "I confirm that I want to transfer" %} <strong>{{ escrow.amount }} ₸</strong> {% trans "to escrow for this milestone." %}
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'jobs:contract_detail' pk=contract.pk %}" class="btn btn-outline-light">
+                                <i class="fas fa-arrow-left me-2"></i> {% trans "Back to Contract" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary" {% if wallet.balance < escrow.amount %}disabled{% endif %}>
+                                <i class="fas fa-lock me-2"></i> {% trans "Fund Escrow" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Дополнительная информация -->
+            <div class="card border-0 bg-dark text-light shadow-sm mt-4">
+                <div class="card-header bg-dark">
+                    <h5 class="card-title mb-0">{% trans "What is Escrow?" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="feature-icon bg-primary bg-opacity-10 p-3 rounded-circle text-primary">
+                                        <i class="fas fa-lock"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>{% trans "Secure Funds" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Your money is held securely in escrow until you approve the work." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="feature-icon bg-success bg-opacity-10 p-3 rounded-circle text-success">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>{% trans "Protection" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Both you and the freelancer are protected during the transaction." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="feature-icon bg-info bg-opacity-10 p-3 rounded-circle text-info">
+                                        <i class="fas fa-check-double"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>{% trans "Quality Assurance" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Verify the work meets your requirements before releasing payment." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmCheck = document.getElementById('confirmFunding');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        
+        {% if wallet.balance < escrow.amount %}
+            // Если недостаточно средств, кнопка всегда отключена
+            submitBtn.disabled = true;
+        {% else %}
+            // Если средств достаточно, кнопка зависит от состояния чекбокса
+            submitBtn.disabled = !confirmCheck.checked;
+            
+            // Обработчик изменения состояния чекбокса
+            confirmCheck.addEventListener('change', function() {
+                submitBtn.disabled = !this.checked;
+            });
+        {% endif %}
+        
+        // Предотвращаем случайную отправку формы
+        document.querySelector('form').addEventListener('submit', function(e) {
+            if (!confirmCheck.checked) {
+                e.preventDefault();
+                alert("{% trans 'Please confirm that you want to fund this escrow payment.' %}");
+            }
+        });
+    });
+</script>
+{% endblock %} 

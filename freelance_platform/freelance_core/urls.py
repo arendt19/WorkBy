@@ -25,6 +25,7 @@ from accounts import views as accounts_views
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
 from .views import serve_robots_txt, serve_sitemap_xml
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 # Обработчики ошибок для production
 handler404 = 'freelance_core.views.page_not_found'
@@ -54,6 +55,17 @@ urlpatterns += i18n_patterns(
     # Django allauth (размещаем после наших URLs)
     path('accounts/', include('allauth.urls')),
     
+    # Legal pages
+    path('about/', TemplateView.as_view(template_name='core/about.html'), name='about'),
+    path('terms/', TemplateView.as_view(template_name='core/terms.html'), name='terms'),
+    path('privacy/', TemplateView.as_view(template_name='core/privacy.html'), name='privacy'),
+    
+    # Error pages for testing
+    path('400/', TemplateView.as_view(template_name='400.html'), name='error_400'),
+    path('403/', TemplateView.as_view(template_name='403.html'), name='error_403'),
+    path('404/', TemplateView.as_view(template_name='404.html'), name='error_404'),
+    path('500/', TemplateView.as_view(template_name='500.html'), name='error_500'),
+    
     prefix_default_language=True  
 )
 
@@ -61,6 +73,20 @@ urlpatterns += i18n_patterns(
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    
+    # Debug Toolbar
+    if 'debug_toolbar' in settings.INSTALLED_APPS:
+        import debug_toolbar
+        urlpatterns += [
+            path('__debug__/', include(debug_toolbar.urls)),
+        ]
 else:
     # В production режиме добавляем настройки для обслуживания медиа файлов
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += staticfiles_urlpatterns()
+    
+    # Add custom error handlers
+    handler400 = 'core.views.error_400'
+    handler403 = 'core.views.error_403'
+    handler404 = 'core.views.error_404'
+    handler500 = 'core.views.error_500'

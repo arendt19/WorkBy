@@ -349,26 +349,111 @@ class EscrowPayment(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"Escrow {self.escrow_id} for milestone: {self.milestone.title}"
+        return f"Escrow {self.escrow_id} for {self.milestone.title}"
     
     def save(self, *args, **kwargs):
         # Генерируем уникальный ID эскроу, если его нет
         if not self.escrow_id:
             uid = str(uuid.uuid4()).replace('-', '')[:10]
-            self.escrow_id = f"ESCROW-{uid}"
+            self.escrow_id = f"ES-{uid}"
         super().save(*args, **kwargs)
     
+    @classmethod
+    def create_escrow(cls, milestone, fund_immediately=False):
+        """
+        Создает новый эскроу-платеж для вехи и при необходимости сразу пополняет его
+        
+        Аргументы:
+        - milestone: объект Milestone
+        - fund_immediately: если True, сразу пополняет эскроу с кошелька клиента
+        
+        Возвращает:
+        - объект EscrowPayment
+        - None, если произошла ошибка
+        """
+        from django.db import transaction
+        
+        try:
+            # Проверяем, что веха существует
+            if not milestone:
+                raise ValueError(_("Milestone not provided"))
+            
+            # Проверяем, что еще нет эскроу для этой вехи
+            if hasattr(milestone, 'escrow_payment'):
+                return milestone.escrow_payment
+            
+            contract = milestone.contract
+            client = contract.client
+            
+            # Проверяем, что клиент есть и у него есть кошелек
+            if not client:
+                raise ValueError(_("Client not found for this milestone"))
+                
+            client_wallet, created = Wallet.objects.get_or_create(user=client)
+            
+            # Создаем новый эскроу-платеж с атомарной транзакцией
+            with transaction.atomic():
+                escrow = cls.objects.create(
+                    milestone=milestone,
+                    amount=milestone.amount
+                )
+                
+                # Если запрошено немедленное пополнение - выполняем его
+                if fund_immediately:
+                    # Проверяем достаточно ли средств
+                    if client_wallet.balance < milestone.amount:
+                        raise ValueError(_("Insufficient funds in client's wallet"))
+                    
+                    # Создаем транзакцию для списания средств
+                    client_transaction = Transaction.objects.create(
+                        user=client,
+                        amount=milestone.amount,
+                        transaction_type='payment',
+                        status='completed',
+                        description=_("Escrow funding for milestone: {}").format(milestone.title),
+                        payment_method='wallet',
+                        contract=contract,
+                        milestone=milestone
+                    )
+                    
+                    # Обновляем баланс клиента
+                    client_wallet.balance -= milestone.amount
+                    client_wallet.save()
+                    
+                    # Обновляем статус эскроу
+                    escrow.client_transaction = client_transaction
+                    escrow.status = 'funded'
+                    escrow.funded_at = timezone.now()
+                    escrow.save()
+                    
+                    # Обновляем статус вехи
+                    milestone.payment_status = 'escrow'
+                    milestone.save()
+                
+                return escrow
+        except Exception as e:
+            import logging
+            logger = logging.getLogger('payments')
+            logger.error(f"Error creating escrow payment: {str(e)}", exc_info=True)
+            return None
+
     def fund(self, client_transaction):
         """
-        Пополнение эскроу (блокировка средств клиента)
+        Пополняет эскроу-платеж
         """
         if self.status != 'pending':
-            raise ValueError(_("This escrow payment is already funded or completed"))
+            raise ValueError(_("Can only fund pending escrow payments"))
         
         self.client_transaction = client_transaction
         self.status = 'funded'
         self.funded_at = timezone.now()
         self.save()
+        
+        # Обновляем статус вехи
+        self.milestone.payment_status = 'escrow'
+        self.milestone.save()
+        
+        return True
     
     def release(self, description=""):
         """

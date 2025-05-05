@@ -21,14 +21,27 @@ urlpatterns = [
     path('milestone/<int:milestone_id>/pay/', views.pay_milestone_view, name='pay_milestone'),
     
     # Эскроу-платежи
-    path('milestone/<int:milestone_id>/create-escrow/', views.create_escrow_payment, name='create_escrow'),
-    path('escrow/<str:escrow_id>/fund/', views.fund_escrow, name='fund_escrow'),
-    path('escrow/<str:escrow_id>/release/', views.release_escrow, name='release_escrow'),
-    path('escrow/<str:escrow_id>/refund/', views.refund_escrow, name='refund_escrow'),
-    path('escrow/<str:escrow_id>/dispute/', views.dispute_escrow, name='dispute_escrow'),
+    path('create-escrow/<int:milestone_id>/', views.create_escrow_payment, name='create_escrow'),
+    path('fund-escrow/<str:escrow_id>/', views.fund_escrow, name='fund_escrow'),
+    path('release-escrow/<str:escrow_id>/', views.release_escrow, name='release_escrow'),
+    path('refund-escrow/<str:escrow_id>/', views.refund_escrow, name='refund_escrow'),
+    path('dispute-escrow/<str:escrow_id>/', views.dispute_escrow, name='dispute_escrow'),
     
     # ЮMoney интеграция
     path('yoomoney/initiate/', views.yoomoney_initiate_payment, name='yoomoney_initiate_payment'),
     path('yoomoney/success/', views.yoomoney_success_callback, name='yoomoney_success_callback'),
     path('yoomoney/notification/', views.yoomoney_notification_callback, name='yoomoney_notification_callback'),
+    
+    # Управление методами вывода средств
+    path('withdrawal-methods/', views.manage_withdrawal_methods, name='manage_withdrawal_methods'),
+    path('withdrawal-methods/add/', views.add_withdrawal_method, name='add_withdrawal_method'),
+    path('withdrawal-methods/edit/<int:pk>/', views.edit_withdrawal_method, name='edit_withdrawal_method'),
+    path('withdrawal-methods/delete/<int:pk>/', views.delete_withdrawal_method, name='delete_withdrawal_method'),
+    path('withdrawal-methods/set-default/<int:pk>/', views.set_default_withdrawal_method, name='set_default_withdrawal_method'),
+    
+    # История запросов на вывод средств
+    path('withdrawal-history/', views.withdrawal_history, name='withdrawal_history'),
+    
+    # Webhook для YooMoney
+    path('yoomoney-webhook/', views.yoomoney_webhook, name='yoomoney_webhook'),
 ] 

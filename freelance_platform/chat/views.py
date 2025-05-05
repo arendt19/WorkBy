@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse, HttpResponseForbidden, HttpResponse
+from django.http import JsonResponse, HttpResponseForbidden, HttpResponse, Http404
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.db.models import Q
@@ -213,48 +213,89 @@ def api_send_message_view(request, pk):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=400)
     
-    conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
+    # Проверяем права доступа к беседе
+    try:
+        conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
+    except Http404:
+        return JsonResponse({'error': 'Conversation not found or access denied'}, status=404)
+    
+    # Получаем данные сообщения
     content = request.POST.get('content', '').strip()
     attachment = request.FILES.get('attachment', None)
     
+    # Проверяем, что есть хотя бы текст или вложение
     if not content and not attachment:
         return JsonResponse({'error': 'Message cannot be empty'}, status=400)
     
-    message = Message.objects.create(
-        conversation=conversation,
-        sender=request.user,
-        content=content,
-        attachment=attachment
-    )
+    # Проверяем размер вложения (максимум 10 МБ)
+    if attachment and attachment.size > 10 * 1024 * 1024:  # 10 МБ
+        return JsonResponse({'error': 'Attachment too large. Maximum size is 10 MB'}, status=400)
     
-    # Обновляем время последнего обновления разговора
-    conversation.save()  # Это автоматически обновит updated_at
+    # Проверяем допустимые типы файлов для вложений
+    allowed_types = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',  # Изображения
+        'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  # Документы
+        'text/plain', 'text/csv', 'application/zip',  # Другие типы
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'  # Таблицы
+    ]
     
-    # Создаем уведомление для получателя
-    Notification.create_message_notification(message)
+    if attachment and hasattr(attachment, 'content_type') and attachment.content_type not in allowed_types:
+        return JsonResponse({'error': 'Invalid file type. Allowed types: images, documents, zip, csv, and excel files'}, status=400)
     
-    # Подготавливаем данные для ответа
-    response_data = {
-        'id': message.id,
-        'content': message.content,
-        'created_at': message.created_at.strftime('%H:%M'),
-        'is_read': message.is_read
-    }
-    
-    if message.attachment:
-        response_data['attachment'] = True
-        response_data['attachment_url'] = message.attachment.url
-        response_data['attachment_name'] = message.attachment.name.split('/')[-1]
-        response_data['is_image'] = message.is_image
-    
-    return JsonResponse(response_data)
+    try:
+        # Создаем сообщение в базе данных
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            content=content,
+            attachment=attachment
+        )
+        
+        # Обновляем время последнего обновления разговора
+        conversation.save()  # Это автоматически обновит updated_at
+        
+        # Создаем уведомление для получателя
+        other_participant = conversation.get_other_participant(request.user)
+        if other_participant:
+            Notification.create_message_notification(message)
+        
+        # Подготавливаем данные для ответа
+        response_data = {
+            'id': message.id,
+            'content': message.content,
+            'created_at': message.created_at.strftime('%H:%M'),
+            'is_read': message.is_read,
+            'sender_name': request.user.get_full_name() or request.user.username
+        }
+        
+        # Добавляем информацию о вложении, если оно есть
+        if message.attachment:
+            response_data.update({
+                'attachment': True,
+                'attachment_url': message.attachment.url,
+                'attachment_name': message.attachment.name.split('/')[-1],
+                'is_image': message.is_image
+            })
+        
+        return JsonResponse(response_data)
+    except Exception as e:
+        # Логируем ошибку
+        import logging
+        logger = logging.getLogger('chat')
+        logger.error(f"Ошибка при отправке сообщения: {str(e)}", exc_info=True)
+        
+        return JsonResponse({'error': f'Error sending message: {str(e)}'}, status=500)
 
 @login_required
 def api_check_messages_view(request, pk):
     """
     API для проверки новых сообщений через AJAX
+    
+    Поддерживает параметры:
+    - since: ID сообщения, начиная с которого нужно загрузить новые
+    - limit: максимальное количество сообщений (по умолчанию 50)
     """
-    # Добавляем CORS заголовки для локального окружения
+    # Настраиваем CORS заголовки для локального окружения
     response = HttpResponse('', content_type='application/json')
     response['Access-Control-Allow-Origin'] = '*'
     response['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
@@ -265,26 +306,47 @@ def api_check_messages_view(request, pk):
         return response
     
     try:
+        # Получаем параметры из запроса
+        since_id = request.GET.get('since', None)
+        limit = min(int(request.GET.get('limit', 50)), 100)  # Ограничиваем максимум 100 сообщений
+        
         conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
         
-        # Получаем все сообщения разговора
-        all_messages = Message.objects.filter(
-            conversation=conversation
-        ).order_by('created_at')
+        # Получаем сообщения разговора с учётом фильтров
+        messages_query = Message.objects.filter(conversation=conversation)
+        
+        # Если указан since_id, получаем только более новые сообщения
+        if since_id and since_id.isdigit() and int(since_id) > 0:
+            messages_query = messages_query.filter(id__gt=int(since_id))
+        
+        # Сортируем и ограничиваем количество
+        all_messages = messages_query.order_by('created_at')[:limit]
         
         # Форматируем сообщения для фронтенда
         formatted_messages = []
         for msg in all_messages:
-            formatted_messages.append({
+            message_data = {
                 'id': msg.id,
                 'content': msg.content,
                 'time': msg.created_at.strftime('%H:%M'),
                 'is_mine': msg.sender == request.user,
                 'sender_name': msg.sender.get_full_name() or msg.sender.username,
-            })
+            }
+            
+            # Добавляем данные о вложениях, если они есть
+            if msg.attachment:
+                message_data.update({
+                    'attachment': True,
+                    'attachment_url': msg.attachment.url,
+                    'attachment_name': msg.attachment.name.split('/')[-1],
+                    'is_image': msg.is_image
+                })
+            
+            formatted_messages.append(message_data)
         
-        # Если нет реальных сообщений, добавим тестовое сообщение
-        if not formatted_messages:
+        # Если нет реальных сообщений и не запрошены инкрементальные обновления,
+        # добавляем шаблонные сообщения
+        if not formatted_messages and not since_id:
             formatted_messages = [
                 {
                     'id': 999001,
@@ -302,21 +364,29 @@ def api_check_messages_view(request, pk):
                 }
             ]
         
-        # Отмечаем сообщения как прочитанные
-        Message.objects.filter(
-            conversation=conversation,
-            is_read=False
-        ).exclude(sender=request.user).update(is_read=True)
+        # Отмечаем сообщения как прочитанные (только если не запрошены инкрементальные обновления)
+        if not since_id:
+            Message.objects.filter(
+                conversation=conversation,
+                is_read=False
+            ).exclude(sender=request.user).update(is_read=True)
         
-        # Возвращаем ответ
+        # Получаем общее количество сообщений в беседе для пагинации
+        total_messages = Message.objects.filter(conversation=conversation).count()
+        
+        # Подготавливаем данные для ответа
         data = {
             'messages': formatted_messages,
             'status': 'success',
             'message_count': len(formatted_messages),
+            'total_count': total_messages,
+            'has_more': total_messages > (len(formatted_messages) + (int(since_id) if since_id and since_id.isdigit() else 0)),
             'debug': {
                 'time': timezone.now().strftime('%H:%M:%S'),
                 'user_id': request.user.id,
-                'conversation_id': conversation.id
+                'conversation_id': conversation.id,
+                'since_id': since_id,
+                'limit': limit
             }
         }
         
@@ -326,7 +396,9 @@ def api_check_messages_view(request, pk):
         
     except Exception as e:
         # В случае ошибки логгируем её и возвращаем запасной ответ
-        print(f"Ошибка при загрузке сообщений: {str(e)}")
+        import logging
+        logger = logging.getLogger('chat')
+        logger.error(f"Ошибка при загрузке сообщений: {str(e)}", exc_info=True)
         
         # Возвращаем запасной ответ
         emergency_data = {
