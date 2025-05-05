@@ -1,3 +1,261 @@
+/**
+ * WorkBy Platform - Main JavaScript File
+ * Contains global functions and utilities used across the platform
+ */
+
+// Base64 звуковое уведомление (короткий звук)
+const NOTIFICATION_SOUND_BASE64 = "data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gQ29uZWN0ZWRTb3VuZHMuY29tAAAAQ09NTAAAAB0AAABUaXRsZQBOb3RpZmljYXRpb24gU291bmQgMQAAAENPTU0AAAAlAAAAYWxidW0AU291bmQgRWZmZWN0cyAtIE5vdGlmaWNhdGlvbnMAAP/7kAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAABCAAAisAAGBg0NDRQUGxsb" + 
+"IiIoKCgvLzU1NTw8QkJCSUlJUFBWVlZdXWNjY2pqcHBwd3d9fX2EhIqKipGRl5eXnp6kpKSrq7Gxsbi4vr6+xcXLy8vS0tjY2N/f5eXl7Oz4+Pj///8AAAA5TEFNRTMuMTAwAc0AAAAAAAAAABRAJAjmQgAAMAAAACKwxZC9OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" + 
+"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAD/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
+"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//uQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
+"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
+"VVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==";
+
+/**
+ * Функция для воспроизведения звукового уведомления
+ * @param {number} volume - громкость от 0 до 1, по умолчанию 0.5
+ */
+function playNotificationSound(volume = 0.5) {
+    try {
+        const audio = new Audio(NOTIFICATION_SOUND_BASE64);
+        audio.volume = volume;
+        audio.play().catch(e => {
+            console.log('Notification sound could not be played', e);
+        });
+    } catch (e) {
+        console.error('Error playing notification sound:', e);
+    }
+}
+
+/**
+ * Функция для обработки AJAX-запросов
+ * @param {Object} options - настройки запроса
+ */
+function ajaxRequest(options) {
+    const defaultOptions = {
+        method: 'GET',
+        url: '',
+        data: null,
+        success: function() {},
+        error: function() {},
+        complete: function() {}
+    };
+
+    // Объединяем переданные параметры с параметрами по умолчанию
+    const settings = Object.assign({}, defaultOptions, options);
+    
+    // Создаём объект XMLHttpRequest
+    const xhr = new XMLHttpRequest();
+    
+    xhr.open(settings.method, settings.url, true);
+    
+    // Устанавливаем заголовки
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    if (settings.method.toUpperCase() === 'POST') {
+        // Для POST-запросов с FormData не устанавливаем Content-Type
+        if (!(settings.data instanceof FormData)) {
+            xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        }
+    }
+    
+    // Получаем CSRF-токен из cookie
+    const csrftoken = getCookie('csrftoken');
+    if (csrftoken) {
+        xhr.setRequestHeader('X-CSRFToken', csrftoken);
+    }
+    
+    // Обработчики событий
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            let response;
+            try {
+                response = JSON.parse(xhr.responseText);
+            } catch (e) {
+                response = xhr.responseText;
+            }
+            settings.success(response, xhr);
+        } else {
+            settings.error(xhr);
+        }
+        settings.complete(xhr);
+    };
+    
+    xhr.onerror = function() {
+        settings.error(xhr);
+        settings.complete(xhr);
+    };
+    
+    // Отправляем запрос
+    if (settings.data) {
+        if (settings.data instanceof FormData) {
+            xhr.send(settings.data);
+        } else if (typeof settings.data === 'object') {
+            xhr.send(JSON.stringify(settings.data));
+        } else {
+            xhr.send(settings.data);
+        }
+    } else {
+        xhr.send();
+    }
+    
+    return xhr;
+}
+
+/**
+ * Получение значения cookie по имени
+ * @param {string} name - название cookie
+ * @return {string|null} - значение cookie или null
+ */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/**
+ * Форматирование даты и времени
+ * @param {Date|string} dateInput - объект Date или строка с датой
+ * @param {string} format - формат вывода (по умолчанию 'DD.MM.YYYY HH:mm')
+ * @return {string} - отформатированная дата
+ */
+function formatDateTime(dateInput, format = 'DD.MM.YYYY HH:mm') {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    
+    if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+    }
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return format
+        .replace('DD', day)
+        .replace('MM', month)
+        .replace('YYYY', year)
+        .replace('HH', hours)
+        .replace('mm', minutes)
+        .replace('ss', seconds);
+}
+
+/**
+ * Функция для форматирования валюты
+ * @param {number} amount - сумма
+ * @param {string} currency - символ валюты (по умолчанию '₸')
+ * @return {string} - форматированная строка с суммой и валютой
+ */
+function formatCurrency(amount, currency = '₸') {
+    return amount.toLocaleString('ru-RU') + ' ' + currency;
+}
+
+/**
+ * Показать быстрое уведомление пользователю
+ * @param {string} message - сообщение для отображения
+ * @param {string} type - тип уведомления ('success', 'error', 'info', 'warning')
+ * @param {number} timeout - время в миллисекундах, через которое сообщение исчезнет
+ */
+function showToast(message, type = 'info', timeout = 3000) {
+    // Проверяем, существует ли контейнер для уведомлений
+    let container = document.getElementById('toast-container');
+    
+    // Если контейнера нет, создаем его
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.position = 'fixed';
+        container.style.top = '20px';
+        container.style.right = '20px';
+        container.style.zIndex = '9999';
+        document.body.appendChild(container);
+    }
+    
+    // Создаем элемент уведомления
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.backgroundColor = type === 'success' ? '#28a745' : 
+                                 type === 'error' ? '#dc3545' : 
+                                 type === 'warning' ? '#ffc107' : '#17a2b8';
+    toast.style.color = type === 'warning' ? '#212529' : '#fff';
+    toast.style.padding = '12px 15px';
+    toast.style.borderRadius = '4px';
+    toast.style.marginBottom = '10px';
+    toast.style.boxShadow = '0 0.25rem 0.75rem rgba(0, 0, 0, 0.1)';
+    toast.style.transition = 'all 0.3s ease';
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-20px)';
+    toast.textContent = message;
+    
+    // Добавляем уведомление в контейнер
+    container.appendChild(toast);
+    
+    // Анимируем появление
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Запускаем звуковое уведомление
+    if (type === 'success' || type === 'error') {
+        playNotificationSound(0.3);
+    }
+    
+    // Устанавливаем таймер для удаления
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        
+        // После завершения анимации удаляем элемент
+        setTimeout(() => {
+            container.removeChild(toast);
+            
+            // Если в контейнере не осталось уведомлений, удаляем его
+            if (container.children.length === 0) {
+                document.body.removeChild(container);
+            }
+        }, 300);
+    }, timeout);
+}
+
+/**
+ * Инициализация при загрузке страницы
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Инициализация Bootstrap popovers
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function (popoverTriggerEl) {
+        return new bootstrap.Popover(popoverTriggerEl);
+    });
+});
+
+// Экспортируем функции для использования в других скриптах
+window.WorkBy = {
+    playNotificationSound,
+    ajaxRequest,
+    getCookie,
+    formatDateTime,
+    formatCurrency,
+    showToast
+};
+
 // Main JavaScript for WorkBy
 
 // Функция для инициализации всех тултипов

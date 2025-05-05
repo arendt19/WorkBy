@@ -17,6 +17,7 @@
         border-radius: 12px;
         margin-top: 10px;
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
     }
     
     .sidebar {
@@ -49,12 +50,32 @@
         color: #eee;
         border-bottom: 1px solid #333;
         transition: all 0.2s ease;
+        position: relative;
     }
     
     .contact-item:hover, .contact-item.active {
         background-color: #252525;
         transform: translateX(3px);
         border-left: 3px solid #8B0000; /* Бордовый акцент */
+    }
+    
+    .contact-item.unread::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: 15px;
+        width: 8px;
+        height: 8px;
+        background-color: #8B0000;
+        border-radius: 50%;
+        transform: translateY(-50%);
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: translateY(-50%) scale(0.8); opacity: 0.8; }
+        50% { transform: translateY(-50%) scale(1.1); opacity: 1; }
+        100% { transform: translateY(-50%) scale(0.8); opacity: 0.8; }
     }
     
     .message-area {
@@ -64,6 +85,9 @@
         position: relative;
         scroll-behavior: smooth;
         background-color: #161616; /* Чуть светлее основного фона */
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(139, 0, 0, 0.03) 0%, transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(139, 0, 0, 0.03) 0%, transparent 25%);
     }
     
     .message-input {
@@ -86,13 +110,14 @@
         border-radius: 24px;
         color: white;
         font-size: 14px;
-        transition: background-color 0.2s;
+        transition: all 0.3s ease;
     }
     
     .message-input input:focus {
         background-color: #3a3a3a;
         outline: none;
         box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.4); /* Бордовый акцент */
+        transform: translateY(-1px);
     }
     
     .message-input button {
@@ -107,17 +132,18 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
         outline: none;
     }
     
     .message-input button:hover {
         background-color: #A00000; /* Более светлый бордовый при наведении */
         transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(139, 0, 0, 0.5);
     }
     
     .message-input button:active {
-        transform: scale(0.98);
+        transform: scale(0.95);
     }
     
     .message {
@@ -126,6 +152,11 @@
         flex-direction: column;
         max-width: 75%;
         animation: fadeIn 0.3s ease;
+        transition: transform 0.2s ease;
+    }
+    
+    .message:hover {
+        transform: translateY(-2px);
     }
     
     @keyframes fadeIn {
@@ -147,6 +178,11 @@
         word-break: break-word;
         box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         line-height: 1.4;
+        transition: box-shadow 0.3s ease;
+    }
+    
+    .message:hover .message-bubble {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     }
     
     .message-outgoing .message-bubble {
@@ -169,11 +205,18 @@
         margin-right: 5px;
         display: flex;
         align-items: center;
+        transition: opacity 0.3s ease;
+        opacity: 0.6;
+    }
+    
+    .message:hover .message-time {
+        opacity: 1;
     }
     
     .message-status {
         color: #8B8B8B;
         font-size: 0.7rem;
+        transition: color 0.3s ease;
     }
     
     .message-outgoing .message-time {
@@ -208,6 +251,12 @@
         font-weight: bold;
         margin-right: 10px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .user-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.4);
     }
     
     .empty-state {
@@ -219,12 +268,19 @@
         color: #777;
         text-align: center;
         padding: 20px;
+        animation: fadeIn 0.5s ease;
     }
     
     .empty-state i {
         font-size: 3rem;
         margin-bottom: 15px;
         color: #8B0000; /* Бордовый акцент */
+        animation: bounceIcon 2s infinite;
+    }
+    
+    @keyframes bounceIcon {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
     
     .typing-indicator {
@@ -267,6 +323,11 @@
         padding: 8px 12px;
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
+        transition: background-color 0.3s ease;
+    }
+    
+    .attachment-container:hover {
+        background-color: rgba(255, 255, 255, 0.15);
     }
     
     .attachment-icon {
@@ -285,6 +346,11 @@
     .attachment-download {
         color: #8B0000; /* Бордовый акцент */
         margin-left: 10px;
+        transition: transform 0.2s ease;
+    }
+    
+    .attachment-download:hover {
+        transform: scale(1.2);
     }
     
     /* Стили для изображений в чате */
@@ -293,11 +359,24 @@
         max-height: 200px;
         border-radius: 12px;
         cursor: pointer;
-        transition: transform 0.2s;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 2px solid transparent;
     }
     
     .message-image:hover {
         transform: scale(1.03);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        border-color: rgba(139, 0, 0, 0.3);
+    }
+    
+    /* Улучшенные стили для кнопок */
+    .action-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
     /* Стили для мобильных устройств */
@@ -305,6 +384,7 @@
         .chat-container {
             flex-direction: column;
             height: calc(100vh - 120px);
+            margin-top: 5px;
         }
         
         .sidebar {
@@ -335,6 +415,18 @@
             max-width: 180px;
             max-height: 150px;
         }
+        
+        .chat-header {
+            padding: 10px;
+        }
+        
+        .message-area {
+            padding: 15px 10px;
+        }
+        
+        .message-input {
+            padding: 10px;
+        }
     }
     
     .mobile-toggle {
@@ -343,6 +435,12 @@
         border: none;
         color: white;
         font-size: 1.2rem;
+        transition: transform 0.2s ease;
+    }
+    
+    .mobile-toggle:hover {
+        transform: scale(1.1);
+        color: #8B0000; /* Бордовый акцент */
     }
     
     /* Улучшенный скроллбар */
@@ -362,6 +460,16 @@
     ::-webkit-scrollbar-thumb:hover {
         background: #8B0000;
     }
+    
+    /* Анимации для новых сообщений */
+    @keyframes newMessageHighlight {
+        0% { background-color: rgba(139, 0, 0, 0.2); }
+        100% { background-color: transparent; }
+    }
+    
+    .new-message {
+        animation: newMessageHighlight 2s ease-out;
+    }
 </style>
 {% endblock %}
 
@@ -378,7 +486,7 @@
             <!-- Список контактов -->
             <div class="contact-list">
                 {% for conv in conversations_list %}
-                    <a href="{% url 'chat:conversation_detail' conv.conversation.id %}" class="contact-item {% if conv.conversation.id == conversation.id %}active{% endif %}">
+                    <a href="{% url 'chat:conversation_detail' conv.conversation.id %}" class="contact-item {% if conv.conversation.id == conversation.id %}active{% endif %} {% if conv.unread_count %}unread{% endif %}">
                         <div class="user-avatar">
                             {{ conv.other_participant.get_full_name|slice:":1"|upper }}
                         </div>
@@ -425,7 +533,7 @@
                     </div>
                 </div>
                 <div>
-                    <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light">
+                    <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light action-btn">
                         <i class="fas fa-user me-1"></i> {% trans "Profile" %}
                     </a>
                 </div>
@@ -476,11 +584,6 @@
         </div>
     </div>
 </div>
-
-<div id="debug-info" class="d-none">
-    <h5>Debug Info:</h5>
-    <pre id="debug-content" class="bg-dark text-white p-3 rounded" style="max-height: 300px; overflow: auto;"></pre>
-</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -504,14 +607,6 @@
     // ID текущего пользователя и собеседника
     const currentUserId = {{ request.user.pk }};
     const otherUserId = {{ other_participant.pk }};
-    
-    // Функция для обновления debug-информации
-    function updateDebug(text) {
-        const debugContent = document.getElementById('debug-content');
-        const timestamp = new Date().toLocaleTimeString();
-        debugContent.innerHTML += `[${timestamp}] ${text}\n`;
-        debugContent.scrollTop = debugContent.scrollHeight;
-    }
     
     // Функция для переключения боковой панели на мобильных устройствах
     toggleSidebar.addEventListener('click', function() {
@@ -557,10 +652,6 @@
     
     // Загрузка сообщений
     function loadMessages(silent = false) {
-        if (!silent) {
-            updateDebug('Загрузка сообщений...');
-        }
-        
         // Показываем индикатор загрузки только при первой загрузке
         if (silent === false && messageContainer.children.length === 0) {
             loadingMessages.style.display = 'block';
@@ -573,10 +664,6 @@
         // Добавляем lastMessageId для избежания повторной загрузки всех сообщений
         const fullUrl = apiUrl + (lastMessageId ? `?since=${lastMessageId}` : '');
         
-        if (!silent) {
-            updateDebug(`Запрос к API: ${fullUrl}`);
-        }
-        
         fetch(fullUrl, {
             method: 'GET',
             headers: {
@@ -586,16 +673,9 @@
             credentials: 'same-origin' // Включаем куки для аутентификации
         })
             .then(response => {
-                if (!silent) {
-                    updateDebug(`Ответ API: ${response.status} ${response.statusText}`);
-                }
                 return response.json();
             })
             .then(data => {
-                if (!silent) {
-                    updateDebug(`Получено сообщений: ${data.messages ? data.messages.length : 0}`);
-                }
-                
                 // Проверяем наличие сообщений
                 if (!data.messages || data.messages.length === 0) {
                     // Если это первая загрузка и нет сообщений, показываем пустое состояние
@@ -629,7 +709,7 @@
                     
                     // Создаем элемент сообщения
                     const messageElement = document.createElement('div');
-                    messageElement.className = `message ${message.is_mine ? 'message-outgoing' : 'message-incoming'}`;
+                    messageElement.className = `message ${message.is_mine ? 'message-outgoing' : 'message-incoming'} ${newMessages ? 'new-message' : ''}`;
                     messageElement.setAttribute('data-message-id', message.id);
                     
                     // Содержимое сообщения
@@ -660,7 +740,7 @@
                     
                     // Добавляем время и статус
                     messageContent += `
-                        <div class="message-time">
+                            <div class="message-time">
                             ${message.time}
                             ${message.is_mine ? '<span class="message-status ms-1"><i class="fas fa-check"></i></span>' : ''}
                         </div>
@@ -676,14 +756,30 @@
                 // Прокручиваем к последнему сообщению, если есть новые
                 if (newMessages) {
                     messageContainer.scrollTop = messageContainer.scrollHeight;
+                    
+                    // Воспроизводим звук уведомления если это не наше сообщение
+                    if (data.messages.some(msg => !msg.is_mine)) {
+                        playNotificationSound();
+                    }
                 }
                 
                 // Отмечаем сообщения как прочитанные
                 markMessagesAsRead();
             })
             .catch(error => {
-                updateDebug(`Ошибка при загрузке сообщений: ${error}`);
+                console.error(`Ошибка при загрузке сообщений: ${error}`);
             });
+    }
+    
+    // Функция для воспроизведения звука уведомления
+    function playNotificationSound() {
+        // Создаем элемент аудио и воспроизводим звук
+        const audio = new Audio('/static/sounds/notification.mp3');
+        audio.volume = 0.5; // Громкость 50%
+        audio.play().catch(e => {
+            // Тихо проглатываем ошибку, если автовоспроизведение запрещено
+            console.log('Notification sound could not be played', e);
+        });
     }
     
     // Отправка сообщения
@@ -708,9 +804,23 @@
         // URL для отправки сообщения
         const sendUrl = `/{{ LANGUAGE_CODE }}/chat/api/send/${otherUserId}/`;
         
-        // Очищаем поле ввода
+        // Очищаем поле ввода и сбрасываем файл
         messageInput.value = '';
         resetFileInput();
+        
+        // Добавляем индикатор отправки сообщения
+        const tempId = 'temp-' + Date.now();
+        const tempMessage = document.createElement('div');
+        tempMessage.className = 'message message-outgoing';
+        tempMessage.id = tempId;
+        tempMessage.innerHTML = `
+            <div class="message-bubble">${messageText || (file ? 'Sending file...' : '')}</div>
+            <div class="message-time">
+                Sending... <span class="message-status ms-1"><i class="fas fa-spinner fa-spin"></i></span>
+            </div>
+        `;
+        messageContainer.appendChild(tempMessage);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
         
         fetch(sendUrl, {
             method: 'POST',
@@ -724,15 +834,42 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Обновляем сообщения
+                    // Удаляем временное сообщение и обновляем сообщения
+                    const tempElement = document.getElementById(tempId);
+                    if (tempElement) {
+                        tempElement.remove();
+                    }
                     loadMessages(true);
                 } else {
-                    alert(data.error || "{% trans 'Error sending message' %}");
+                    // Отображаем ошибку в временном сообщении
+                    const tempElement = document.getElementById(tempId);
+                    if (tempElement) {
+                        tempElement.innerHTML = `
+                            <div class="message-bubble text-danger">
+                                ${data.error || "{% trans 'Error sending message' %}"}
+                            </div>
+                            <div class="message-time">
+                                <span class="text-danger">Failed</span>
+                            </div>
+                        `;
+                    }
                 }
             })
             .catch(error => {
-                updateDebug(`Ошибка при отправке сообщения: ${error}`);
-                alert("{% trans 'Error sending message' %}");
+                console.error(`Ошибка при отправке сообщения: ${error}`);
+                
+                // Отображаем ошибку в временном сообщении
+                const tempElement = document.getElementById(tempId);
+                if (tempElement) {
+                    tempElement.innerHTML = `
+                        <div class="message-bubble text-danger">
+                            {% trans 'Error sending message' %}
+                        </div>
+                        <div class="message-time">
+                            <span class="text-danger">Failed</span>
+                        </div>
+                    `;
+                }
             });
     });
     
@@ -761,7 +898,7 @@
                 }
             })
             .catch(error => {
-                updateDebug(`Ошибка при отметке сообщений: ${error}`);
+                console.error(`Ошибка при отметке сообщений: ${error}`);
             });
     }
     
@@ -781,6 +918,15 @@
         
         // Регулярно проверяем новые сообщения
         setInterval(checkNewMessages, 5000);
+        
+        // Фокусируем поле ввода
+        messageInput.focus();
+        
+        // Отображаем индикатор печати при вводе
+        messageInput.addEventListener('input', function() {
+            // Здесь можно добавить логику для отправки события "пользователь печатает"
+            // через веб-сокеты, если это реализовано на сервере
+        });
     });
     
     // Обработка видимости страницы (для остановки проверки сообщений при переключении вкладок)
@@ -793,6 +939,9 @@
     // Обработка прокрутки сообщений
     messageContainer.addEventListener('scroll', function() {
         // Здесь можно добавить подгрузку предыдущих сообщений при прокрутке вверх
+        if (messageContainer.scrollTop === 0) {
+            // Логика для загрузки предыдущих сообщений
+        }
     });
 </script>
 {% endblock %}

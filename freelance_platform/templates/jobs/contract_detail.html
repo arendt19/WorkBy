@@ -4,11 +4,214 @@
 
 {% block title %}{% trans "Contract" %} #{{ contract.contract_id }} | WorkBy{% endblock %}
 
+{% block extra_css %}
+<style>
+    .timeline-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .timeline-icon:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating-input input {
+        display: none;
+    }
+    
+    .rating-input label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #555;
+        margin-right: 8px;
+        transition: color 0.2s ease;
+    }
+    
+    .rating-input label:hover,
+    .rating-input label:hover ~ label,
+    .rating-input input:checked ~ label {
+        color: #f8ce0b;
+    }
+    
+    .contract-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+        border: none !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+    
+    .contract-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+    
+    .milestone-item {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .milestone-item:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+        transform: translateX(5px);
+    }
+    
+    .milestone-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 0;
+        background-color: rgba(139, 0, 0, 0.1);
+        transition: width 0.3s ease;
+    }
+    
+    .milestone-item:hover::before {
+        width: 5px;
+    }
+    
+    .badge.status-badge {
+        transition: all 0.3s ease;
+    }
+    
+    .badge.status-badge:hover {
+        transform: scale(1.1);
+    }
+    
+    .action-btn {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .action-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .action-btn:hover::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 0.5;
+        }
+        20% {
+            transform: scale(25, 25);
+            opacity: 0.3;
+        }
+        100% {
+            opacity: 0;
+            transform: scale(40, 40);
+        }
+    }
+    
+    .progress {
+        height: 8px;
+        overflow: visible;
+    }
+    
+    .progress-bar {
+        position: relative;
+        border-radius: 4px;
+        transition: width 1s ease;
+        animation: progress-animation 1s;
+    }
+    
+    @keyframes progress-animation {
+        0% {
+            width: 0%;
+        }
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(
+            -45deg, 
+            rgba(255, 255, 255, .2) 25%, 
+            transparent 25%, 
+            transparent 50%, 
+            rgba(255, 255, 255, .2) 50%, 
+            rgba(255, 255, 255, .2) 75%, 
+            transparent 75%, 
+            transparent
+        );
+        background-size: 30px 30px;
+        animation: progress-stripe 2s linear infinite;
+        border-radius: 4px;
+    }
+    
+    @keyframes progress-stripe {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: 30px 30px;
+        }
+    }
+    
+    .timeline-point {
+        position: relative;
+    }
+    
+    .timeline-point::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 19px;
+        width: 2px;
+        background-color: #333;
+        z-index: 0;
+    }
+    
+    .timeline-point:last-child::after {
+        display: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+            <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                 <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">{% trans "Contract" %} #{{ contract.contract_id }}</h5>
                     
@@ -18,7 +221,7 @@
                         {% elif contract.status == 'completed' %}bg-primary
                         {% elif contract.status == 'cancelled' %}bg-danger
                         {% elif contract.status == 'disputed' %}bg-danger
-                        {% endif %}">
+                        {% endif %} status-badge">
                         {{ contract.get_status_display }}
                     </span>
                 </div>
@@ -53,14 +256,14 @@
                     {% if contract.client == request.user and contract.status == 'active' %}
                         <!-- Кнопки для клиента -->
                         <div class="mb-4 d-flex gap-2">
-                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-outline-light">
+                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-outline-light action-btn">
                                 <i class="fas fa-comments me-1"></i> {% trans "Message" %}
                             </a>
                             
                             {% if not contract.milestones.exists %}
                                 <form method="post" action="{% url 'jobs:contract_complete' contract.pk %}" class="d-inline">
                                     {% csrf_token %}
-                                    <button type="submit" class="btn btn-success">
+                                    <button type="submit" class="btn btn-success action-btn" onclick="return confirm('{% trans "Are you sure you want to complete this contract and release the payment?" %}')">
                                         <i class="fas fa-check-circle me-1"></i> {% trans "Work Completed & Pay" %}
                                     </button>
                                 </form>
@@ -69,7 +272,7 @@
                     {% elif contract.freelancer == request.user and contract.status == 'active' %}
                         <!-- Кнопки для фрилансера -->
                         <div class="mb-4 d-flex gap-2">
-                            <a href="{% url 'chat:start_conversation' contract.client.id %}" class="btn btn-outline-light">
+                            <a href="{% url 'chat:start_conversation' contract.client.id %}" class="btn btn-outline-light action-btn">
                                 <i class="fas fa-comments me-1"></i> {% trans "Message" %}
                             </a>
                         </div>
@@ -77,12 +280,12 @@
                     
                     {% if contract.status == 'completed' and contract.client == request.user and not contract.review %}
                         <!-- Форма отзыва для клиента после завершения контракта -->
-                        <div class="card bg-dark border-secondary mb-4">
+                        <div class="card bg-dark border-secondary mb-4 contract-card">
                             <div class="card-header bg-dark border-secondary">
                                 <h6 class="mb-0">{% trans "Leave Feedback for Freelancer" %}</h6>
                             </div>
                             <div class="card-body">
-                                <form method="post" action="{% url 'jobs:leave_review' contract.pk %}">
+                                <form method="post" action="{% url 'jobs:leave_review' contract.pk %}" id="reviewForm">
                                     {% csrf_token %}
                                     <div class="mb-3">
                                         <label class="form-label">{% trans "Rating" %}</label>
@@ -103,7 +306,7 @@
                                         <label for="review_text" class="form-label">{% trans "Your Review" %}</label>
                                         <textarea class="form-control bg-dark text-light" id="review_text" name="text" rows="3" required></textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-success">{% trans "Submit Review" %}</button>
+                                    <button type="submit" class="btn btn-success action-btn">{% trans "Submit Review" %}</button>
                                 </form>
                             </div>
                         </div>
@@ -111,7 +314,7 @@
                     
                     {% if contract.review %}
                         <!-- Отображение отзыва -->
-                        <div class="card bg-dark border-secondary mb-4">
+                        <div class="card bg-dark border-secondary mb-4 contract-card">
                             <div class="card-header bg-dark border-secondary">
                                 <h6 class="mb-0">{% trans "Client's Feedback" %}</h6>
                             </div>
@@ -138,12 +341,12 @@
             
             <!-- Вехи и Эскроу-платежи -->
             {% if contract.milestones.exists %}
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                     <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0">{% trans "Milestones" %}</h5>
                         
                         {% if contract.client == request.user and contract.status == 'active' %}
-                            <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-sm btn-outline-primary action-btn">
                                 <i class="fas fa-plus me-1"></i> {% trans "Add Milestone" %}
                             </a>
                         {% endif %}
@@ -151,7 +354,7 @@
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
                             {% for milestone in contract.milestones.all %}
-                                <div class="list-group-item bg-dark border-light border-opacity-10">
+                                <div class="list-group-item bg-dark border-light border-opacity-10 milestone-item">
                                     <div class="row align-items-center">
                                         <!-- Информация о вехе -->
                                         <div class="col-md-7">
@@ -159,7 +362,7 @@
                                             <p class="text-muted small mb-2">{{ milestone.description|truncatechars:100 }}</p>
                                             
                                             <div class="d-flex align-items-center">
-                                                <span class="badge {% if milestone.status == 'pending' %}bg-warning{% elif milestone.status == 'in_progress' %}bg-info{% elif milestone.status == 'completed' %}bg-success{% elif milestone.status == 'approved' %}bg-primary{% else %}bg-secondary{% endif %} me-2">
+                                                <span class="badge {% if milestone.status == 'pending' %}bg-warning{% elif milestone.status == 'in_progress' %}bg-info{% elif milestone.status == 'completed' %}bg-success{% elif milestone.status == 'approved' %}bg-primary{% else %}bg-secondary{% endif %} me-2 status-badge">
                                                     {{ milestone.get_status_display }}
                                                 </span>
                                                 
@@ -186,24 +389,24 @@
                                                     {% if milestone.escrow_payment %}
                                                         <!-- Есть эскроу-платеж -->
                                                         {% if milestone.escrow_payment.status == 'pending' and contract.client == request.user %}
-                                                            <a href="{% url 'payments:fund_escrow' milestone.escrow_payment.escrow_id %}" class="btn btn-primary btn-sm">
+                                                            <a href="{% url 'payments:fund_escrow' milestone.escrow_payment.escrow_id %}" class="btn btn-primary btn-sm action-btn">
                                                                 <i class="fas fa-lock me-1"></i> {% trans "Fund Escrow" %}
                                                             </a>
                                                         {% elif milestone.escrow_payment.status == 'funded' and contract.client == request.user %}
-                                                            <a href="{% url 'payments:release_escrow' milestone.escrow_payment.escrow_id %}" class="btn btn-success btn-sm">
+                                                            <a href="{% url 'payments:release_escrow' milestone.escrow_payment.escrow_id %}" class="btn btn-success btn-sm action-btn">
                                                                 <i class="fas fa-check me-1"></i> {% trans "Release Funds" %}
                                                             </a>
                                                         {% elif milestone.escrow_payment.status == 'pending' and contract.freelancer == request.user %}
-                                                            <span class="badge bg-warning">{% trans "Awaiting Client Funding" %}</span>
+                                                            <span class="badge bg-warning status-badge">{% trans "Awaiting Client Funding" %}</span>
                                                         {% elif milestone.escrow_payment.status == 'funded' and contract.freelancer == request.user %}
-                                                            <span class="badge bg-success">{% trans "Funds in Escrow" %}</span>
+                                                            <span class="badge bg-success status-badge">{% trans "Funds in Escrow" %}</span>
                                                         {% elif milestone.escrow_payment.status == 'released' %}
-                                                            <span class="badge bg-success">{% trans "Paid" %}</span>
+                                                            <span class="badge bg-success status-badge">{% trans "Paid" %}</span>
                                                         {% endif %}
                                                     {% else %}
                                                         <!-- Нет эскроу-платежа -->
                                                         {% if contract.client == request.user %}
-                                                            <a href="{% url 'payments:create_escrow' milestone.id %}" class="btn btn-outline-primary btn-sm">
+                                                            <a href="{% url 'payments:create_escrow' milestone.id %}" class="btn btn-outline-primary btn-sm action-btn">
                                                                 <i class="fas fa-shield-alt me-1"></i> {% trans "Create Escrow" %}
                                                             </a>
                                                         {% endif %}
@@ -220,7 +423,7 @@
             {% endif %}
             
             <!-- Упрощенный блок платежей -->
-            <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+            <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                 <div class="card-header bg-dark border-bottom border-secondary">
                     <h5 class="card-title mb-0">{% trans "Payment Status" %}</h5>
                 </div>
@@ -233,9 +436,9 @@
                         <div>
                             <span class="d-block text-muted">{% trans "Status" %}</span>
                             {% if contract.status == 'completed' %}
-                                <span class="badge bg-success">{% trans "Paid" %}</span>
+                                <span class="badge bg-success status-badge">{% trans "Paid" %}</span>
                             {% else %}
-                                <span class="badge bg-warning">{% trans "Pending Payment" %}</span>
+                                <span class="badge bg-warning status-badge">{% trans "Pending Payment" %}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -266,7 +469,7 @@
         <!-- Боковая панель со вспомогательной информацией -->
         <div class="col-lg-4">
             {% if contract.client == request.user and contract.status == 'active' %}
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                     <div class="card-body">
                         <h6 class="mb-3">{% trans "How to Complete Order" %}</h6>
                         <ol class="small ps-3 mb-0">
@@ -279,7 +482,7 @@
                 </div>
                 
                 <!-- Информация о балансе кошелька -->
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                     <div class="card-header bg-dark border-bottom border-secondary">
                         <h6 class="mb-0">{% trans "Your Wallet" %}</h6>
                     </div>
@@ -289,17 +492,17 @@
                                 <span class="text-muted small">{% trans "Current Balance" %}</span>
                                 <h5 class="text-danger mb-0">{{ user_balance }} ₸</h5>
                             </div>
-                            <a href="{% url 'payments:deposit' %}" class="btn btn-sm btn-outline-primary">
+                            <a href="{% url 'payments:deposit' %}" class="btn btn-sm btn-outline-primary action-btn">
                                 <i class="fas fa-plus-circle me-1"></i> {% trans "Add Funds" %}
                             </a>
                         </div>
-                        <div class="progress" style="height: 6px;">
+                        <div class="progress" style="height: 8px;">
                             <div class="progress-bar bg-danger" role="progressbar" style="width: {{ user_balance|default:0|floatformat:0 }}%;" aria-valuenow="{{ user_balance|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
                     </div>
                 </div>
             {% elif contract.freelancer == request.user and contract.status == 'active' %}
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                     <div class="card-body">
                         <h6 class="mb-3">{% trans "How to Get Paid" %}</h6>
                         <ol class="small ps-3 mb-0">
@@ -313,27 +516,27 @@
             {% endif %}
             
             <!-- Информация о проекте -->
-            <div class="card border-0 shadow-sm bg-dark text-light mb-4">
+            <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
                 <div class="card-header bg-dark border-bottom border-secondary">
                     <h6 class="mb-0">{% trans "Project Details" %}</h6>
                 </div>
                 <div class="card-body">
                     <h6 class="mb-2">{{ contract.project.title }}</h6>
                     <p class="text-muted small mb-3">{{ contract.project.description|truncatechars:100 }}</p>
-                    <a href="{% url 'jobs:project_detail' contract.project.pk %}" class="btn btn-sm btn-outline-light">
+                    <a href="{% url 'jobs:project_detail' contract.project.pk %}" class="btn btn-sm btn-outline-light action-btn">
                         <i class="fas fa-external-link-alt me-1"></i> {% trans "View Project" %}
                     </a>
                 </div>
             </div>
             
             <!-- История событий -->
-            <div class="card border-0 shadow-sm bg-dark text-light">
+            <div class="card border-0 shadow-sm bg-dark text-light contract-card">
                 <div class="card-header bg-dark border-bottom border-secondary">
                     <h6 class="mb-0">{% trans "Contract Timeline" %}</h6>
                 </div>
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item bg-dark border-light border-opacity-10">
+                        <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
                             <div class="d-flex">
                                 <div class="timeline-icon bg-success me-3">
                                     <i class="fas fa-file-contract"></i>
@@ -346,7 +549,7 @@
                         </li>
                         
                         {% for milestone in contract.milestones.all %}
-                            <li class="list-group-item bg-dark border-light border-opacity-10">
+                            <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
                                 <div class="d-flex">
                                     <div class="timeline-icon bg-info me-3">
                                         <i class="fas fa-flag"></i>
@@ -360,7 +563,7 @@
                             
                             {% if milestone.escrow_payment %}
                                 {% if milestone.escrow_payment.status != 'pending' %}
-                                <li class="list-group-item bg-dark border-light border-opacity-10">
+                                <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
                                     <div class="d-flex">
                                         <div class="timeline-icon bg-warning me-3">
                                             <i class="fas fa-lock"></i>
@@ -374,7 +577,7 @@
                                 {% endif %}
                                 
                                 {% if milestone.escrow_payment.status == 'released' %}
-                                <li class="list-group-item bg-dark border-light border-opacity-10">
+                                <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
                                     <div class="d-flex">
                                         <div class="timeline-icon bg-success me-3">
                                             <i class="fas fa-check-circle"></i>
@@ -390,7 +593,7 @@
                         {% endfor %}
                         
                         {% if contract.status == 'completed' %}
-                            <li class="list-group-item bg-dark border-light border-opacity-10">
+                            <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
                                 <div class="d-flex">
                                     <div class="timeline-icon bg-success me-3">
                                         <i class="fas fa-flag-checkered"></i>
@@ -408,39 +611,64 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-    .timeline-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    
-    .rating-input {
-        display: flex;
-        flex-direction: row-reverse;
-        justify-content: flex-end;
-    }
-    
-    .rating-input input {
-        display: none;
-    }
-    
-    .rating-input label {
-        cursor: pointer;
-        font-size: 1.5rem;
-        color: #ccc;
-        margin-right: 5px;
-    }
-    
-    .rating-input label:hover,
-    .rating-input label:hover ~ label,
-    .rating-input input:checked ~ label {
-        color: #f8ce0b;
-    }
-</style>
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация всех тултипов и поповеров
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Обработка отправки формы отзыва
+        const reviewForm = document.getElementById('reviewForm');
+        if (reviewForm) {
+            reviewForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Проверка формы
+                const rating = reviewForm.querySelector('input[name="rating"]:checked');
+                const reviewText = reviewForm.querySelector('#review_text').value.trim();
+                
+                if (!rating) {
+                    WorkBy.showToast("{% trans 'Please select a rating' %}", 'warning');
+                    return;
+                }
+                
+                if (!reviewText) {
+                    WorkBy.showToast("{% trans 'Please write your review' %}", 'warning');
+                    return;
+                }
+                
+                // Отправка формы
+                this.submit();
+            });
+        }
+        
+        // Подтверждение действий
+        const actionButtons = document.querySelectorAll('.action-btn[onclick*="confirm"]');
+        actionButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.getAttribute('onclick')) {
+                    // Извлекаем текст подтверждения из атрибута onclick
+                    const confirmText = this.getAttribute('onclick')
+                        .replace('return confirm(\'', '')
+                        .replace('\')', '');
+                    
+                    // Переопределяем обработчик
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (confirm(confirmText)) {
+                        // Если подтверждено, удаляем атрибут onclick и отправляем форму
+                        this.removeAttribute('onclick');
+                        this.closest('form').submit();
+                    }
+                }
+            });
+        });
+    });
+</script>
 {% endblock %} 

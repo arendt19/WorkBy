@@ -54,70 +54,105 @@
     <script src="{% static 'js/main.js' %}"></script>
     
     <script>
-        // Функция для удаления отладочных сообщений
-        function removeDebugMessages() {
-            // Регулярное выражение для поиска отладочных сообщений с номерами
-            const debugRegex = /\s*Message\s+\d+\s*/gi;
-            
-            // Получаем все текстовые узлы в DOM
-            const textNodes = [];
-            const walker = document.createTreeWalker(
-                document.body,
-                NodeFilter.SHOW_TEXT,
-                null,
-                false
-            );
-            
-            let node;
-            while (node = walker.nextNode()) {
-                if (node.nodeValue && node.nodeValue.trim()) {
-                    // Проверяем и удаляем отладочные сообщения
-                    if (debugRegex.test(node.nodeValue)) {
-                        node.nodeValue = node.nodeValue.replace(debugRegex, '');
+        // Функция для удаления отладочных сообщений в режиме отладки 
+        (function() {
+            /**
+             * Расширенная функция для удаления отладочной информации из DOM
+             * Работает только если режим отладки включен, чтобы не влиять на производительность в production
+             */
+            function cleanDebugInfo() {
+                try {
+                    // Удаляем элементы с классом debug или debug-info 
+                    document.querySelectorAll('.debug, .debug-info, #debug-info, [id^="debug-"], [class^="debug-"]').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    
+                    // Регулярные выражения для поиска отладочных сообщений разных форматов
+                    const debugPatterns = [
+                        /\s*Message\s+\d+\s*/gi,             // Message 123
+                        /DEBUG:.*$/gim,                       // DEBUG: текст
+                        /\[DEBUG\].*$/gim,                    // [DEBUG] текст
+                        /<!--\s*DEBUG:.*?-->/g,               // <!-- DEBUG: текст -->
+                        /console\.log\(.*?\)/g,               // console.log() вызовы
+                        /\bDEBUG\b.*$/gim                     // DEBUG текст
+                    ];
+                    
+                    // Получаем все текстовые узлы в DOM
+                    const textNodes = [];
+                    const walker = document.createTreeWalker(
+                        document.body,
+                        NodeFilter.SHOW_TEXT,
+                        null,
+                        false
+                    );
+                    
+                    let node;
+                    while (node = walker.nextNode()) {
+                        if (node.nodeValue && node.nodeValue.trim()) {
+                            textNodes.push(node);
+                        }
                     }
                     
-                    // Дополнительно проверяем другие форматы отладочных сообщений
-                    // Например, "DEBUG: что-то там"
-                    if (/DEBUG:.*$/gim.test(node.nodeValue)) {
-                        node.nodeValue = node.nodeValue.replace(/DEBUG:.*$/gim, '');
+                    // Очищаем отладочные сообщения во всех текстовых узлах
+                    textNodes.forEach(node => {
+                        let originalValue = node.nodeValue;
+                        let newValue = originalValue;
+                        
+                        debugPatterns.forEach(pattern => {
+                            newValue = newValue.replace(pattern, '');
+                        });
+                        
+                        if (newValue !== originalValue) {
+                            node.nodeValue = newValue;
+                        }
+                    });
+                    
+                    // Удаляем комментарии с отладочной информацией
+                    const commentNodes = [];
+                    const commentWalker = document.createTreeWalker(
+                        document.body,
+                        NodeFilter.SHOW_COMMENT,
+                        null,
+                        false
+                    );
+                    
+                    while (node = commentWalker.nextNode()) {
+                        if (node.nodeValue && /debug|DEBUG|дебаг|Дебаг|отладка|Отладка/.test(node.nodeValue)) {
+                            commentNodes.push(node);
+                        }
                     }
+                    
+                    commentNodes.forEach(node => {
+                        if (node.parentNode) {
+                            node.parentNode.removeChild(node);
+                        }
+                    });
+                    
+                    // Скрываем Django error-traceback если он есть
+                    document.querySelectorAll('.traceback, .exception_value, .context_line').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                    
+                } catch (e) {
+                    // Тихо игнорируем ошибки, чтобы не ломать сайт
+                    console.error("Error cleaning debug info:", e);
                 }
             }
             
-            // Удаляем блоки с отладочной информацией
-            document.querySelectorAll('.debug-info').forEach(el => {
-                el.style.display = 'none';
-            });
-            
-            // Скрываем Django error-traceback если он есть
-            document.querySelectorAll('.traceback').forEach(el => {
-                el.style.display = 'none';
-            });
-            
-            // Удаляем комментарии с отладочной информацией
-            document.querySelectorAll('*').forEach(el => {
-                const commentNodes = [];
-                for (let i = 0; i < el.childNodes.length; i++) {
-                    if (el.childNodes[i].nodeType === 8) { // 8 = комментарий
-                        commentNodes.push(el.childNodes[i]);
-                    }
-                }
-                commentNodes.forEach(node => {
-                    if (node.nodeValue.includes('DEBUG') || node.nodeValue.includes('debug')) {
-                        el.removeChild(node);
-                    }
+            // Запускаем очистку при загрузке и затем периодически
+            document.addEventListener('DOMContentLoaded', function() {
+                // Немедленная очистка
+                cleanDebugInfo();
+                
+                // Периодическая очистка для динамически добавляемого контента
+                setInterval(cleanDebugInfo, 1000);
+                
+                // Очистка после AJAX-запросов
+                $(document).ajaxComplete(function() {
+                    setTimeout(cleanDebugInfo, 100);
                 });
             });
-        }
-        
-        // Запускаем очистку при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            // Даём немного времени для загрузки всего контента
-            setTimeout(removeDebugMessages, 100);
-            
-            // Периодическая очистка для динамически добавляемого контента
-            setInterval(removeDebugMessages, 2000);
-        });
+        })();
     </script>
     
     {% block extra_js %}{% endblock %}
