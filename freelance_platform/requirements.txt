@@ -1,3 +1,4 @@
+# Зависимости для проекта WorkBy
 Django>=5.1.0,<5.2.0
 django-allauth>=0.62.0,<0.63.0
 django-crispy-forms>=2.1.0

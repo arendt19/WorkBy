@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: workby
+    env: python
+    buildCommand: bash build.sh
+    startCommand: gunicorn freelance_core.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SERVER_ENV
+        value: production
+    autoDeploy: true 
