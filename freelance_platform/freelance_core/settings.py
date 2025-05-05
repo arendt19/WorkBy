@@ -19,9 +19,8 @@ from django.contrib.messages import constants as messages
 try:
     from dotenv import load_dotenv
     load_dotenv()
-    print("Переменные окружения загружены из .env")
 except ImportError:
-    print("python-dotenv не установлен, загрузка переменных из .env пропущена")
+    pass
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

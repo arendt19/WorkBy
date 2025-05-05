@@ -11,11 +11,17 @@
 {% endblock %}
 
 {% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    .select2-container--default .select2-selection--multiple {
-        min-height: 38px;
-        border: 1px solid #ced4da;
+    /* Стили для формы */
+    .form-select, .form-control {
+        background-color: #333;
+        color: #fff;
+        border-color: #555;
+    }
+    
+    .form-select option {
+        background-color: #333;
+        color: #fff;
     }
 </style>
 {% endblock %}
@@ -84,6 +90,9 @@
                                         {{ form.category.errors }}
                                     </div>
                                 {% endif %}
+                                <div class="form-text text-light-emphasis small mt-1">
+                                    {% trans "Select a category for your project" %}
+                                </div>
                             </div>
                             
                             <div class="mb-3">
@@ -225,21 +234,14 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     $(document).ready(function() {
-        // Применяем Select2 для полей с выбором
-        $('#id_category').select2({
-            placeholder: "{% trans 'Select a category' %}",
-            width: '100%'
-        });
-        
-        // Инициализация форматирования полей
+        // Инициализация форматирования полей (без Select2)
         $('#id_title').addClass('form-control');
         $('#id_description').addClass('form-control');
-        $('#id_category').addClass('form-control');
+        // Поле категории уже имеет класс form-select из формы
         $('#id_tags').addClass('form-control');
-        $('#id_budget_type').addClass('form-select');
+        // Поле типа бюджета уже имеет класс form-select из формы
         $('#id_budget_min').addClass('form-control');
         $('#id_budget_max').addClass('form-control');
         $('#id_deadline').addClass('form-control');

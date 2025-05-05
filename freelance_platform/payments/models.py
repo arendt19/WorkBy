@@ -200,7 +200,7 @@ class Wallet(models.Model):
     def __str__(self):
         return f"Wallet of {self.user.username}"
     
-    def deposit(self, amount, description="", related_transaction=None):
+    def deposit(self, amount, description="", related_transaction=None, contract=None, milestone=None):
         """
         Метод для пополнения кошелька
         """
@@ -215,7 +215,9 @@ class Wallet(models.Model):
             status='completed',
             description=description,
             related_transaction=related_transaction,
-            payment_method='system'
+            payment_method='system',
+            contract=contract,
+            milestone=milestone
         )
         
         # Сохраняем локализованное описание в зависимости от текущего языка

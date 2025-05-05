@@ -476,18 +476,18 @@
 {% block content %}
 <div class="container-fluid py-3">
     <!-- Чат контейнер -->
-    <div class="chat-container">
-        <!-- Боковая панель с контактами -->
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
+<div class="chat-container">
+    <!-- Боковая панель с контактами -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
                 <h5 class="mb-0">{% trans "Chats" %}</h5>
-            </div>
-            
+        </div>
+        
             <!-- Список контактов -->
-            <div class="contact-list">
+        <div class="contact-list">
                 {% for conv in conversations_list %}
                     <a href="{% url 'chat:conversation_detail' conv.conversation.id %}" class="contact-item {% if conv.conversation.id == conversation.id %}active{% endif %} {% if conv.unread_count %}unread{% endif %}">
-                        <div class="user-avatar">
+                    <div class="user-avatar">
                             {{ conv.other_participant.get_full_name|slice:":1"|upper }}
                         </div>
                         <div class="flex-grow-1">
@@ -495,8 +495,8 @@
                                 <strong>{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}</strong>
                                 {% if conv.unread_count %}
                                     <span class="badge bg-danger rounded-pill">{{ conv.unread_count }}</span>
-                                {% endif %}
-                            </div>
+                        {% endif %}
+                    </div>
                             <div class="small text-muted text-truncate" style="max-width: 180px;">
                                 {% if conv.last_message %}
                                     {{ conv.last_message.content|truncatechars:25 }}
@@ -504,25 +504,25 @@
                                     {% trans "No messages yet" %}
                                 {% endif %}
                             </div>
-                        </div>
+                    </div>
                     </a>
                 {% empty %}
                     <div class="p-3 text-center text-muted">
                         {% trans "No conversations yet" %}
-                    </div>
-                {% endfor %}
-            </div>
+                </div>
+            {% endfor %}
         </div>
-        
+    </div>
+
         <!-- Содержимое чата -->
-        <div class="chat-content">
+    <div class="chat-content">
             <!-- Заголовок чата -->
-            <div class="chat-header">
-                <div class="d-flex align-items-center">
+        <div class="chat-header">
+            <div class="d-flex align-items-center">
                     <button class="mobile-toggle me-2" id="toggleSidebar">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <div class="user-avatar">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="user-avatar">
                         {{ other_participant.get_full_name|slice:":1"|upper }}
                     </div>
                     <div>
@@ -540,30 +540,30 @@
             </div>
             
             <!-- Область сообщений -->
-            <div class="message-area" id="messageContainer">
+        <div class="message-area" id="messageContainer">
                 <!-- Сообщения будут загружены через JavaScript -->
                 <div id="loadingMessages" class="text-center p-3">
                     <div class="spinner-border text-danger" role="status">
                         <span class="visually-hidden">{% trans "Loading..." %}</span>
                     </div>
                     <p class="mt-2 text-muted">{% trans "Loading messages..." %}</p>
-                </div>
             </div>
-            
+        </div>
+
             <!-- Область ввода сообщений -->
-            <div class="message-input">
-                <form id="messageForm" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    <div class="input-container">
+        <div class="message-input">
+            <form id="messageForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-container">
                         <input type="text" id="messageInput" placeholder="{% trans 'Type a message...' %}" autocomplete="off">
                         <button type="button" id="attachButton" class="me-2" style="background-color: #333;">
                             <i class="fas fa-paperclip"></i>
                         </button>
-                        <input type="file" id="fileInput" style="display: none;">
+                    <input type="file" id="fileInput" style="display: none;">
                         <button type="submit" id="sendButton">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
                     <div id="typingIndicator" class="typing-indicator mt-2">
                         <span></span>
                         <span></span>
@@ -578,8 +578,8 @@
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
-                    </div>
-                </form>
+                </div>
+            </form>
             </div>
         </div>
     </div>
@@ -601,7 +601,7 @@
     const toggleSidebar = document.getElementById('toggleSidebar');
     const sidebar = document.getElementById('sidebar');
     
-    let lastMessageId = 0;
+        let lastMessageId = 0;
     let updatingMessages = false;
     
     // ID текущего пользователя и собеседника
@@ -815,10 +815,10 @@
         tempMessage.id = tempId;
         tempMessage.innerHTML = `
             <div class="message-bubble">${messageText || (file ? 'Sending file...' : '')}</div>
-            <div class="message-time">
+                                    <div class="message-time">
                 Sending... <span class="message-status ms-1"><i class="fas fa-spinner fa-spin"></i></span>
-            </div>
-        `;
+                                </div>
+                            `;
         messageContainer.appendChild(tempMessage);
         messageContainer.scrollTop = messageContainer.scrollHeight;
         
@@ -872,9 +872,9 @@
                 }
             });
     });
-    
-    // Отмечаем сообщения как прочитанные
-    function markMessagesAsRead() {
+        
+        // Отмечаем сообщения как прочитанные
+        function markMessagesAsRead() {
         // URL для отметки сообщений
         const markUrl = `/{{ LANGUAGE_CODE }}/chat/api/mark_read/{{ conversation.pk }}/`;
         

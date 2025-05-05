@@ -7,8 +7,8 @@
 const NOTIFICATION_SOUND_BASE64 = "data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gQ29uZWN0ZWRTb3VuZHMuY29tAAAAQ09NTAAAAB0AAABUaXRsZQBOb3RpZmljYXRpb24gU291bmQgMQAAAENPTU0AAAAlAAAAYWxidW0AU291bmQgRWZmZWN0cyAtIE5vdGlmaWNhdGlvbnMAAP/7kAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAABCAAAisAAGBg0NDRQUGxsb" + 
 "IiIoKCgvLzU1NTw8QkJCSUlJUFBWVlZdXWNjY2pqcHBwd3d9fX2EhIqKipGRl5eXnp6kpKSrq7Gxsbi4vr6+xcXLy8vS0tjY2N/f5eXl7Oz4+Pj///8AAAA5TEFNRTMuMTAwAc0AAAAAAAAAABRAJAjmQgAAMAAAACKwxZC9OAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" + 
 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/7kGQAD/AAAGkAAAAIAAANIAAAAQAAAaQAAAAgAAA0gAAABExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
-"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//uQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
-"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
+"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//uQZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAEVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
+"VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" + 
 "VVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==";
 
 /**
@@ -640,7 +640,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeTooltips() {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            container: 'body',
+            trigger: 'hover'
+        });
     });
 }
 
@@ -878,17 +881,28 @@ function enhanceProposalForm() {
     const proposalForm = document.querySelector('form[action*="proposal"]');
     if (!proposalForm) return;
 
-    // Создаем элемент для отображения всплывающего уведомления
-    const confirmationDiv = document.createElement('div');
-    confirmationDiv.className = 'proposal-confirmation';
-    confirmationDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i> Предложение успешно отправлено!';
-    document.body.appendChild(confirmationDiv);
-
-    // Создаем элемент для отображения ошибок
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'proposal-error';
-    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i> Ошибка при отправке предложения';
-    document.body.appendChild(errorDiv);
+    // Стилизуем поля формы
+    const bidInput = proposalForm.querySelector('#id_bid_amount');
+    const deliverySelect = proposalForm.querySelector('#id_delivery_time');
+    
+    if (bidInput) {
+        // Добавляем подсветку при вводе суммы
+        bidInput.addEventListener('input', function() {
+            const value = parseFloat(this.value);
+            if (value > 0) {
+                this.classList.add('border-primary');
+            } else {
+                this.classList.remove('border-primary');
+            }
+        });
+    }
+    
+    if (deliverySelect) {
+        // Добавляем подсветку при выборе срока
+        deliverySelect.addEventListener('change', function() {
+            this.classList.add('border-primary');
+        });
+    }
 
     // Обрабатываем отправку формы
     proposalForm.addEventListener('submit', function(e) {
@@ -913,6 +927,7 @@ function enhanceProposalForm() {
         
         // Отправляем форму с помощью AJAX
         const formData = new FormData(proposalForm);
+        
         fetch(proposalForm.action, {
             method: 'POST',
             body: formData,
@@ -921,93 +936,212 @@ function enhanceProposalForm() {
                 'X-CSRFToken': csrfToken
             }
         })
-        .then(response => {
-            if (response.ok) {
-                return response.json().then(data => {
-                    // Показываем уведомление об успешной отправке
-                    confirmationDiv.classList.add('show');
-                    
-                    // Скрываем уведомление через 3 секунды
-                    setTimeout(() => {
-                        confirmationDiv.classList.add('hide');
-                        
-                        // После завершения анимации скрытия, перенаправляем на страницу my_proposals
-                        setTimeout(() => {
-                            if (data.redirect_url) {
-                                window.location.href = data.redirect_url;
-                            } else {
-                                window.location.href = '/jobs/my-proposals/';
-                            }
-                        }, 300);
-                    }, 3000);
-                });
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Показываем сообщение об успехе
+                showNotification('success', data.message || 'Предложение успешно отправлено!');
+                
+                // Перенаправляем на страницу проекта или предложения
+                setTimeout(() => {
+                    window.location.href = data.redirect_url;
+                }, 1000);
             } else {
                 // Обрабатываем ошибки
-                return response.json().then(errorData => {
-                    // Возвращаем кнопку в исходное состояние
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.disabled = false;
-                    
-                    // Проверяем, есть ли ошибки валидации формы
-                    if (errorData.errors) {
-                        try {
-                            const errors = JSON.parse(errorData.errors);
-                            
-                            // Отображаем ошибки в соответствующих полях
-                            Object.keys(errors).forEach(fieldName => {
-                                const field = proposalForm.querySelector(`[name="${fieldName}"]`);
-                                if (field) {
-                                    field.classList.add('is-invalid');
-                                    
-                                    // Создаем элемент с сообщением об ошибке
-                                    const errorMessage = document.createElement('div');
-                                    errorMessage.className = 'invalid-feedback';
-                                    errorMessage.textContent = errors[fieldName][0].message;
-                                    
-                                    // Добавляем сообщение после поля
-                                    field.parentNode.appendChild(errorMessage);
-                                }
-                            });
-                        } catch (e) {
-                            // Если не удалось разобрать JSON с ошибками, показываем общее сообщение
-                            errorDiv.textContent = 'Пожалуйста, проверьте правильность заполнения формы';
-                            errorDiv.classList.add('show');
-                            
-                            setTimeout(() => {
-                                errorDiv.classList.remove('show');
-                            }, 5000);
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
+                
+                if (data.errors) {
+                    // Показываем ошибки валидации формы
+                    Object.keys(data.errors).forEach(field => {
+                        const input = proposalForm.querySelector(`#id_${field}`);
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            const errorMsg = document.createElement('div');
+                            errorMsg.className = 'invalid-feedback d-block';
+                            errorMsg.textContent = data.errors[field][0];
+                            input.parentNode.appendChild(errorMsg);
                         }
-                    } else {
-                        // Показываем общее сообщение об ошибке
-                        errorDiv.classList.add('show');
-                        
-                        setTimeout(() => {
-                            errorDiv.classList.remove('show');
-                        }, 5000);
-                    }
-                }).catch(() => {
-                    // Если не удалось получить JSON с ошибками
-                    submitBtn.innerHTML = originalBtnText;
-                    submitBtn.disabled = false;
-                    
-                    errorDiv.classList.add('show');
-                    setTimeout(() => {
-                        errorDiv.classList.remove('show');
-                    }, 5000);
-                });
+                    });
+                } else {
+                    // Общая ошибка
+                    showNotification('error', data.message || 'Произошла ошибка при отправке предложения.');
+                }
             }
         })
         .catch(error => {
-            // Возвращаем кнопку в исходное состояние
+            console.error('Error:', error);
             submitBtn.innerHTML = originalBtnText;
             submitBtn.disabled = false;
-            
-            // Показываем ошибку
-            console.error('Error:', error);
-            errorDiv.classList.add('show');
-            setTimeout(() => {
-                errorDiv.classList.remove('show');
-            }, 5000);
+            showNotification('error', 'Произошла ошибка при отправке. Попробуйте еще раз.');
         });
     });
+}
+
+/**
+ * Показывает всплывающее уведомление
+ * @param {string} type - тип уведомления (success, error, warning, info)
+ * @param {string} message - текст сообщения
+ * @param {number} duration - длительность отображения в миллисекундах
+ */
+function showNotification(type, message, duration = 3000) {
+    // Создаем элемент уведомления
+    const notification = document.createElement('div');
+    notification.className = `toast toast-${type} show`;
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.minWidth = '250px';
+    notification.style.zIndex = '9999';
+    notification.style.backgroundColor = type === 'success' ? '#198754' : 
+                                        type === 'error' ? '#dc3545' : 
+                                        type === 'warning' ? '#ffc107' : '#0dcaf0';
+    notification.style.color = ['warning', 'info'].includes(type) ? '#000' : '#fff';
+    notification.style.padding = '15px 20px';
+    notification.style.borderRadius = '5px';
+    notification.style.boxShadow = '0 3px 15px rgba(0, 0, 0, 0.3)';
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateY(-20px)';
+    notification.style.transition = 'all 0.3s ease';
+    
+    // Добавляем иконку в зависимости от типа уведомления
+    let icon = '';
+    switch (type) {
+        case 'success':
+            icon = '<i class="fas fa-check-circle me-2"></i>';
+            break;
+        case 'error':
+            icon = '<i class="fas fa-exclamation-circle me-2"></i>';
+            break;
+        case 'warning':
+            icon = '<i class="fas fa-exclamation-triangle me-2"></i>';
+            break;
+        case 'info':
+            icon = '<i class="fas fa-info-circle me-2"></i>';
+            break;
+    }
+    
+    notification.innerHTML = icon + message;
+    
+    // Добавляем уведомление в DOM
+    document.body.appendChild(notification);
+    
+    // Показываем уведомление с анимацией
+    setTimeout(() => {
+        notification.style.opacity = '1';
+        notification.style.transform = 'translateY(0)';
+    }, 10);
+    
+    // Скрываем уведомление через указанное время
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transform = 'translateY(-20px)';
+        
+        // Удаляем элемент после завершения анимации
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, duration);
+}
+
+// Инициализация всех функций при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+    // Инициализация всех всплывающих подсказок
+    initTooltips();
+    
+    // Инициализация датапикеров
+    initDatepickers();
+    
+    // Улучшение формы отправки предложения
+    enhanceProposalForm();
+    
+    // Инициализация прочих компонентов интерфейса
+    initNotifications();
+    initContractFunctions();
+    initChatComponents();
+    
+    console.log('WorkBy App initialized successfully');
+});
+
+/**
+ * Инициализирует систему уведомлений
+ */
+function initNotifications() {
+    // Обрабатываем отметку уведомлений как прочитанных
+    const notificationLinks = document.querySelectorAll('.notification-item');
+    if (notificationLinks) {
+        notificationLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const notificationId = this.dataset.notificationId;
+                if (notificationId) {
+                    // Можно отправить AJAX-запрос для отметки уведомления как прочитанного
+                    fetch(`/notifications/mark-as-read/${notificationId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            // Обновляем счетчик непрочитанных уведомлений
+                            const counter = document.querySelector('.notification-counter');
+                            if (counter) {
+                                const count = parseInt(counter.textContent) - 1;
+                                counter.textContent = count > 0 ? count : '';
+                                if (count <= 0) {
+                                    counter.classList.add('d-none');
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    }
+}
+
+/**
+ * Инициализирует функции для контрактов
+ */
+function initContractFunctions() {
+    // Функционал для страницы контракта
+    const contractTimeline = document.querySelector('.contract-timeline');
+    if (contractTimeline) {
+        // Анимация временной линии контракта
+        contractTimeline.querySelectorAll('.timeline-item').forEach((item, index) => {
+            setTimeout(() => {
+                item.classList.add('show');
+            }, 100 * (index + 1));
+        });
+    }
+}
+
+/**
+ * Инициализирует компоненты чата
+ */
+function initChatComponents() {
+    // Компоненты чата
+    const chatContainer = document.getElementById('chat-messages');
+    if (chatContainer) {
+        // Прокрутка чата вниз при загрузке
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        
+        // Обработка отправки сообщения
+        const chatForm = document.getElementById('chat-form');
+        if (chatForm) {
+            chatForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const messageInput = this.querySelector('textarea[name="message"]');
+                const message = messageInput.value.trim();
+                
+                if (message) {
+                    // Очищаем поле ввода
+                    messageInput.value = '';
+                    
+                    // В реальном приложении здесь должен быть код для отправки сообщения через WebSocket
+                    // и добавления его в чат после успешной отправки
+                }
+            });
+        }
+    }
 } 

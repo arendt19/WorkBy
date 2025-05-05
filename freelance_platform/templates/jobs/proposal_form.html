@@ -5,6 +5,44 @@
 
 {% block title %}{% trans "Submit Proposal" %} | {{ project.title }} | WorkBy{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+<script>
+    $(document).ready(function() {
+        // jQuery для улучшения интерфейса формы
+        $('#id_cover_letter').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_cover_letter').attr('rows', 8);
+        
+        {% if project.budget_type == 'fixed' %}
+        // Для фиксированной цены
+        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_delivery_time').addClass('form-select bg-dark bg-opacity-50 text-light border-secondary');
+        {% else %}
+        // Для почасовой ставки
+        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_estimated_hours').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        {% endif %}
+        
+        $('#id_attachment').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        
+        // Character counter for cover letter
+        $('#id_cover_letter').on('input', function() {
+            const maxLength = 4000;
+            const currentLength = $(this).val().length;
+            
+            if (currentLength > maxLength) {
+                $(this).val($(this).val().substring(0, maxLength));
+            }
+        });
+    });
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -99,7 +137,7 @@
                                         {% trans "Delivery Time" %}
                                     </label>
                                     <select name="{{ form.delivery_time.name }}" id="{{ form.delivery_time.id_for_label }}" class="form-select bg-dark bg-opacity-50 text-light border-secondary">
-                                        {% for value, text in form.delivery_time.field.choices %}
+                                        {% for value, text in form.fields.delivery_time.choices %}
                                             <option value="{{ value }}" {% if form.delivery_time.value == value|stringformat:"i" %}selected{% endif %}>{{ text }}</option>
                                         {% endfor %}
                                     </select>
@@ -226,36 +264,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    $(document).ready(function() {
-        // jQuery для улучшения интерфейса формы
-        $('#id_cover_letter').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
-        $('#id_cover_letter').attr('rows', 8);
-        
-        {% if project.budget_type == 'fixed' %}
-        // Для фиксированной цены
-        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
-        $('#id_delivery_time').addClass('form-select bg-dark bg-opacity-50 text-light border-secondary');
-        {% else %}
-        // Для почасовой ставки
-        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
-        $('#id_estimated_hours').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
-        {% endif %}
-        
-        $('#id_attachment').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
-        
-        // Character counter for cover letter
-        $('#id_cover_letter').on('input', function() {
-            const maxLength = 4000;
-            const currentLength = $(this).val().length;
-            
-            if (currentLength > maxLength) {
-                $(this).val($(this).val().substring(0, maxLength));
-            }
-        });
-    });
-</script>
 {% endblock %} 

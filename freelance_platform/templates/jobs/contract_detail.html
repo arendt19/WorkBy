@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load static %}
 
-{% block title %}{% trans "Contract" %} #{{ contract.contract_id }} | WorkBy{% endblock %}
+{% block title %}{% trans "Contract" %} #{{ contract.contract_id }} | WorkBy{% endblock title %}
 
 {% block extra_css %}
 <style>
@@ -204,406 +204,135 @@
     .timeline-point:last-child::after {
         display: none;
     }
+    
+    .animate-pulse {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+            transform: scale(1);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            transform: scale(1.02);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            transform: scale(1);
+        }
+    }
+    
+    .pulse-animation {
+        animation: pulse-animate 1s ease-out;
+    }
+    
+    @keyframes pulse-animate {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    
+    .highlight-section {
+        animation: highlight-section-animation 2s ease;
+    }
+    
+    @keyframes highlight-section-animation {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+        }
+        50% {
+            box-shadow: 0 0 30px 5px rgba(255, 193, 7, 0.7);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+        }
+    }
+    
+    .needs-payment {
+        border-left: 4px solid #ffc107 !important;
+        border-right: 4px solid #ffc107 !important;
+    }
+    
+    .payment-button-wrapper {
+        position: relative;
+    }
 </style>
-{% endblock %}
+{% endblock extra_css %}
 
 {% block content %}
 <div class="container py-4">
+    <!-- Основной контент -->
     <div class="row">
-        <div class="col-lg-8">
-            <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">{% trans "Contract" %} #{{ contract.contract_id }}</h5>
-                    
-                    <span class="badge 
-                        {% if contract.status == 'active' %}bg-success
-                        {% elif contract.status == 'paused' %}bg-warning
-                        {% elif contract.status == 'completed' %}bg-primary
-                        {% elif contract.status == 'cancelled' %}bg-danger
-                        {% elif contract.status == 'disputed' %}bg-danger
-                        {% endif %} status-badge">
-                        {{ contract.get_status_display }}
-                    </span>
-                </div>
-                
+        <div class="col-md-8">
+            <div class="card">
                 <div class="card-body">
-                    <h5 class="mb-3">{{ contract.title }}</h5>
-                    <p class="text-muted mb-4">{{ contract.description }}</p>
-                    
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <span class="text-muted">{% trans "Client" %}:</span>
-                                <strong>{{ contract.client.get_full_name }}</strong>
-                            </div>
-                            <div class="mb-3">
-                                <span class="text-muted">{% trans "Freelancer" %}:</span>
-                                <strong>{{ contract.freelancer.get_full_name }}</strong>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <span class="text-muted">{% trans "Amount" %}:</span>
-                                <strong class="text-primary">{{ contract.amount }} ₸</strong>
-                            </div>
-                            <div class="mb-3">
-                                <span class="text-muted">{% trans "Deadline" %}:</span>
-                                <strong>{{ contract.deadline|date:"d.m.Y" }}</strong>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {% if contract.client == request.user and contract.status == 'active' %}
-                        <!-- Кнопки для клиента -->
-                        <div class="mb-4 d-flex gap-2">
-                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-outline-light action-btn">
-                                <i class="fas fa-comments me-1"></i> {% trans "Message" %}
-                            </a>
-                            
-                            {% if not contract.milestones.exists %}
-                                <form method="post" action="{% url 'jobs:contract_complete' contract.pk %}" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-success action-btn" onclick="return confirm('{% trans "Are you sure you want to complete this contract and release the payment?" %}')">
-                                        <i class="fas fa-check-circle me-1"></i> {% trans "Work Completed & Pay" %}
-                                    </button>
-                                </form>
-                            {% endif %}
-                        </div>
-                    {% elif contract.freelancer == request.user and contract.status == 'active' %}
-                        <!-- Кнопки для фрилансера -->
-                        <div class="mb-4 d-flex gap-2">
-                            <a href="{% url 'chat:start_conversation' contract.client.id %}" class="btn btn-outline-light action-btn">
-                                <i class="fas fa-comments me-1"></i> {% trans "Message" %}
-                            </a>
-                        </div>
-                    {% endif %}
-                    
-                    {% if contract.status == 'completed' and contract.client == request.user and not contract.review %}
-                        <!-- Форма отзыва для клиента после завершения контракта -->
-                        <div class="card bg-dark border-secondary mb-4 contract-card">
-                            <div class="card-header bg-dark border-secondary">
-                                <h6 class="mb-0">{% trans "Leave Feedback for Freelancer" %}</h6>
-                            </div>
-                            <div class="card-body">
-                                <form method="post" action="{% url 'jobs:leave_review' contract.pk %}" id="reviewForm">
-                                    {% csrf_token %}
-                                    <div class="mb-3">
-                                        <label class="form-label">{% trans "Rating" %}</label>
-                                        <div class="rating-input mb-3">
-                                            <input type="radio" id="star5" name="rating" value="5" required>
-                                            <label for="star5"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="star4" name="rating" value="4">
-                                            <label for="star4"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="star3" name="rating" value="3">
-                                            <label for="star3"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="star2" name="rating" value="2">
-                                            <label for="star2"><i class="fas fa-star"></i></label>
-                                            <input type="radio" id="star1" name="rating" value="1">
-                                            <label for="star1"><i class="fas fa-star"></i></label>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label for="review_text" class="form-label">{% trans "Your Review" %}</label>
-                                        <textarea class="form-control bg-dark text-light" id="review_text" name="text" rows="3" required></textarea>
-                                    </div>
-                                    <button type="submit" class="btn btn-success action-btn">{% trans "Submit Review" %}</button>
-                                </form>
-                            </div>
-                        </div>
-                    {% endif %}
-                    
-                    {% if contract.review %}
-                        <!-- Отображение отзыва -->
-                        <div class="card bg-dark border-secondary mb-4 contract-card">
-                            <div class="card-header bg-dark border-secondary">
-                                <h6 class="mb-0">{% trans "Client's Feedback" %}</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="d-flex align-items-center mb-2">
-                                    <div class="rating text-warning me-2">
-                                        {% for i in "12345" %}
-                                            {% if i|add:"0" <= contract.review.rating %}
-                                                <i class="fas fa-star"></i>
-                                            {% else %}
-                                                <i class="far fa-star"></i>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </div>
-                                    <span>{{ contract.review.rating }}/5</span>
-                                </div>
-                                <p class="mb-1">{{ contract.review.text }}</p>
-                                <small class="text-muted">{{ contract.review.created_at|date:"d.m.Y" }}</small>
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Вехи и Эскроу-платежи -->
-            {% if contract.milestones.exists %}
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                    <div class="card-header bg-dark border-bottom border-secondary d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0">{% trans "Milestones" %}</h5>
-                        
-                        {% if contract.client == request.user and contract.status == 'active' %}
-                            <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-sm btn-outline-primary action-btn">
-                                <i class="fas fa-plus me-1"></i> {% trans "Add Milestone" %}
-                            </a>
-                        {% endif %}
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="list-group list-group-flush">
-                            {% for milestone in contract.milestones.all %}
-                                <div class="list-group-item bg-dark border-light border-opacity-10 milestone-item">
-                                    <div class="row align-items-center">
-                                        <!-- Информация о вехе -->
-                                        <div class="col-md-7">
-                                            <h6 class="mb-1">{{ milestone.title }}</h6>
-                                            <p class="text-muted small mb-2">{{ milestone.description|truncatechars:100 }}</p>
-                                            
-                                            <div class="d-flex align-items-center">
-                                                <span class="badge {% if milestone.status == 'pending' %}bg-warning{% elif milestone.status == 'in_progress' %}bg-info{% elif milestone.status == 'completed' %}bg-success{% elif milestone.status == 'approved' %}bg-primary{% else %}bg-secondary{% endif %} me-2 status-badge">
-                                                    {{ milestone.get_status_display }}
-                                                </span>
-                                                
-                                                <span class="text-muted small">
-                                                    <i class="fas fa-calendar me-1"></i>
-                                                    {% if milestone.due_date %}
-                                                        {% trans "Due" %}: {{ milestone.due_date|date:"d M Y" }}
-                                                    {% else %}
-                                                        {% trans "No deadline" %}
-                                                    {% endif %}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Информация о платеже -->
-                                        <div class="col-md-5">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <span class="text-muted small d-block">{% trans "Amount" %}</span>
-                                                    <span class="text-primary fw-bold">{{ milestone.amount }} ₸</span>
-                                                </div>
-                                                
-                                                <div>
-                                                    {% if milestone.escrow_payment %}
-                                                        <!-- Есть эскроу-платеж -->
-                                                        {% if milestone.escrow_payment.status == 'pending' and contract.client == request.user %}
-                                                            <a href="{% url 'payments:fund_escrow' milestone.escrow_payment.escrow_id %}" class="btn btn-primary btn-sm action-btn">
-                                                                <i class="fas fa-lock me-1"></i> {% trans "Fund Escrow" %}
-                                                            </a>
-                                                        {% elif milestone.escrow_payment.status == 'funded' and contract.client == request.user %}
-                                                            <a href="{% url 'payments:release_escrow' milestone.escrow_payment.escrow_id %}" class="btn btn-success btn-sm action-btn">
-                                                                <i class="fas fa-check me-1"></i> {% trans "Release Funds" %}
-                                                            </a>
-                                                        {% elif milestone.escrow_payment.status == 'pending' and contract.freelancer == request.user %}
-                                                            <span class="badge bg-warning status-badge">{% trans "Awaiting Client Funding" %}</span>
-                                                        {% elif milestone.escrow_payment.status == 'funded' and contract.freelancer == request.user %}
-                                                            <span class="badge bg-success status-badge">{% trans "Funds in Escrow" %}</span>
-                                                        {% elif milestone.escrow_payment.status == 'released' %}
-                                                            <span class="badge bg-success status-badge">{% trans "Paid" %}</span>
-                                                        {% endif %}
-                                                    {% else %}
-                                                        <!-- Нет эскроу-платежа -->
-                                                        {% if contract.client == request.user %}
-                                                            <a href="{% url 'payments:create_escrow' milestone.id %}" class="btn btn-outline-primary btn-sm action-btn">
-                                                                <i class="fas fa-shield-alt me-1"></i> {% trans "Create Escrow" %}
-                                                            </a>
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-            
-            <!-- Упрощенный блок платежей -->
-            <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                <div class="card-header bg-dark border-bottom border-secondary">
-                    <h5 class="card-title mb-0">{% trans "Payment Status" %}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex align-items-center mb-4">
-                        <div class="me-4">
-                            <span class="d-block text-muted">{% trans "Contract Amount" %}</span>
-                            <h3 class="text-primary mb-0">{{ contract.amount }} ₸</h3>
-                        </div>
-                        <div>
-                            <span class="d-block text-muted">{% trans "Status" %}</span>
-                            {% if contract.status == 'completed' %}
-                                <span class="badge bg-success status-badge">{% trans "Paid" %}</span>
-                            {% else %}
-                                <span class="badge bg-warning status-badge">{% trans "Pending Payment" %}</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    {% if contract.client == request.user %}
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            {% if contract.milestones.exists %}
-                                {% trans "This contract uses milestone payments. You'll need to fund and release escrow for each milestone." %}
-                            {% else %}
-                                {% trans "Payment will be processed from your balance when you confirm that the work is complete." %}
-                            {% endif %}
-                        </div>
-                    {% elif contract.freelancer == request.user %}
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            {% if contract.milestones.exists %}
-                                {% trans "You'll receive payments as the client releases escrow for each milestone." %}
-                            {% else %}
-                                {% trans "You will receive payment when the client confirms the work is complete." %}
-                            {% endif %}
-                        </div>
-                    {% endif %}
+                    <h5 class="card-title">{% trans "Contract Details" %}</h5>
+                    <p class="card-text">{% trans "Contract ID:" %} {{ contract.contract_id }}</p>
+                    <p class="card-text">{% trans "Status:" %} {{ contract.get_status_display }}</p>
+                    <p class="card-text">{% trans "Client:" %} {{ contract.client.username }}</p>
+                    <p class="card-text">{% trans "Freelancer:" %} {{ contract.freelancer.username }}</p>
+                    <p class="card-text">{% trans "Created:" %} {{ contract.created_at|date:"d F Y" }}</p>
+                    <p class="card-text">{% trans "Deadline:" %} {{ contract.deadline|date:"d F Y" }}</p>
+                    <p class="card-text">{% trans "Total Amount:" %} {{ contract.total_amount }} {{ contract.currency }}</p>
+                    <p class="card-text">{% trans "Description:" %} {{ contract.description }}</p>
                 </div>
             </div>
         </div>
-        
-        <!-- Боковая панель со вспомогательной информацией -->
-        <div class="col-lg-4">
-            {% if contract.client == request.user and contract.status == 'active' %}
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                    <div class="card-body">
-                        <h6 class="mb-3">{% trans "How to Complete Order" %}</h6>
-                        <ol class="small ps-3 mb-0">
-                            <li class="mb-2">{% trans "Check work completeness" %}</li>
-                            <li class="mb-2">{% trans "Contact freelancer if needed" %}</li>
-                            <li class="mb-2">{% trans "Click 'Work Completed & Pay' when satisfied" %}</li>
-                            <li>{% trans "Leave feedback for the freelancer" %}</li>
-                        </ol>
-                    </div>
-                </div>
-                
-                <!-- Информация о балансе кошелька -->
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                    <div class="card-header bg-dark border-bottom border-secondary">
-                        <h6 class="mb-0">{% trans "Your Wallet" %}</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <span class="text-muted small">{% trans "Current Balance" %}</span>
-                                <h5 class="text-danger mb-0">{{ user_balance }} ₸</h5>
-                            </div>
-                            <a href="{% url 'payments:deposit' %}" class="btn btn-sm btn-outline-primary action-btn">
-                                <i class="fas fa-plus-circle me-1"></i> {% trans "Add Funds" %}
-                            </a>
-                        </div>
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ user_balance|default:0|floatformat:0 }}%;" aria-valuenow="{{ user_balance|default:0|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                    </div>
-                </div>
-            {% elif contract.freelancer == request.user and contract.status == 'active' %}
-                <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                    <div class="card-body">
-                        <h6 class="mb-3">{% trans "How to Get Paid" %}</h6>
-                        <ol class="small ps-3 mb-0">
-                            <li class="mb-2">{% trans "Complete all tasks as agreed" %}</li>
-                            <li class="mb-2">{% trans "Notify client when work is done" %}</li>
-                            <li class="mb-2">{% trans "Client will review and approve payment" %}</li>
-                            <li>{% trans "Payment will be released to your account" %}</li>
-                        </ol>
-                    </div>
-                </div>
-            {% endif %}
-            
-            <!-- Информация о проекте -->
-            <div class="card border-0 shadow-sm bg-dark text-light mb-4 contract-card">
-                <div class="card-header bg-dark border-bottom border-secondary">
-                    <h6 class="mb-0">{% trans "Project Details" %}</h6>
-                </div>
+        <div class="col-md-4">
+            <div class="card">
                 <div class="card-body">
-                    <h6 class="mb-2">{{ contract.project.title }}</h6>
-                    <p class="text-muted small mb-3">{{ contract.project.description|truncatechars:100 }}</p>
-                    <a href="{% url 'jobs:project_detail' contract.project.pk %}" class="btn btn-sm btn-outline-light action-btn">
-                        <i class="fas fa-external-link-alt me-1"></i> {% trans "View Project" %}
-                    </a>
-                </div>
-            </div>
-            
-            <!-- История событий -->
-            <div class="card border-0 shadow-sm bg-dark text-light contract-card">
-                <div class="card-header bg-dark border-bottom border-secondary">
-                    <h6 class="mb-0">{% trans "Contract Timeline" %}</h6>
-                </div>
-                <div class="card-body p-0">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
-                            <div class="d-flex">
-                                <div class="timeline-icon bg-success me-3">
-                                    <i class="fas fa-file-contract"></i>
-                                </div>
-                                <div>
-                                    <p class="mb-0">{% trans "Contract Created" %}</p>
-                                    <small class="text-muted">{{ contract.created_at|date:"d M Y, H:i" }}</small>
-                                </div>
-                            </div>
+                    <h5 class="card-title">{% trans "Contract Actions" %}</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-primary">
+                                <i class="fas fa-comments me-1"></i> {% trans "Message" %}
+                            </a>
                         </li>
+                        {% if contract.client == request.user and contract.status == 'active' %}
+                        <li class="list-group-item">
+                            <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-success">
+                                <i class="fas fa-check-circle me-1"></i> {% trans "Complete Contract" %}
+                            </a>
+                        </li>
+                        {% endif %}
                         
-                        {% for milestone in contract.milestones.all %}
-                            <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
-                                <div class="d-flex">
-                                    <div class="timeline-icon bg-info me-3">
-                                        <i class="fas fa-flag"></i>
+                        <!-- Кнопка для оставления отзыва -->
+                        {% if contract.client == request.user and contract.status == 'completed' %}
+                            {% if not contract.review %}
+                            <li class="list-group-item">
+                                <a href="{% url 'jobs:leave_review' contract.pk %}" class="btn btn-warning animate-pulse">
+                                    <i class="fas fa-star me-1"></i> {% trans "Leave a Review" %}
+                                </a>
+                            </li>
+                            {% else %}
+                            <!-- Показываем информацию о существующем отзыве -->
+                            <li class="list-group-item">
+                                <div class="card border-0 bg-light p-3">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h6 class="mb-0 me-2">{% trans "Your Review:" %}</h6>
+                                        <div class="ms-auto">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= contract.review.rating %}
+                                                    <i class="fas fa-star text-warning"></i>
+                                                {% else %}
+                                                    <i class="far fa-star text-warning"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <p class="mb-0">{% trans "Milestone Added" %}: {{ milestone.title }}</p>
-                                        <small class="text-muted">{{ milestone.created_at|date:"d M Y, H:i" }}</small>
-                                    </div>
+                                    <p class="card-text small mb-0">{{ contract.review.comment }}</p>
+                                    <small class="text-muted">{{ contract.review.created_at|date:"d F Y" }}</small>
                                 </div>
                             </li>
-                            
-                            {% if milestone.escrow_payment %}
-                                {% if milestone.escrow_payment.status != 'pending' %}
-                                <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
-                                    <div class="d-flex">
-                                        <div class="timeline-icon bg-warning me-3">
-                                            <i class="fas fa-lock"></i>
-                                        </div>
-                                        <div>
-                                            <p class="mb-0">{% trans "Escrow Funded" %} ({{ milestone.amount }} ₸)</p>
-                                            <small class="text-muted">{{ milestone.escrow_payment.funded_at|date:"d M Y, H:i" }}</small>
-                                        </div>
-                                    </div>
-                                </li>
-                                {% endif %}
-                                
-                                {% if milestone.escrow_payment.status == 'released' %}
-                                <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
-                                    <div class="d-flex">
-                                        <div class="timeline-icon bg-success me-3">
-                                            <i class="fas fa-check-circle"></i>
-                                        </div>
-                                        <div>
-                                            <p class="mb-0">{% trans "Funds Released" %}</p>
-                                            <small class="text-muted">{{ milestone.escrow_payment.released_at|date:"d M Y, H:i" }}</small>
-                                        </div>
-                                    </div>
-                                </li>
-                                {% endif %}
                             {% endif %}
-                        {% endfor %}
-                        
-                        {% if contract.status == 'completed' %}
-                            <li class="list-group-item bg-dark border-light border-opacity-10 timeline-point">
-                                <div class="d-flex">
-                                    <div class="timeline-icon bg-success me-3">
-                                        <i class="fas fa-flag-checkered"></i>
-                                    </div>
-                                    <div>
-                                        <p class="mb-0">{% trans "Contract Completed" %}</p>
-                                        <small class="text-muted">{{ contract.updated_at|date:"d M Y, H:i" }}</small>
-                                    </div>
-                                </div>
-                            </li>
                         {% endif %}
                     </ul>
                 </div>
@@ -611,64 +340,93 @@
         </div>
     </div>
 </div>
-{% endblock %}
+{% endblock content %}
 
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Инициализация всех тултипов и поповеров
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl);
-        });
-        
-        // Обработка отправки формы отзыва
-        const reviewForm = document.getElementById('reviewForm');
-        if (reviewForm) {
-            reviewForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Проверка формы
-                const rating = reviewForm.querySelector('input[name="rating"]:checked');
-                const reviewText = reviewForm.querySelector('#review_text').value.trim();
-                
-                if (!rating) {
-                    WorkBy.showToast("{% trans 'Please select a rating' %}", 'warning');
-                    return;
+        // Функция для полного удаления красных точек со страницы
+        function removeRedDots() {
+            // Удаляем все элементы с классом payment-notification-badge
+            document.querySelectorAll('.payment-notification-badge').forEach(function(element) {
+                if (element && element.parentNode) {
+                    element.parentNode.removeChild(element);
                 }
-                
-                if (!reviewText) {
-                    WorkBy.showToast("{% trans 'Please write your review' %}", 'warning');
-                    return;
-                }
-                
-                // Отправка формы
-                this.submit();
             });
-        }
-        
-        // Подтверждение действий
-        const actionButtons = document.querySelectorAll('.action-btn[onclick*="confirm"]');
-        actionButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                if (this.getAttribute('onclick')) {
-                    // Извлекаем текст подтверждения из атрибута onclick
-                    const confirmText = this.getAttribute('onclick')
-                        .replace('return confirm(\'', '')
-                        .replace('\')', '');
-                    
-                    // Переопределяем обработчик
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    if (confirm(confirmText)) {
-                        // Если подтверждено, удаляем атрибут onclick и отправляем форму
-                        this.removeAttribute('onclick');
-                        this.closest('form').submit();
+            
+            // Ищем и удаляем все круглые красные элементы
+            document.querySelectorAll('*').forEach(function(element) {
+                const style = window.getComputedStyle(element);
+                if (
+                    (style.backgroundColor.includes('rgb(220, 53, 69)') || 
+                    style.backgroundColor.includes('#dc3545')) && 
+                    style.borderRadius.includes('50%')
+                ) {
+                    if (element && element.parentNode) {
+                        element.parentNode.removeChild(element);
                     }
                 }
             });
-        });
+        }
+        
+        // Удаляем красные точки сразу и с небольшой задержкой
+        removeRedDots();
+        setTimeout(removeRedDots, 500);
+        setTimeout(removeRedDots, 1500);
+        
+        // Функция для удаления зеленой кнопки VIEW PAYMENTS
+        function removeGreenButtons() {
+            // Удаляем все элементы с id floatingPayButton
+            document.querySelectorAll('#floatingPayButton').forEach(function(element) {
+                if (element && element.parentNode && element.parentNode.parentNode) {
+                    // Удаляем родительский элемент payment-button-wrapper
+                    element.parentNode.parentNode.removeChild(element.parentNode);
+                } else if (element && element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            
+            // Удаляем все зеленые кнопки с текстом VIEW PAYMENTS
+            document.querySelectorAll('.floating-payment-button').forEach(function(element) {
+                if (element && element.parentNode) {
+                    // Удаляем родительский элемент
+                    if (element.parentNode.classList.contains('payment-button-wrapper')) {
+                        element.parentNode.parentNode.removeChild(element.parentNode);
+                    } else {
+                        element.parentNode.removeChild(element);
+                    }
+                }
+            });
+            
+            // Ищем все зеленые кнопки на основе стиля
+            document.querySelectorAll('button, a').forEach(function(element) {
+                const style = window.getComputedStyle(element);
+                const text = element.textContent.trim();
+                
+                // Проверяем, является ли элемент зеленой кнопкой VIEW PAYMENTS
+                if (
+                    (style.backgroundColor.includes('rgb(40, 167, 69)') || 
+                     style.backgroundColor.includes('#28a745') || 
+                     style.background.includes('linear-gradient') && style.background.includes('rgb(40, 167, 69)')) &&
+                    (text.includes('VIEW PAYMENTS') || text.includes('PAY NOW')) &&
+                    (style.position === 'fixed')
+                ) {
+                    if (element && element.parentNode) {
+                        // Если это кнопка в обертке, удаляем обертку
+                        if (element.parentNode.classList.contains('payment-button-wrapper')) {
+                            element.parentNode.parentNode.removeChild(element.parentNode);
+                        } else {
+                            element.parentNode.removeChild(element);
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Удаляем зеленые кнопки
+        removeGreenButtons();
+        setTimeout(removeGreenButtons, 500);
+        setTimeout(removeGreenButtons, 1500);
     });
 </script>
-{% endblock %} 
+{% endblock extra_js %} 

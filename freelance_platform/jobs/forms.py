@@ -6,6 +6,14 @@ class ProjectForm(forms.ModelForm):
     """
     Форма для создания и редактирования проектов
     """
+    # Переопределяем поле категории для правильной обработки ID
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        label=_('Category'),
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        empty_label=_('Select a category')
+    )
+    
     tags = forms.CharField(
         required=False,
         label=_('Tags (comma separated)'),
@@ -17,17 +25,26 @@ class ProjectForm(forms.ModelForm):
         fields = [
             'title', 'description', 'category', 'budget_type', 'budget_min', 
             'budget_max', 'deadline', 'location_required', 'is_remote', 
-            'experience_required', 'is_private', 'tags'
+            'experience_required', 'is_private'
         ]
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 6}),
-            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'budget_min': forms.NumberInput(attrs={'step': '0.01'}),
-            'budget_max': forms.NumberInput(attrs={'step': '0.01'}),
+            'description': forms.Textarea(attrs={'rows': 6, 'class': 'form-control'}),
+            'budget_type': forms.Select(attrs={'class': 'form-select'}),
+            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'budget_min': forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control'}),
+            'budget_max': forms.NumberInput(attrs={'step': '0.01', 'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'location_required': forms.TextInput(attrs={'class': 'form-control'}),
+            'experience_required': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_remote': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'is_private': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Явно указываем выбор категории по ID
+        self.fields['category'].to_field_name = 'id'
         
         # Если редактируем существующий проект
         if self.instance.pk:
@@ -41,27 +58,56 @@ class ProjectForm(forms.ModelForm):
         if commit:
             project.save()
             
-            # Обработка тегов
-            tag_input = self.cleaned_data.get('tags', '')
-            if tag_input:
-                # Удалить существующие теги
-                project.tags.clear()
-                
-                # Добавить новые теги
-                tag_names = [tag.strip() for tag in tag_input.split(',') if tag.strip()]
-                for tag_name in tag_names:
-                    tag, created = Tag.objects.get_or_create(
-                        name=tag_name,
-                        defaults={'slug': tag_name.lower().replace(' ', '-')}
-                    )
-                    project.tags.add(tag)
-        
+            # Обработка тегов только при commit=True
+            self.save_tags(project)
+            
+            return project
         return project
+    
+    def save_m2m(self):
+        # Переопределяем метод save_m2m для обработки тегов
+        super().save_m2m()
+        
+        # Сохраняем теги
+        self.save_tags(self.instance)
+    
+    def save_tags(self, project):
+        # Обработка тегов
+        tag_input = self.cleaned_data.get('tags', '')
+        if tag_input:
+            # Удалить существующие теги
+            project.tags.clear()
+            
+            # Добавить новые теги
+            tag_names = [tag.strip() for tag in tag_input.split(',') if tag.strip()]
+            for tag_name in tag_names:
+                tag, created = Tag.objects.get_or_create(
+                    name=tag_name,
+                    defaults={'slug': tag_name.lower().replace(' ', '-')}
+                )
+                project.tags.add(tag)
 
 class ProposalForm(forms.ModelForm):
     """
     Форма для подачи предложений на проект
     """
+    DELIVERY_CHOICES = [
+        (1, _('1 day')),
+        (2, _('2 days')),
+        (3, _('3 days')),
+        (5, _('5 days')),
+        (7, _('1 week')),
+        (14, _('2 weeks')),
+        (21, _('3 weeks')),
+        (30, _('1 month')),
+    ]
+    
+    delivery_time = forms.ChoiceField(
+        choices=DELIVERY_CHOICES,
+        widget=forms.Select(),
+        label=_('Delivery Time')
+    )
+    
     class Meta:
         model = Proposal
         fields = ['cover_letter', 'bid_amount', 'delivery_time']

@@ -20,7 +20,7 @@ urlpatterns = [
     path('my-projects/', views.my_projects_view, name='my_projects'),
     
     # Управление предложениями для фрилансеров
-    path('projects/<int:project_pk>/propose/', views.proposal_create_view, name='proposal_create'),
+    path('projects/<int:pk>/propose/', views.proposal_create_view, name='proposal_create'),
     path('proposals/<int:pk>/edit/', views.proposal_edit_view, name='proposal_edit'),
     path('proposals/<int:pk>/withdraw/', views.proposal_withdraw_view, name='proposal_withdraw'),
     path('proposals/<int:pk>/', views.proposal_detail_view, name='proposal_detail'),
@@ -28,6 +28,7 @@ urlpatterns = [
     
     # Принятие предложений и создание контрактов
     path('proposals/<int:pk>/accept/', views.proposal_accept_view, name='proposal_accept'),
+    path('proposals/<int:pk>/reject/', views.proposal_reject_view, name='proposal_reject'),
     path('contracts/create/', views.contract_create_view, name='contract_create'),
     path('contracts/<int:pk>/', views.contract_detail_view, name='contract_detail'),
     path('contracts/', views.contract_list_view, name='contract_list'),
@@ -35,6 +36,7 @@ urlpatterns = [
     path('contracts/<int:pk>/review/', views.leave_review_view, name='leave_review'),
     
     # Управление вехами
+    path('contracts/<int:pk>/milestones/create/', views.milestone_create_view, name='milestone_create'),
     path('milestones/<int:pk>/submit/', views.milestone_submit_view, name='milestone_submit'),
     path('milestones/<int:pk>/approve/', views.milestone_approve_view, name='milestone_approve'),
     path('milestones/<int:pk>/reject/', views.milestone_reject_view, name='milestone_reject'),
@@ -47,13 +49,7 @@ urlpatterns = [
     
     # Фрилансеры
     path('freelancers/', views.freelancer_list_view, name='freelancer_list'),
-
-    # Предложения
-    path('proposal/<int:pk>/', views.proposal_detail_view, name='proposal_detail'),
-    path('project/<int:project_pk>/propose/', views.proposal_create_view, name='proposal_create'),
-    path('proposal/<int:pk>/edit/', views.proposal_edit_view, name='proposal_edit'),
-    path('proposal/<int:pk>/withdraw/', views.proposal_withdraw_view, name='proposal_withdraw'),
-    path('proposal/<int:pk>/accept/', views.proposal_accept_view, name='proposal_accept'),
-    path('proposal/<int:pk>/reject/', views.proposal_reject_view, name='proposal_reject'),
-    path('my-proposals/', views.my_proposals_view, name='my_proposals'),
+    
+    # URL для обратной совместимости (единственное число)
+    path('project/<int:pk>/propose/', views.proposal_create_view, name='proposal_create_singular'),
 ] 

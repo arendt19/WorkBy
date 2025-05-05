@@ -41,6 +41,32 @@
             </div>
         {% endif %}
         
+        <!-- Уведомление о необходимости оставить отзыв -->
+        {% if pending_reviews %}
+        <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-star-half-alt fs-4 me-3"></i>
+                <div>
+                    <h5 class="mb-1">{% trans "Pending Reviews" %}</h5>
+                    <p class="mb-0">
+                        {% blocktrans with count=pending_reviews_count %}
+                        You have {{ count }} completed contract(s) waiting for your review.
+                        {% endblocktrans %}
+                        <a href="{% url 'jobs:contract_list' %}" class="alert-link">{% trans "View contracts" %}</a>
+                    </p>
+                </div>
+                <div class="ms-auto">
+                    {% for contract in pending_reviews|slice:":3" %}
+                        <a href="{% url 'jobs:leave_review' contract.pk %}" class="btn btn-sm btn-warning mb-1 d-block">
+                            <i class="fas fa-star me-1"></i> {% trans "Review" %} #{{ contract.contract_id }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+        
         {% block content %}{% endblock %}
     </main>
 

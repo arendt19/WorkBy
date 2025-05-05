@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.db import transaction
 from decimal import Decimal
 from django.db import models
+from django.utils.functional import wraps
+from accounts.models import Review
 
 from .models import Project, Category, Proposal, Contract, Milestone, Tag
 from .forms import (
@@ -22,6 +24,45 @@ from .notifications import (
     send_proposal_accepted_notification,
     send_proposal_rejected_notification
 )
+
+def check_pending_reviews(view_func):
+    """
+    Декоратор, который проверяет наличие завершенных контрактов без отзывов
+    и добавляет эту информацию в контекст
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        # Получаем ответ от исходного представления
+        response = view_func(request, *args, **kwargs)
+        
+        # Проверяем, что пользователь авторизован и это объект TemplateResponse
+        if hasattr(response, 'context_data') and request.user.is_authenticated:
+            # Только для клиентов
+            if request.user.is_client:
+                # Находим завершенные контракты пользователя без отзывов
+                completed_contracts = Contract.objects.filter(
+                    client=request.user,
+                    status='completed'
+                )
+                
+                # Исключаем контракты, для которых уже оставлены отзывы
+                contract_ids_with_reviews = Review.objects.filter(
+                    client=request.user,
+                    project__contracts__in=completed_contracts
+                ).values_list('project__contracts__id', flat=True)
+                
+                contracts_without_reviews = completed_contracts.exclude(
+                    id__in=contract_ids_with_reviews
+                )
+                
+                # Добавляем информацию в контекст
+                if contracts_without_reviews.exists():
+                    response.context_data['pending_reviews'] = contracts_without_reviews
+                    response.context_data['pending_reviews_count'] = contracts_without_reviews.count()
+        
+        return response
+    
+    return wrapper
 
 def home_view(request):
     """
@@ -277,52 +318,57 @@ def project_delete_view(request, pk):
     return render(request, 'jobs/project_confirm_delete.html', context)
 
 @login_required
-def proposal_create_view(request, project_pk):
+def proposal_create_view(request, pk):
     """
-    Создание предложения для проекта (доступно всем пользователям)
+    Создание предложения для проекта (только для фрилансеров)
     """
-    project = get_object_or_404(Project, pk=project_pk)
+    project = get_object_or_404(Project, pk=pk)
     
     # Проверяем, что проект открыт для предложений
     if project.status != 'open':
-        messages.error(request, _('This project is not open for proposals'))
-        return redirect('jobs:project_detail', pk=project_pk)
+        messages.error(request, _('This project is no longer accepting proposals'))
+        return redirect('jobs:project_detail', pk=project.pk)
     
-    # Проверяем, не подавал ли уже пользователь предложение
-    existing_proposal = Proposal.objects.filter(project=project, freelancer=request.user).first()
+    # Проверяем, что пользователь является фрилансером
+    if not hasattr(request.user, 'freelancer_profile'):
+        messages.error(request, _('Only freelancers can submit proposals'))
+        return redirect('jobs:project_detail', pk=project.pk)
+    
+    # Проверяем, не подавал ли пользователь уже предложение для этого проекта
+    existing_proposal = Proposal.objects.filter(
+        freelancer=request.user,
+        project=project
+    ).first()
+    
     if existing_proposal:
-        messages.error(request, _('You have already submitted a proposal for this project'))
+        messages.info(request, _('You have already submitted a proposal for this project'))
         return redirect('jobs:proposal_detail', pk=existing_proposal.pk)
     
     if request.method == 'POST':
-        form = ProposalForm(project, request.POST)
+        form = ProposalForm(project, request.POST, request.FILES)
         if form.is_valid():
             proposal = form.save(commit=False)
             proposal.freelancer = request.user
             proposal.project = project
             proposal.save()
             
-            # Отправляем уведомление клиенту о новом предложении
-            send_proposal_submitted_notification(proposal)
+            messages.success(request, _('Your proposal has been submitted successfully'))
             
-            messages.success(request, _('Proposal submitted successfully'))
-            
-            # Проверяем, является ли запрос AJAX
+            # Возвращаем JSON-ответ для AJAX-запросов
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
-                    'message': _('Proposal submitted successfully'),
-                    'redirect_url': reverse('jobs:my_proposals')
+                    'message': _('Your proposal has been submitted successfully'),
+                    'redirect_url': reverse('jobs:proposal_detail', kwargs={'pk': proposal.pk})
                 })
             
             return redirect('jobs:proposal_detail', pk=proposal.pk)
-        else:
-            # Если форма не валидна и запрос AJAX, возвращаем ошибки
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': False,
-                    'errors': form.errors.as_json()
-                }, status=400)
+        elif request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Возвращаем ошибки для AJAX-запросов
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors.get_json_data()
+            }, status=400)
     else:
         form = ProposalForm(project)
     
@@ -350,11 +396,26 @@ def proposal_edit_view(request, pk):
         return redirect('jobs:proposal_detail', pk=proposal.pk)
     
     if request.method == 'POST':
-        form = ProposalForm(proposal.project, request.POST, instance=proposal)
+        form = ProposalForm(proposal.project, request.POST, request.FILES, instance=proposal)
         if form.is_valid():
             form.save()
             messages.success(request, _('Proposal updated successfully'))
+            
+            # Возвращаем JSON-ответ для AJAX-запросов
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': _('Your proposal has been updated successfully'),
+                    'redirect_url': reverse('jobs:proposal_detail', kwargs={'pk': proposal.pk})
+                })
+            
             return redirect('jobs:proposal_detail', pk=proposal.pk)
+        elif request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # Возвращаем ошибки для AJAX-запросов
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors.get_json_data()
+            }, status=400)
     else:
         form = ProposalForm(proposal.project, instance=proposal)
     
@@ -533,14 +594,8 @@ def contract_create_view(request):
     # Проверяем, не создан ли уже контракт для этого предложения
     existing_contract = Contract.objects.filter(proposal=proposal).first()
     if existing_contract:
-        messages.error(request, _('A contract already exists for this proposal'))
+        messages.info(request, _('A contract already exists for this proposal'))
         return redirect('jobs:contract_detail', pk=existing_contract.pk)
-    
-    # Создаем формсет для вех (milestones)
-    MilestoneInlineFormSet = inlineformset_factory(
-        Contract, Milestone, form=MilestoneForm, 
-        formset=MilestoneFormSet, extra=1, can_delete=False
-    )
     
     if request.method == 'POST':
         contract_form = ContractForm(request.POST)
@@ -551,17 +606,23 @@ def contract_create_view(request):
             contract.freelancer = proposal.freelancer
             contract.project = proposal.project
             contract.proposal = proposal
+            contract.save()
             
-            formset = MilestoneInlineFormSet(request.POST, instance=contract)
+            # Создаём одну веху автоматически (если выбрана полная оплата)
+            payment_option = request.POST.get('payment_option', 'full')
+            if payment_option == 'full':
+                # Создаем одну веху для полной оплаты
+                milestone = Milestone.objects.create(
+                    contract=contract,
+                    title=_('Complete Project'),
+                    description=_('Full payment upon completion of all work'),
+                    amount=contract.amount,
+                    due_date=contract.deadline,
+                    status='pending'
+                )
             
-            if formset.is_valid():
-                contract.save()
-                formset.save()
-                
-                messages.success(request, _('Contract created successfully'))
-                return redirect('jobs:contract_detail', pk=contract.pk)
-        else:
-            formset = MilestoneInlineFormSet(request.POST)
+            messages.success(request, _('Contract created successfully! You can now communicate with the freelancer to get started.'))
+            return redirect('jobs:contract_detail', pk=contract.pk)
     else:
         # Предзаполняем форму контракта данными из предложения и проекта
         initial = {
@@ -571,11 +632,9 @@ def contract_create_view(request):
             'deadline': timezone.now() + timezone.timedelta(days=proposal.delivery_time)
         }
         contract_form = ContractForm(initial=initial)
-        formset = MilestoneInlineFormSet()
     
     context = {
         'contract_form': contract_form,
-        'milestone_formset': formset,
         'proposal': proposal,
         'project': proposal.project,
     }
@@ -780,7 +839,8 @@ def contract_complete_view(request, pk):
             contract.project.save()
             
             messages.success(request, _('Contract completed successfully. Payment has been sent to the freelancer.'))
-            return redirect('jobs:contract_detail', pk=contract.pk)
+            # Перенаправляем на страницу оставления отзыва
+            return redirect('jobs:leave_review', pk=contract.pk)
             
         except Exception as e:
             messages.error(request, _(f'Error processing payment: {str(e)}'))
@@ -860,6 +920,10 @@ def milestone_complete_view(request, pk):
                 # Завершаем проект
                 milestone.contract.project.status = 'completed'
                 milestone.contract.project.save()
+                
+                messages.success(request, _('All milestones completed. Contract has been marked as completed.'))
+                # Перенаправляем на страницу оставления отзыва
+                return redirect('jobs:leave_review', pk=milestone.contract.pk)
             
             messages.success(request, _('Milestone completed successfully. Payment has been sent to the freelancer.'))
             return redirect('jobs:contract_detail', pk=milestone.contract.pk)
@@ -1053,8 +1117,12 @@ def leave_review_view(request, pk):
         return redirect('jobs:contract_detail', pk=contract.pk)
     
     # Проверяем, что отзыв еще не оставлен
-    from accounts.models import Review
-    existing_review = Review.objects.filter(contract=contract).first()
+    existing_review = Review.objects.filter(
+        project=contract.project,
+        client=contract.client,
+        freelancer=contract.freelancer
+    ).first()
+    
     if existing_review:
         messages.error(request, _('You have already left a review for this contract'))
         return redirect('jobs:contract_detail', pk=contract.pk)
@@ -1067,35 +1135,83 @@ def leave_review_view(request, pk):
             
             if not (1 <= rating <= 5):
                 messages.error(request, _('Rating must be between 1 and 5'))
-                return redirect('jobs:contract_detail', pk=contract.pk)
+                return redirect('jobs:leave_review', pk=contract.pk)
             
             # Создаем отзыв
             review = Review.objects.create(
-                reviewer=request.user,
-                reviewed_user=contract.freelancer,
-                contract=contract,
+                freelancer=contract.freelancer,
+                client=request.user,
                 project=contract.project,
                 rating=rating,
-                text=text
+                comment=text
             )
             
             # Обновляем рейтинг фрилансера
             freelancer_profile = contract.freelancer.freelancer_profile
             
             # Получаем все отзывы о фрилансере
-            all_reviews = Review.objects.filter(reviewed_user=contract.freelancer)
+            all_reviews = Review.objects.filter(freelancer=contract.freelancer)
             avg_rating = all_reviews.aggregate(models.Avg('rating'))['rating__avg'] or 0
             
             freelancer_profile.rating = avg_rating
-            freelancer_profile.reviews_count = all_reviews.count()
             freelancer_profile.save()
             
             messages.success(request, _('Thank you for your review!'))
+            return redirect('jobs:contract_detail', pk=contract.pk)
             
         except Exception as e:
             messages.error(request, _(f'Error creating review: {str(e)}'))
-        
+            return redirect('jobs:leave_review', pk=contract.pk)
+    
+    # Для GET запроса показываем форму для оставления отзыва
+    context = {
+        'contract': contract
+    }
+    
+    return render(request, 'jobs/review_form.html', context)
+
+@login_required
+def milestone_create_view(request, pk):
+    """
+    Создание вехи для контракта (только для клиента)
+    """
+    contract = get_object_or_404(Contract, pk=pk)
+    
+    # Проверяем, что пользователь является владельцем контракта
+    if contract.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to create milestones for this contract'))
+    
+    # Проверяем, что контракт активен
+    if contract.status != 'active':
+        messages.error(request, _('You can only add milestones to active contracts'))
         return redirect('jobs:contract_detail', pk=contract.pk)
     
-    # GET запрос не должен происходить, так как форма встроена в страницу контракта
-    return redirect('jobs:contract_detail', pk=contract.pk)
+    if request.method == 'POST':
+        form = MilestoneForm(request.POST)
+        if form.is_valid():
+            milestone = form.save(commit=False)
+            milestone.contract = contract
+            milestone.save()
+            
+            messages.success(request, _('Milestone added successfully'))
+            return redirect('jobs:contract_detail', pk=contract.pk)
+    else:
+        # Предварительно заполняем форму с дедлайном контракта
+        initial = {
+            'due_date': contract.deadline,
+        }
+        form = MilestoneForm(initial=initial)
+    
+    context = {
+        'form': form,
+        'contract': contract,
+    }
+    
+    return render(request, 'jobs/milestone_form.html', context)
+
+# Применяем декоратор к представлениям, которые используют базовый шаблон
+home_view = check_pending_reviews(home_view)
+project_list_view = check_pending_reviews(project_list_view)
+project_detail_view = check_pending_reviews(project_detail_view)
+contract_detail_view = check_pending_reviews(contract_detail_view)
+contract_list_view = check_pending_reviews(contract_list_view)

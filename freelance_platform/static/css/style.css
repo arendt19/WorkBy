@@ -2138,4 +2138,29 @@ small.text-muted {
     margin-top: 0.25rem;
     font-size: 0.875em;
     color: var(--danger-color);
+}
+
+/* Удаляю стили для плавающей кнопки VIEW PAYMENTS, если они есть в глобальном CSS */
+.floating-payment-button,
+.floating-payment-button:hover,
+.floating-payment-button i,
+#floatingPayButton,
+.payment-button-wrapper {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    height: 0 !important;
+    width: 0 !important;
+    pointer-events: none !important;
+}
+
+/* Стили для индикаторов счетчиков */
+.message-badge, .notification-badge {
+    position: relative;
+    top: -8px;
+    left: -5px;
+    background-color: var(--danger-color);
+    color: white;
 } 

@@ -302,7 +302,11 @@ class Contract(models.Model):
         Возвращает отзыв, связанный с контрактом (если есть)
         """
         from accounts.models import Review
-        return Review.objects.filter(contract=self).first()
+        return Review.objects.filter(
+            project=self.project,
+            client=self.client,
+            freelancer=self.freelancer
+        ).first()
 
 class Milestone(models.Model):
     """
