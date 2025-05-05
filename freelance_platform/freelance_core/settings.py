@@ -15,9 +15,13 @@ import os
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 
-# Загрузка переменных окружения из .env файла
-from dotenv import load_dotenv
-load_dotenv()
+# Загрузка переменных окружения из .env файла (если доступно)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("Переменные окружения загружены из .env")
+except ImportError:
+    print("python-dotenv не установлен, загрузка переменных из .env пропущена")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
