@@ -15,6 +15,10 @@ import os
 from django.utils.translation import gettext_lazy as _
 from django.contrib.messages import constants as messages
 
+# Загрузка переменных окружения из .env файла
+from dotenv import load_dotenv
+load_dotenv()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,11 +28,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m3!7+k_)1g1!iw!#iqo&z6dqj7=^c-8s@(12v&a3l90z#bz%!9'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-m3!7+k_)1g1!iw!#iqo&z6dqj7=^c-8s@(12v&a3l90z#bz%!9')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # Определение режима отладки на основе переменной окружения
-DEBUG = True  # Для локальной разработки всегда True
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 't')
 
 # Определяем, запущен ли сервер на локальной машине
 IS_LOCAL = os.environ.get('SERVER_ENV', 'local') == 'local'
@@ -81,7 +85,6 @@ INSTALLED_APPS = [
     'crispy_bootstrap4',
     'rest_framework',
     'channels',
-    'sslserver',  # Для запуска сервера с SSL
     
     # Наши приложения
     'accounts',
@@ -89,6 +92,12 @@ INSTALLED_APPS = [
     'payments',
     'chat',
 ]
+
+# Добавляем дополнительные приложения только в режиме отладки
+if DEBUG:
+    INSTALLED_APPS += [
+        'sslserver',  # Для запуска сервера с SSL только при разработке
+    ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
