@@ -97,11 +97,8 @@ INSTALLED_APPS = [
     'chat',
 ]
 
-# Добавляем дополнительные приложения только в режиме отладки
-if DEBUG:
-    INSTALLED_APPS += [
-        'sslserver',  # Для запуска сервера с SSL только при разработке
-    ]
+# Добавляем дополнительные приложения только для локальной разработки
+# Эти приложения не будут загружаться на production сервере
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
