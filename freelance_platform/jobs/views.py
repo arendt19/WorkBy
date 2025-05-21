@@ -12,10 +12,7 @@ from decimal import Decimal
 from django.db import models
 from django.utils.functional import wraps
 from accounts.models import Review
-<<<<<<< HEAD
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-=======
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
 
 from .models import Project, Category, Proposal, Contract, Milestone, Tag
 from .forms import (
@@ -338,7 +335,6 @@ def project_delete_view(request, pk):
 @login_required
 def proposal_create_view(request, pk):
     """
-<<<<<<< HEAD
     Создание предложения по проекту
     """
     project = get_object_or_404(Project, pk=pk)
@@ -355,28 +351,7 @@ def proposal_create_view(request, pk):
     
     # Проверяем, не отправлял ли пользователь уже предложение
     existing_proposal = Proposal.objects.filter(project=project, freelancer=request.user).first()
-=======
-    Создание предложения для проекта (только для фрилансеров)
-    """
-    project = get_object_or_404(Project, pk=pk)
     
-    # Проверяем, что проект открыт для предложений
-    if project.status != 'open':
-        messages.error(request, _('This project is no longer accepting proposals'))
-        return redirect('jobs:project_detail', pk=project.pk)
-    
-    # Проверяем, что пользователь является фрилансером
-    if not hasattr(request.user, 'freelancer_profile'):
-        messages.error(request, _('Only freelancers can submit proposals'))
-        return redirect('jobs:project_detail', pk=project.pk)
-    
-    # Проверяем, не подавал ли пользователь уже предложение для этого проекта
-    existing_proposal = Proposal.objects.filter(
-        freelancer=request.user,
-        project=project
-    ).first()
-    
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
     if existing_proposal:
         messages.info(request, _('You have already submitted a proposal for this project'))
         return redirect('jobs:proposal_detail', pk=existing_proposal.pk)
@@ -586,39 +561,30 @@ def proposal_accept_view(request, pk):
     
     # Проверяем, что пользователь является владельцем проекта
     if proposal.project.client != request.user:
-<<<<<<< HEAD
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': False,
                 'message': _('You do not have permission to accept this proposal')
             }, status=403)
-=======
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         return HttpResponseForbidden(_('You do not have permission to accept this proposal'))
     
     # Проверяем, что предложение в статусе ожидания
     if proposal.status != 'pending':
-<<<<<<< HEAD
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': False,
                 'message': _('This proposal is not pending and cannot be accepted')
             }, status=400)
-=======
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         messages.error(request, _('This proposal is not pending and cannot be accepted'))
         return redirect('jobs:proposal_detail', pk=proposal.pk)
     
     # Проверяем, что проект открыт
     if proposal.project.status != 'open':
-<<<<<<< HEAD
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': False,
                 'message': _('This project is not open and proposals cannot be accepted')
             }, status=400)
-=======
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         messages.error(request, _('This project is not open and proposals cannot be accepted'))
         return redirect('jobs:proposal_detail', pk=proposal.pk)
     
@@ -635,7 +601,6 @@ def proposal_accept_view(request, pk):
             # Отклоняем остальные предложения
             Proposal.objects.filter(project=proposal.project).exclude(pk=proposal.pk).update(status='rejected')
             
-<<<<<<< HEAD
             # Автоматически создаем контракт
             contract = Contract.objects.create(
                 client=request.user,
@@ -668,13 +633,6 @@ def proposal_accept_view(request, pk):
             'success': False,
             'message': _('Invalid request method')
         }, status=400)
-=======
-            # Отправляем уведомление фрилансеру о принятии предложения
-            send_proposal_accepted_notification(proposal)
-            
-            messages.success(request, _('Proposal accepted successfully'))
-            return redirect(reverse('jobs:contract_create') + f'?proposal={proposal.pk}')
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
     
     context = {
         'proposal': proposal,
@@ -783,7 +741,6 @@ def contract_list_view(request):
     else:
         contracts = Contract.objects.filter(freelancer=request.user)
     
-<<<<<<< HEAD
     # Получаем количество контрактов для каждого статуса
     all_count = contracts.count()
     active_count = contracts.filter(status='active').count()
@@ -814,15 +771,6 @@ def contract_list_view(request):
         'all_count': all_count,
         'active_count': active_count,
         'completed_count': completed_count,
-=======
-    # Фильтрация по статусу
-    status = request.GET.get('status')
-    if status:
-        contracts = contracts.filter(status=status)
-    
-    context = {
-        'contracts': contracts,
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
     }
     
     return render(request, 'jobs/contract_list.html', context)

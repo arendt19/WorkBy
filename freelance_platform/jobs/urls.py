@@ -10,10 +10,7 @@ urlpatterns = [
     path('projects/<int:pk>/', views.project_detail_view, name='project_detail'),
     path('about/', views.about_view, name='about'),
     path('categories/', views.category_list_view, name='categories'),
-<<<<<<< HEAD
-=======
     path('tips-for-freelancers/', views.tips_for_freelancers_view, name='tips_for_freelancers'),
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
     
     # Управление проектами для клиентов
     path('projects/create/', views.project_create_view, name='project_create'),

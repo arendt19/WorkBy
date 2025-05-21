@@ -12,7 +12,6 @@
             <p class="lead">{% trans "Find projects in your area of expertise" %}</p>
         </div>
     </div>
-
     <div class="row mt-4">
         {% for category in categories %}
         <div class="col-md-4 mb-4">
@@ -23,7 +22,7 @@
                         {% trans "Projects" %}: {{ category.projects.count }}
                     </p>
                     <a href="{% url 'jobs:category_detail' category.slug %}" class="btn btn-outline-primary">
-                        {% trans "Browse" %} {{ category.get_translated_name }}
+                        {% trans "Browse" %} {{ category.get_translated_name }} 
                     </a>
                 </div>
             </div>

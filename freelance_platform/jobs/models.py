@@ -40,19 +40,19 @@ class Category(models.Model):
         """
         current_lang = get_language()
         
-        # Получаем имя на указанном языке
+        # Если текущий язык английский, используем name_en или основное name (для поддержки английской версии)
+        if current_lang == 'en':
+            return self.name_en if self.name_en else self.name
+        
+        # Для других языков пытаемся получить перевод
         translated_field = f"name_{current_lang}"
         
         # Проверяем, есть ли соответствующее поле и заполнено ли оно
         if hasattr(self, translated_field) and getattr(self, translated_field):
             return getattr(self, translated_field)
         
-        # Если перевода нет на текущем языке, проверяем name_en, затем name
-        if current_lang != 'en' and self.name_en:
-            return self.name_en
-            
-        # Возвращаем основное name в качестве запасного варианта
-        return self.name
+        # Если перевода нет, возвращаем english или основное name
+        return self.name_en if self.name_en else self.name
 
 class Tag(models.Model):
     """
@@ -83,19 +83,19 @@ class Tag(models.Model):
         """
         current_lang = get_language()
         
-        # Получаем имя на указанном языке
+        # Если текущий язык английский, используем name_en или основное name
+        if current_lang == 'en':
+            return self.name_en if self.name_en else self.name
+        
+        # Для других языков пытаемся получить перевод
         translated_field = f"name_{current_lang}"
         
         # Проверяем, есть ли соответствующее поле и заполнено ли оно
         if hasattr(self, translated_field) and getattr(self, translated_field):
             return getattr(self, translated_field)
         
-        # Если перевода нет на текущем языке, проверяем name_en, затем name
-        if current_lang != 'en' and self.name_en:
-            return self.name_en
-            
-        # Возвращаем основное name в качестве запасного варианта
-        return self.name
+        # Если перевода нет, возвращаем english или основное name
+        return self.name_en if self.name_en else self.name
 
 class Project(models.Model):
     """
