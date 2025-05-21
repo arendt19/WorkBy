@@ -43,6 +43,16 @@ def get_range(value):
     """
     return range(1, int(value) + 1)
 
+@register.filter
+def multiply(value, arg):
+    """
+    Умножает значение на аргумент
+    """
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return 0
+
 @register.filter(name='jobs_add_class')
 def jobs_add_class(field, css_class):
     """Добавляет CSS класс к виджету поля формы (Jobs app версия)"""

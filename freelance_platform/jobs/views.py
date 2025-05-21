@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Case, When, Value, IntegerField, Count
+from django.db.models import Q, Case, When, Value, IntegerField, Count, Avg
 from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.http import HttpResponseForbidden, JsonResponse
@@ -77,12 +77,26 @@ def home_view(request):
     freelancers_count = User.objects.filter(user_type='freelancer').count()
     clients_count = User.objects.filter(user_type='client').count()
     
+    # Получаем топовых фрилансеров с высоким рейтингом
+    top_freelancers = User.objects.filter(
+        user_type='freelancer',
+        freelancer_profile__rating__gt=0  # Только с рейтингом больше 0
+    ).annotate(
+        reviews_count=Count('reviews_received')
+    ).filter(
+        reviews_count__gt=0  # Только с отзывами
+    ).order_by(
+        '-freelancer_profile__rating',  # Сортировка по рейтингу (высокий сначала)
+        '-reviews_count'  # При одинаковом рейтинге - по количеству отзывов
+    )[:8]  # Ограничиваем 8 фрилансерами
+    
     context = {
         'projects': projects,
         'categories': categories,
         'projects_count': projects_count,
         'freelancers_count': freelancers_count,
         'clients_count': clients_count,
+        'top_freelancers': top_freelancers,
     }
     
     return render(request, 'jobs/home.html', context)
@@ -508,10 +522,22 @@ def my_proposals_view(request):
     if request.user.user_type == 'freelancer':
         # Для фрилансеров показываем их предложения
         proposals = Proposal.objects.filter(freelancer=request.user)
+        
+        # Подсчитываем количество предложений по статусам
+        pending_count = proposals.filter(status='pending').count()
+        accepted_count = proposals.filter(status='accepted').count()
+        rejected_count = proposals.filter(status='rejected').count()
+        withdrawn_count = proposals.filter(status='withdrawn').count()
     else:
         # Для клиентов показываем предложения на их проекты
         projects = Project.objects.filter(client=request.user).values_list('id', flat=True)
         proposals = Proposal.objects.filter(project_id__in=projects)
+        
+        # Подсчитываем количество предложений по статусам
+        pending_count = proposals.filter(status='pending').count()
+        accepted_count = proposals.filter(status='accepted').count()
+        rejected_count = proposals.filter(status='rejected').count()
+        withdrawn_count = proposals.filter(status='withdrawn').count()
     
     # Фильтрация по статусу
     status = request.GET.get('status')
@@ -520,6 +546,10 @@ def my_proposals_view(request):
     
     context = {
         'proposals': proposals,
+        'pending_count': pending_count,
+        'accepted_count': accepted_count,
+        'rejected_count': rejected_count,
+        'withdrawn_count': withdrawn_count,
     }
     
     return render(request, 'jobs/my_proposals.html', context)

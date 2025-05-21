@@ -4,6 +4,8 @@
 :root {
     /* Основная цветовая схема */
     --primary-color: #8B0000;
+    --primary-color-light: #a52a2a;
+    --primary-color-dark: #6b0000;
     --secondary-color: #6c757d;
     --background-color: #121212;
     --text-color: #f5f5f5;
@@ -70,21 +72,44 @@ footer {
     background-color: var(--footer-bg);
 }
 
-/* Стили для карточек проектов */
+/* Улучшенные стили для карточек проектов */
 .project-card {
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
     margin-bottom: 1.5rem;
     height: 100%;
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--card-bg);
+    position: relative;
+}
+
+.project-card:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-color-light) 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease-in-out;
 }
 
 .project-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.project-card:hover:before {
+    transform: scaleX(1);
 }
 
 .project-card .card-footer {
     padding: 0.75rem 1.25rem;
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(0, 0, 0, 0.1);
+    border-top: 1px solid var(--card-border);
 }
 
 /* Стили для индикатора звезд рейтинга */
@@ -110,6 +135,7 @@ footer {
     font-size: 0.75rem;
     border-radius: 0.25rem;
     font-weight: bold;
+    transition: all 0.2s ease;
 }
 
 .status-open {
@@ -132,60 +158,269 @@ footer {
     color: white;
 }
 
-/* Стили для чата */
-.chat-container {
-    height: 60vh;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 1rem;
-    background-color: #f9f9f9;
+/* Улучшенные стили для кнопок */
+.btn-primary {
+    background: linear-gradient(145deg, var(--primary-color), var(--primary-color-dark));
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(145deg, var(--primary-color-light), var(--primary-color));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.1), transparent);
+    transition: all 0.3s ease;
+    z-index: -1;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.btn-outline-primary:hover:before {
+    left: 100%;
+}
+
+/* Улучшенные стили для карточек категорий */
+.category-card {
+    transition: all 0.3s ease;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    background-color: var(--card-bg);
+    padding: 1.5rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.category-card:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(145deg, var(--primary-color-dark), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+    border-radius: 12px;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+}
+
+.category-card:hover:before {
+    opacity: 0.05;
+}
+
+.category-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background-color: rgba(139, 0, 0, 0.1);
+    border-radius: 50%;
     margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
 }
 
-.message {
-    margin-bottom: 1rem;
-    padding: 0.75rem 1rem;
-    border-radius: 10px;
-    max-width: 75%;
-}
-
-.message.received {
-    background-color: #e9ecef;
-    align-self: flex-start;
-}
-
-.message.sent {
+.category-card:hover .category-icon {
+    transform: scale(1.1);
     background-color: var(--primary-color);
     color: white;
-    align-self: flex-end;
-    margin-left: auto;
 }
 
-.message .sender {
-    font-weight: bold;
-    margin-bottom: 0.25rem;
+/* Улучшенные стили для счетчиков на главной странице */
+.counter-wrapper {
+    background-color: var(--counter-wrapper-bg);
+    padding: 3rem 0;
+    border-radius: 0.5rem;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-.message-time {
-    font-size: 0.8rem;
-    color: #4a4a4a;
-    text-align: right;
-}
-
-.message.sent .message-time {
-    color: rgba(255, 255, 255, 0.9);
-}
-
-/* Стили для форм */
-.form-container {
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
+.counter-item {
+    text-align: center;
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    position: relative;
 }
 
-/* Стили для профилей пользователей */
+.counter-item:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 3px;
+    width: 0;
+    background: linear-gradient(90deg, var(--primary-color-dark), var(--primary-color), var(--primary-color-light));
+    transition: width 0.3s ease;
+}
+
+.counter-item:hover:after {
+    width: 50px;
+}
+
+.counter-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.counter-label {
+    font-size: 1rem;
+    color: var(--text-color);
+    margin-top: 0.5rem;
+}
+
+/* Анимации для элементов */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+.slide-up {
+    animation: slideUp 0.5s ease-in-out;
+}
+
+.slide-in-right {
+    animation: slideInRight 0.5s ease-in-out;
+}
+
+/* Улучшенные стили для секции "Как это работает" */
+.how-it-works-card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid var(--card-border);
+    background-color: var(--card-bg);
+}
+
+.how-it-works-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.how-it-works-icon {
+    font-size: 3rem;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.how-it-works-card:hover .how-it-works-icon {
+    transform: scale(1.1);
+    color: var(--primary-color-light);
+}
+
+/* Улучшенные стили для хедера */
+.hero-section {
+    position: relative;
+    padding: 5rem 0;
+    background: linear-gradient(rgba(13, 13, 13, 0.9), rgba(13, 13, 13, 0.95)), url('../img/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.hero-section:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, rgba(139, 0, 0, 0.1), transparent 70%);
+    z-index: 0;
+}
+
+.hero-section .container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Улучшенные стили для поля поиска */
+.search-container {
+    position: relative;
+    margin: 2rem auto;
+    max-width: 600px;
+}
+
+.search-container .form-control {
+    height: 60px;
+    padding-left: 20px;
+    border-radius: 30px 0 0 30px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+.search-container .form-control:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(139, 0, 0, 0.25);
+}
+
+.search-container .btn {
+    height: 60px;
+    border-radius: 0 30px 30px 0;
+    padding: 0 30px;
+    background: linear-gradient(145deg, var(--primary-color), var(--primary-color-dark));
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.search-container .btn:hover {
+    background: linear-gradient(145deg, var(--primary-color-light), var(--primary-color));
+    transform: translateY(-2px);
+}
+
+/* Стили для профиля */
 .profile-header {
     background-color: var(--card-bg) !important;
     border-radius: 10px;
@@ -233,145 +468,6 @@ footer {
     font-weight: 500;
 }
 
-/* Стили для индикаторов счетчиков */
-.message-badge, .notification-badge {
-    position: relative;
-    top: -8px;
-    left: -5px;
-    background-color: var(--danger-color);
-    color: white;
-}
-
-/* Респонсивные стили */
-@media (max-width: 768px) {
-    .profile-header {
-        text-align: center;
-    }
-    
-    .profile-avatar {
-        margin-bottom: 1rem;
-    }
-}
-
-/* Стили для главной страницы */
-.hero-section {
-    background-color: var(--primary-color);
-    color: white;
-    text-align: center;
-    padding: 5rem 0;
-    margin-bottom: 3rem;
-}
-
-.hero-title {
-    font-size: 3rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-}
-
-.hero-subtitle {
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-}
-
-.category-icon {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-}
-
-/* Стили для карточек категорий */
-.category-card {
-    text-align: center;
-    padding: 2rem 1rem;
-    transition: transform 0.3s;
-    margin-bottom: 1.5rem;
-    height: 100%;
-}
-
-.category-card:hover {
-    transform: translateY(-5px);
-}
-
-/* Стили для счетчиков на главной странице */
-.counter-wrapper {
-    background-color: var(--dark-bg) !important;
-    color: var(--text-color) !important;
-}
-
-.counter-item {
-    background-color: var(--card-bg) !important;
-    border-radius: 8px;
-    border: 1px solid var(--border-color) !important;
-}
-
-.counter-value {
-    color: var(--primary-color) !important;
-}
-
-.counter-label {
-    color: var(--text-muted) !important;
-}
-
-/* Основные стили сайта */
-
-/* Для логотипа, если нет изображения */
-.logo-text {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    letter-spacing: -0.5px;
-}
-
-.dark-theme .logo-text {
-    color: #FFFFFF;
-}
-
-/* Кастомные стили для карточек проектов */
-.project-card {
-    transition: all 0.3s ease;
-}
-
-.project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Стили для профиля */
-.profile-header {
-    background-color: var(--card-bg) !important;
-    border-radius: 10px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    border-color: var(--border-color) !important;
-    color: var(--text-color) !important;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
-}
-
-.profile-avatar {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 5px solid var(--card-border) !important;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
-    background-color: var(--primary-color) !important;
-}
-
-.stat-item {
-    background-color: var(--card-bg) !important;
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15) !important;
-    border: 1px solid var(--border-color) !important;
-    color: var(--text-color) !important;
-}
-
-.stat-item .count {
-    font-size: 2rem;
-    font-weight: bold;
-    color: var(--primary-color) !important;
-}
-
 /* Стили для чата */
 .chat-container {
     height: 60vh;
@@ -399,6 +495,11 @@ footer {
     color: white;
     align-self: flex-end;
     margin-left: auto;
+}
+
+.message .sender {
+    font-weight: bold;
+    margin-bottom: 0.25rem;
 }
 
 .message-time {
@@ -1687,36 +1788,6 @@ section[class*="bg-light"] {
     background-color: var(--card-bg) !important;
     color: var(--text-color) !important;
     border-color: var(--border-color) !important;
-}
-
-/* Исправляем цвета счетчиков на главной странице */
-.counter-wrapper {
-    background-color: var(--dark-bg) !important;
-    color: var(--text-color) !important;
-}
-
-.counter-item {
-    background-color: var(--card-bg) !important;
-    border-radius: 8px;
-    border: 1px solid var(--border-color) !important;
-}
-
-.counter-value {
-    color: var(--primary-color) !important;
-}
-
-.counter-label {
-    color: var(--text-muted) !important;
-}
-
-/* Сильно усиливаем правила для всех карточек */
-.card, 
-div[class*="card"], 
-.list-group-item,
-div[class*="list-group-item"] {
-    background-color: var(--card-bg) !important;
-    border-color: var(--border-color) !important;
-    color: var(--text-color) !important;
 }
 
 /* Исправление цветового оформления на страницах профиля */

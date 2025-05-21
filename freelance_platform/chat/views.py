@@ -174,7 +174,7 @@ def mark_notification_read_view(request, pk):
         # Перенаправляем на профиль фрилансера
         from accounts.models import User
         freelancer = get_object_or_404(User, pk=notification.related_object_id)
-        return redirect('freelancer_detail', username=freelancer.username)
+        return redirect('accounts:freelancer_detail', username=freelancer.username)
     
     # Если не удалось определить, куда перенаправить
     return redirect('chat:notifications')

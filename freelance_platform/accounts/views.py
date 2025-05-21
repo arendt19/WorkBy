@@ -129,13 +129,17 @@ def freelancer_detail_view(request, username):
     reviews = Review.objects.filter(freelancer=freelancer)
     avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
     
+    # Убедимся, что avg_rating - это число, а не None
+    if avg_rating is None:
+        avg_rating = 0
+    
     # Собираем статистику для фрилансера
     completed_contracts = Contract.objects.filter(freelancer=freelancer, status='completed')
     total_contracts = Contract.objects.filter(freelancer=freelancer).exclude(status='cancelled')
     
     stats = {
         'completed_projects': completed_contracts.count(),
-        'success_rate': int(completed_contracts.count() / total_contracts.count() * 100) if total_contracts.count() > 0 else 0,
+        'success_rate': int(completed_contracts.count() / max(total_contracts.count(), 1) * 100),
         'on_time': 95,  # Заглушка, в реальном проекте нужно рассчитывать
         'on_budget': 90,  # Заглушка, в реальном проекте нужно рассчитывать
     }
@@ -207,19 +211,41 @@ def create_review_view(request, freelancer_id, contract_id):
     
     if existing_review:
         messages.error(request, _('You have already reviewed this freelancer for this project'))
-        return redirect('freelancer_detail', username=freelancer.username)
+        return redirect('accounts:freelancer_detail', username=freelancer.username)
     
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
-            review = form.save(commit=False)
-            review.client = request.user
-            review.freelancer = freelancer
-            review.project = contract.project
-            review.save()
+            with transaction.atomic():
+                # Сохраняем основной отзыв
+                review = form.save(commit=False)
+                review.client = request.user
+                review.freelancer = freelancer
+                review.project = contract.project
+                review.save()
+                
+                # Сохраняем детальные оценки
+                quality_rating = request.POST.get('quality_rating')
+                communication_rating = request.POST.get('communication_rating')
+                deadline_rating = request.POST.get('deadline_rating')
+                cost_rating = request.POST.get('cost_rating')
+                
+                # Создаем объект детальных оценок
+                from .models import ReviewDetail
+                ReviewDetail.objects.create(
+                    review=review,
+                    quality_rating=quality_rating,
+                    communication_rating=communication_rating,
+                    deadline_rating=deadline_rating,
+                    cost_rating=cost_rating
+                )
+                
+                # Обновляем детальные рейтинги в профиле фрилансера
+                freelancer_profile = freelancer.freelancer_profile
+                freelancer_profile.update_detailed_ratings()
             
             messages.success(request, _('Thank you for your review!'))
-            return redirect('freelancer_detail', username=freelancer.username)
+            return redirect('accounts:freelancer_detail', username=freelancer.username)
     else:
         form = ReviewForm()
     
@@ -238,18 +264,46 @@ def edit_review_view(request, review_id):
     """
     review = get_object_or_404(Review, pk=review_id, client=request.user)
     
+    # Получаем или создаем детальные оценки
+    try:
+        review_detail = review.details
+    except:
+        from .models import ReviewDetail
+        review_detail = ReviewDetail.objects.create(
+            review=review,
+            quality_rating=review.rating,
+            communication_rating=review.rating,
+            deadline_rating=review.rating,
+            cost_rating=review.rating
+        )
+    
     if request.method == 'POST':
         form = ReviewForm(request.POST, instance=review)
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                # Сохраняем основной отзыв
+                form.save()
+                
+                # Обновляем детальные оценки
+                review_detail.quality_rating = request.POST.get('quality_rating')
+                review_detail.communication_rating = request.POST.get('communication_rating')
+                review_detail.deadline_rating = request.POST.get('deadline_rating')
+                review_detail.cost_rating = request.POST.get('cost_rating')
+                review_detail.save()
+                
+                # Обновляем детальные рейтинги в профиле фрилансера
+                freelancer_profile = review.freelancer.freelancer_profile
+                freelancer_profile.update_detailed_ratings()
+            
             messages.success(request, _('Review updated successfully'))
-            return redirect('freelancer_detail', username=review.freelancer.username)
+            return redirect('accounts:freelancer_detail', username=review.freelancer.username)
     else:
         form = ReviewForm(instance=review)
     
     context = {
         'form': form,
         'review': review,
+        'review_detail': review_detail,
         'freelancer': review.freelancer,
     }
     
@@ -266,7 +320,7 @@ def delete_review_view(request, review_id):
     if request.method == 'POST':
         review.delete()
         messages.success(request, _('Review deleted successfully'))
-        return redirect('freelancer_detail', username=freelancer.username)
+        return redirect('accounts:freelancer_detail', username=freelancer.username)
     
     context = {
         'review': review,

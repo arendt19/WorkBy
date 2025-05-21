@@ -63,6 +63,9 @@ msgstr "Мои проекты"
 msgid "My Proposals"
 msgstr "Мои предложения"
 
+msgid "Proposals"
+msgstr "Предложения"
+
 msgid "Contracts"
 msgstr "Контракты"
 
@@ -257,4 +260,211 @@ msgid "Ready to get started?"
 msgstr "Готовы начать?"
 
 msgid "Join thousands of clients and freelancers on WorkBy"
-msgstr "Присоединяйтесь к тысячам клиентов и фрилансеров на WorkBy" 
+msgstr "Присоединяйтесь к тысячам клиентов и фрилансеров на WorkBy"
+
+msgid "All"
+msgstr "Все"
+
+msgid "Pending"
+msgstr "Ожидающие"
+
+msgid "Accepted"
+msgstr "Принятые"
+
+msgid "Rejected"
+msgstr "Отклоненные"
+
+msgid "Withdrawn"
+msgstr "Отозванные"
+
+msgid "Client"
+msgstr "Клиент"
+
+msgid "Submitted"
+msgstr "Отправлено"
+
+msgid "View"
+msgstr "Просмотр"
+
+msgid "Edit"
+msgstr "Редактировать"
+
+msgid "Withdraw"
+msgstr "Отозвать"
+
+msgid "You haven't submitted any proposals yet"
+msgstr "Вы еще не отправили ни одного предложения"
+
+msgid "Start bidding on projects to build your portfolio and earn money"
+msgstr "Начните предлагать свои услуги, чтобы создать портфолио и заработать"
+
+msgid "Browse Projects"
+msgstr "Просмотреть проекты"
+
+msgid "Proposals for"
+msgstr "Предложения для"
+
+msgid "Back to Project"
+msgstr "Вернуться к проекту"
+
+msgid "No proposals yet"
+msgstr "Предложений пока нет"
+
+msgid "Your project hasn't received any proposals yet. Check back later."
+msgstr "Ваш проект пока не получил ни одного предложения. Проверьте позже."
+
+msgid "Submit Proposal"
+msgstr "Отправить предложение"
+
+msgid "Proposal Sent"
+msgstr "Предложение отправлено"
+
+msgid "Back to My Proposals"
+msgstr "Вернуться к моим предложениям"
+
+msgid "Accept Proposal"
+msgstr "Принять предложение"
+
+msgid "Decline"
+msgstr "Отклонить"
+
+msgid "Rating Details"
+msgstr "Детали рейтинга"
+
+msgid "Work Quality"
+msgstr "Качество работы"
+
+msgid "Communication"
+msgstr "Коммуникация"
+
+msgid "Deadline Adherence"
+msgstr "Соблюдение сроков"
+
+msgid "Value for Money"
+msgstr "Соотношение цена/качество"
+
+msgid "How satisfied are you with the quality of work delivered?"
+msgstr "Насколько вы удовлетворены качеством выполненной работы?"
+
+msgid "How well did the freelancer communicate throughout the project?"
+msgstr "Насколько хорошо фрилансер поддерживал коммуникацию на протяжении проекта?"
+
+msgid "Did the freelancer deliver on time?"
+msgstr "Выполнил ли фрилансер работу в срок?"
+
+msgid "Was the work worth what you paid?"
+msgstr "Стоила ли работа тех денег, которые вы заплатили?"
+
+msgid "Overall Rating"
+msgstr "Общая оценка"
+
+msgid "Your Review"
+msgstr "Ваш отзыв"
+
+msgid "Share your experience working with this freelancer"
+msgstr "Поделитесь своим опытом работы с этим фрилансером"
+
+msgid "Top Rated Freelancers"
+msgstr "Лучшие фрилансеры"
+
+msgid "View Profile"
+msgstr "Просмотреть профиль"
+
+msgid "No top freelancers found."
+msgstr "Лучшие фрилансеры не найдены."
+
+msgid "View All Freelancers"
+msgstr "Посмотреть всех фрилансеров"
+
+msgid "Contact Information"
+msgstr "Контактная информация"
+
+msgid "Skills & Languages"
+msgstr "Навыки и языки"
+
+msgid "Education & Certifications"
+msgstr "Образование и сертификаты"
+
+msgid "No portfolio projects yet."
+msgstr "Проекты в портфолио отсутствуют."
+
+msgid "No portfolio projects yet"
+msgstr "Проекты в портфолио отсутствуют"
+
+msgid "Reviews"
+msgstr "Отзывы"
+
+msgid "Freelancers"
+msgstr "Фрилансеры"
+
+msgid "Contact"
+msgstr "Связаться"
+
+msgid "Location:"
+msgstr "Местоположение:"
+
+msgid "Experience:"
+msgstr "Опыт:"
+
+msgid "Languages:"
+msgstr "Языки:"
+
+msgid "Hourly Rate:"
+msgstr "Почасовая ставка:"
+
+msgid "Education:"
+msgstr "Образование:"
+
+msgid "Website:"
+msgstr "Сайт:"
+
+msgid "Skills:"
+msgstr "Навыки:"
+
+msgid "Statistics"
+msgstr "Статистика"
+
+msgid "Completed Projects"
+msgstr "Выполненные проекты"
+
+msgid "Success Rate"
+msgstr "Коэффициент успеха"
+
+msgid "On-Time Delivery"
+msgstr "Своевременная сдача"
+
+msgid "On-Budget"
+msgstr "В рамках бюджета"
+
+msgid "out of 5"
+msgstr "из 5"
+
+msgid "reviews"
+msgstr "отзывов"
+
+msgid "Available for Hire"
+msgstr "Доступен для найма"
+
+msgid "Not Available"
+msgstr "Не доступен"
+
+msgid "Not specified"
+msgstr "Не указано"
+
+msgid "years"
+msgstr "лет"
+
+msgid "No reviews yet"
+msgstr "Пока нет отзывов"
+
+msgid "This freelancer hasn't received any reviews yet."
+msgstr "Этот фрилансер еще не получил ни одного отзыва."
+
+msgid "Write a Review"
+msgstr "Оставить отзыв"
+
+msgid "Project:"
+msgstr "Проект:"
+
+msgid "Years of Experience"
+msgstr "Лет опыта" 

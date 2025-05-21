@@ -78,8 +78,52 @@ class FreelancerProfile(models.Model):
     specialization = models.CharField(_('Specialization'), max_length=100, blank=True)
     languages = models.CharField(_('Languages'), max_length=200, blank=True, help_text=_('Languages you speak (comma separated)'))
     
+    # Детальные рейтинги
+    quality_rating = models.DecimalField(_('Quality Rating'), max_digits=3, decimal_places=2, default=0)
+    communication_rating = models.DecimalField(_('Communication Rating'), max_digits=3, decimal_places=2, default=0)
+    deadline_rating = models.DecimalField(_('Deadline Adherence Rating'), max_digits=3, decimal_places=2, default=0)
+    cost_rating = models.DecimalField(_('Value for Money Rating'), max_digits=3, decimal_places=2, default=0)
+    
     def __str__(self):
         return f"{self.user.username}'s Freelancer Profile"
+    
+    def update_detailed_ratings(self):
+        """
+        Обновляет детальные рейтинги фрилансера на основе всех отзывов
+        """
+        from django.db.models import Avg
+        
+        # Получаем все отзывы для этого фрилансера
+        reviews = Review.objects.filter(freelancer=self.user)
+        
+        if reviews.exists():
+            # Получаем средние значения для каждого типа рейтинга
+            review_details = ReviewDetail.objects.filter(review__freelancer=self.user)
+            
+            if review_details.exists():
+                # Обновляем детальные рейтинги
+                avg_quality = review_details.aggregate(Avg('quality_rating'))['quality_rating__avg'] or 0
+                avg_communication = review_details.aggregate(Avg('communication_rating'))['communication_rating__avg'] or 0
+                avg_deadline = review_details.aggregate(Avg('deadline_rating'))['deadline_rating__avg'] or 0
+                avg_cost = review_details.aggregate(Avg('cost_rating'))['cost_rating__avg'] or 0
+                
+                self.quality_rating = avg_quality
+                self.communication_rating = avg_communication
+                self.deadline_rating = avg_deadline
+                self.cost_rating = avg_cost
+                
+                # Обновляем общий рейтинг как среднее из всех детальных рейтингов
+                self.rating = (avg_quality + avg_communication + avg_deadline + avg_cost) / 4
+            else:
+                # Если нет детальных рейтингов, используем общий рейтинг
+                avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+                self.rating = avg_rating
+                self.quality_rating = avg_rating
+                self.communication_rating = avg_rating
+                self.deadline_rating = avg_rating
+                self.cost_rating = avg_rating
+            
+            self.save(update_fields=['rating', 'quality_rating', 'communication_rating', 'deadline_rating', 'cost_rating'])
 
 class ClientProfile(models.Model):
     """
@@ -158,7 +202,9 @@ class Review(models.Model):
         return f"Review for {self.freelancer.username} by {self.client.username}"
     
     def save(self, *args, **kwargs):
+        is_new = not self.pk
         super().save(*args, **kwargs)
+        
         # Обновляем рейтинг фрилансера при добавлении/изменении отзыва
         freelancer_profile = self.freelancer.freelancer_profile
         reviews = Review.objects.filter(freelancer=self.freelancer)
@@ -166,3 +212,37 @@ class Review(models.Model):
         if avg_rating:
             freelancer_profile.rating = avg_rating
             freelancer_profile.save(update_fields=['rating'])
+            
+        # Если это новый отзыв и нет детальных оценок, создаем их
+        if is_new and not hasattr(self, 'details'):
+            ReviewDetail.objects.create(
+                review=self,
+                quality_rating=self.rating,
+                communication_rating=self.rating,
+                deadline_rating=self.rating,
+                cost_rating=self.rating
+            )
+            
+        # Обновляем детальные рейтинги фрилансера
+        freelancer_profile.update_detailed_ratings()
+
+class ReviewDetail(models.Model):
+    """
+    Детальные оценки для отзывов по разным критериям
+    """
+    review = models.OneToOneField(Review, on_delete=models.CASCADE, related_name='details')
+    quality_rating = models.PositiveSmallIntegerField(_('Quality Rating'), choices=[(i, i) for i in range(1, 6)])
+    communication_rating = models.PositiveSmallIntegerField(_('Communication Rating'), choices=[(i, i) for i in range(1, 6)])
+    deadline_rating = models.PositiveSmallIntegerField(_('Deadline Adherence Rating'), choices=[(i, i) for i in range(1, 6)])
+    cost_rating = models.PositiveSmallIntegerField(_('Value for Money Rating'), choices=[(i, i) for i in range(1, 6)])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"Detailed ratings for {self.review}"
+    
+    @property
+    def average_rating(self):
+        """Возвращает среднюю оценку по всем критериям"""
+        ratings = [self.quality_rating, self.communication_rating, self.deadline_rating, self.cost_rating]
+        return sum(ratings) / len(ratings)

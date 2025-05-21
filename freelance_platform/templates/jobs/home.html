@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load static %}
+{% load jobs_tags %}
 
 {% block title %}{% trans "WorkBy - Find Freelancers in Kazakhstan" %}{% endblock %}
 
@@ -156,8 +157,73 @@
     </div>
 </section>
 
-<!-- How It Works -->
+<!-- Top Freelancers -->
 <section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">{% trans "Top Rated Freelancers" %}</h2>
+        
+        <div class="row">
+            {% for freelancer in top_freelancers %}
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card freelancer-card h-100">
+                        <div class="card-body text-center">
+                            {% if freelancer.avatar %}
+                                <img src="{{ freelancer.avatar.url }}" alt="{{ freelancer.get_full_name }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                                    <span style="font-size: 2rem;">{{ freelancer.get_initials }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <h5 class="card-title">
+                                <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="text-decoration-none">
+                                    {{ freelancer.get_full_name|default:freelancer.username }}
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted">{{ freelancer.freelancer_profile.specialization }}</p>
+                            
+                            <div class="rating mb-3">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= freelancer.freelancer_profile.rating|floatformat:"0" %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-2">{{ freelancer.freelancer_profile.rating|floatformat:1 }}</span>
+                            </div>
+                            
+                            <div class="skills mb-3">
+                                {% if freelancer.skills %}
+                                    {% for skill in freelancer.skills|split:"," %}
+                                        <span class="badge bg-light text-dark me-1">{{ skill|strip }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="btn btn-sm btn-outline-primary">
+                                {% trans "View Profile" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>{% trans "No top freelancers found." %}</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'jobs:freelancer_list' %}" class="btn btn-outline-primary">
+                {% trans "View All Freelancers" %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5 bg-light">
     <div class="container">
         <h2 class="text-center mb-5">{% trans "How It Works" %}</h2>
         

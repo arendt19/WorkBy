@@ -96,8 +96,9 @@ INSTALLED_APPS = [
     'chat',
 ]
 
-# Добавляем дополнительные приложения только для локальной разработки
-# Эти приложения не будут загружаться на production сервере
+# Добавляем debug_toolbar только для отладки
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -110,6 +111,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',  # Добавляем middleware для django-allauth
 ]
+
+# Добавляем middleware для debug_toolbar только для отладки
+if DEBUG:
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ['127.0.0.1', 'localhost']
 
 ROOT_URLCONF = 'freelance_core.urls'
 
