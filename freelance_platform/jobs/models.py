@@ -39,7 +39,6 @@ class Category(models.Model):
         Возвращает переведенное название категории в зависимости от текущего языка
         """
         current_lang = get_language()
-<<<<<<< HEAD
         
         # Получаем имя на указанном языке
         translated_field = f"name_{current_lang}"
@@ -53,14 +52,6 @@ class Category(models.Model):
             return self.name_en
             
         # Возвращаем основное name в качестве запасного варианта
-=======
-        if current_lang == 'en' and self.name_en:
-            return self.name_en
-        elif current_lang == 'ru' and self.name_ru:
-            return self.name_ru
-        elif current_lang == 'kk' and self.name_kk:
-            return self.name_kk
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         return self.name
 
 class Tag(models.Model):
@@ -91,7 +82,6 @@ class Tag(models.Model):
         Возвращает переведенное название тега в зависимости от текущего языка
         """
         current_lang = get_language()
-<<<<<<< HEAD
         
         # Получаем имя на указанном языке
         translated_field = f"name_{current_lang}"
@@ -105,14 +95,6 @@ class Tag(models.Model):
             return self.name_en
             
         # Возвращаем основное name в качестве запасного варианта
-=======
-        if current_lang == 'en' and self.name_en:
-            return self.name_en
-        elif current_lang == 'ru' and self.name_ru:
-            return self.name_ru
-        elif current_lang == 'kk' and self.name_kk:
-            return self.name_kk
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         return self.name
 
 class Project(models.Model):
