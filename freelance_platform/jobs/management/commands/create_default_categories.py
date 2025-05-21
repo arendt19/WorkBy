@@ -6,6 +6,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         categories = [
+<<<<<<< HEAD
             {
                 'name': 'Web Development', 
                 'name_ru': 'Веб-разработка', 
@@ -126,6 +127,28 @@ class Command(BaseCommand):
                 'name_kk': 'Бухгалтерлік есеп',
                 'description': 'Management of financial records'
             },
+=======
+            {'name': 'Web Development', 'description': 'Development of websites and web applications'},
+            {'name': 'Mobile App Development', 'description': 'Development of mobile applications for iOS and Android'},
+            {'name': 'Graphic Design', 'description': 'Design of visual content for branding and marketing'},
+            {'name': 'Content Writing', 'description': 'Writing of articles, blogs, and other content'},
+            {'name': 'Digital Marketing', 'description': 'Marketing of products and services using digital technologies'},
+            {'name': 'Video Production', 'description': 'Production of videos for various purposes'},
+            {'name': 'Translation', 'description': 'Translation of content between languages'},
+            {'name': 'Data Science', 'description': 'Analysis of data to extract meaningful insights'},
+            {'name': 'UI/UX Design', 'description': 'Design of user interfaces and experiences'},
+            {'name': 'Backend Development', 'description': 'Development of server-side applications'},
+            {'name': 'Frontend Development', 'description': 'Development of client-side applications'},
+            {'name': 'DevOps', 'description': 'Combining software development with IT operations'},
+            {'name': 'Game Development', 'description': 'Development of video games'},
+            {'name': 'AI & Machine Learning', 'description': 'Development of artificial intelligence and machine learning solutions'},
+            {'name': 'Blockchain', 'description': 'Development of blockchain-based solutions'},
+            {'name': 'E-commerce Development', 'description': 'Development of online stores'},
+            {'name': 'Legal Services', 'description': 'Provision of legal services'},
+            {'name': 'Financial Services', 'description': 'Provision of financial services'},
+            {'name': 'Business Consulting', 'description': 'Consulting for business strategy and operations'},
+            {'name': 'Accounting & Bookkeeping', 'description': 'Management of financial records'},
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         ]
         
         for category_data in categories:
@@ -134,10 +157,14 @@ class Command(BaseCommand):
             if created:
                 self.stdout.write(self.style.SUCCESS(f"Created category: {category.name}"))
             else:
+<<<<<<< HEAD
                 # Обновляем поля перевода даже для существующих категорий
                 category.name_ru = category_data['name_ru']
                 category.name_kk = category_data['name_kk']
                 category.save()
                 self.stdout.write(self.style.WARNING(f"Updated category: {category.name}"))
+=======
+                self.stdout.write(self.style.WARNING(f"Category already exists: {category.name}"))
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         
         self.stdout.write(self.style.SUCCESS('Default categories created successfully!')) 

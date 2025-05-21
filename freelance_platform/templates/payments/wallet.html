@@ -184,6 +184,14 @@
         <a href="{% url 'payments:withdraw' %}" class="btn btn-outline-primary">
             <i class="fas fa-minus-circle me-2"></i> {% trans "Withdraw Funds" %}
         </a>
+<<<<<<< HEAD
+=======
+        {% if debug %}
+        <a href="{% url 'payments:demo_add_balance' %}" class="btn btn-lg btn-success">
+            <i class="fas fa-vial me-2"></i> {% trans "Demo: Add 10,000 ₸" %}
+        </a>
+        {% endif %}
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
     </div>
 </div>
 {% endblock %} 

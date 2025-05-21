@@ -63,6 +63,7 @@
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
+<<<<<<< HEAD
         padding: 16px;
         border-radius: 8px;
         margin-bottom: 16px;
@@ -72,6 +73,12 @@
     
     .milestone-item:hover {
         background-color: rgba(255, 255, 255, 0.1);
+=======
+    }
+    
+    .milestone-item:hover {
+        background-color: rgba(255, 255, 255, 0.03);
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         transform: translateX(5px);
     }
     
@@ -269,6 +276,7 @@
     .payment-button-wrapper {
         position: relative;
     }
+<<<<<<< HEAD
     
     .status-pending {
         background-color: rgba(255, 193, 7, 0.2);
@@ -299,6 +307,8 @@
         background-color: rgba(108, 117, 125, 0.2);
         border-left: 4px solid #6c757d;
     }
+=======
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
 </style>
 {% endblock extra_css %}
 
@@ -307,6 +317,7 @@
     <!-- Основной контент -->
     <div class="row">
         <div class="col-md-8">
+<<<<<<< HEAD
             <div class="card bg-dark text-light mb-4">
                 <div class="card-body">
                     <h5 class="card-title">{% trans "Contract Details" %}</h5>
@@ -426,21 +437,62 @@
                                 <i class="fas fa-check-circle me-1"></i> {% trans "Complete Contract & Pay" %}
                             </a>
                             <div class="small text-muted">{% trans "Mark contract as completed and pay full amount to freelancer." %}</div>
+=======
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Contract Details" %}</h5>
+                    <p class="card-text">{% trans "Contract ID:" %} {{ contract.contract_id }}</p>
+                    <p class="card-text">{% trans "Status:" %} {{ contract.get_status_display }}</p>
+                    <p class="card-text">{% trans "Client:" %} {{ contract.client.username }}</p>
+                    <p class="card-text">{% trans "Freelancer:" %} {{ contract.freelancer.username }}</p>
+                    <p class="card-text">{% trans "Created:" %} {{ contract.created_at|date:"d F Y" }}</p>
+                    <p class="card-text">{% trans "Deadline:" %} {{ contract.deadline|date:"d F Y" }}</p>
+                    <p class="card-text">{% trans "Total Amount:" %} {{ contract.total_amount }} {{ contract.currency }}</p>
+                    <p class="card-text">{% trans "Description:" %} {{ contract.description }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Contract Actions" %}</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-primary">
+                                <i class="fas fa-comments me-1"></i> {% trans "Message" %}
+                            </a>
+                        </li>
+                        {% if contract.client == request.user and contract.status == 'active' %}
+                        <li class="list-group-item">
+                            <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-success">
+                                <i class="fas fa-check-circle me-1"></i> {% trans "Complete Contract" %}
+                            </a>
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                         </li>
                         {% endif %}
                         
                         <!-- Кнопка для оставления отзыва -->
                         {% if contract.client == request.user and contract.status == 'completed' %}
                             {% if not contract.review %}
+<<<<<<< HEAD
                             <li class="list-group-item bg-dark text-light border-secondary">
                                 <a href="{% url 'jobs:leave_review' contract.pk %}" class="btn btn-warning animate-pulse btn-sm w-100">
+=======
+                            <li class="list-group-item">
+                                <a href="{% url 'jobs:leave_review' contract.pk %}" class="btn btn-warning animate-pulse">
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                                     <i class="fas fa-star me-1"></i> {% trans "Leave a Review" %}
                                 </a>
                             </li>
                             {% else %}
                             <!-- Показываем информацию о существующем отзыве -->
+<<<<<<< HEAD
                             <li class="list-group-item bg-dark text-light border-secondary">
                                 <div class="card border-0 bg-dark text-light p-3 border border-secondary">
+=======
+                            <li class="list-group-item">
+                                <div class="card border-0 bg-light p-3">
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                                     <div class="d-flex align-items-center mb-2">
                                         <h6 class="mb-0 me-2">{% trans "Your Review:" %}</h6>
                                         <div class="ms-auto">
@@ -462,6 +514,7 @@
                     </ul>
                 </div>
             </div>
+<<<<<<< HEAD
             
             <!-- Блок информации о прогрессе -->
             <div class="card bg-dark text-light mt-4">
@@ -511,3 +564,98 @@
     </div>
 </div>
 {% endblock content %} 
+=======
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Функция для полного удаления красных точек со страницы
+        function removeRedDots() {
+            // Удаляем все элементы с классом payment-notification-badge
+            document.querySelectorAll('.payment-notification-badge').forEach(function(element) {
+                if (element && element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            
+            // Ищем и удаляем все круглые красные элементы
+            document.querySelectorAll('*').forEach(function(element) {
+                const style = window.getComputedStyle(element);
+                if (
+                    (style.backgroundColor.includes('rgb(220, 53, 69)') || 
+                    style.backgroundColor.includes('#dc3545')) && 
+                    style.borderRadius.includes('50%')
+                ) {
+                    if (element && element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                }
+            });
+        }
+        
+        // Удаляем красные точки сразу и с небольшой задержкой
+        removeRedDots();
+        setTimeout(removeRedDots, 500);
+        setTimeout(removeRedDots, 1500);
+        
+        // Функция для удаления зеленой кнопки VIEW PAYMENTS
+        function removeGreenButtons() {
+            // Удаляем все элементы с id floatingPayButton
+            document.querySelectorAll('#floatingPayButton').forEach(function(element) {
+                if (element && element.parentNode && element.parentNode.parentNode) {
+                    // Удаляем родительский элемент payment-button-wrapper
+                    element.parentNode.parentNode.removeChild(element.parentNode);
+                } else if (element && element.parentNode) {
+                    element.parentNode.removeChild(element);
+                }
+            });
+            
+            // Удаляем все зеленые кнопки с текстом VIEW PAYMENTS
+            document.querySelectorAll('.floating-payment-button').forEach(function(element) {
+                if (element && element.parentNode) {
+                    // Удаляем родительский элемент
+                    if (element.parentNode.classList.contains('payment-button-wrapper')) {
+                        element.parentNode.parentNode.removeChild(element.parentNode);
+                    } else {
+                        element.parentNode.removeChild(element);
+                    }
+                }
+            });
+            
+            // Ищем все зеленые кнопки на основе стиля
+            document.querySelectorAll('button, a').forEach(function(element) {
+                const style = window.getComputedStyle(element);
+                const text = element.textContent.trim();
+                
+                // Проверяем, является ли элемент зеленой кнопкой VIEW PAYMENTS
+                if (
+                    (style.backgroundColor.includes('rgb(40, 167, 69)') || 
+                     style.backgroundColor.includes('#28a745') || 
+                     style.background.includes('linear-gradient') && style.background.includes('rgb(40, 167, 69)')) &&
+                    (text.includes('VIEW PAYMENTS') || text.includes('PAY NOW')) &&
+                    (style.position === 'fixed')
+                ) {
+                    if (element && element.parentNode) {
+                        // Если это кнопка в обертке, удаляем обертку
+                        if (element.parentNode.classList.contains('payment-button-wrapper')) {
+                            element.parentNode.parentNode.removeChild(element.parentNode);
+                        } else {
+                            element.parentNode.removeChild(element);
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Удаляем зеленые кнопки
+        removeGreenButtons();
+        setTimeout(removeGreenButtons, 500);
+        setTimeout(removeGreenButtons, 1500);
+    });
+</script>
+{% endblock extra_js %} 
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd

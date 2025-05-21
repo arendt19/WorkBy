@@ -2,7 +2,10 @@
 
 import django.db.models.deletion
 from django.db import migrations, models
+<<<<<<< HEAD
 from django.db.migrations.operations.base import Operation
+=======
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
 
 
 class Migration(migrations.Migration):

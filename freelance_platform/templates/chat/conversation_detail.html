@@ -767,8 +767,12 @@
                 markMessagesAsRead();
             })
             .catch(error => {
+<<<<<<< HEAD
                 // Скрываем отладочную информацию
                 markMessagesAsRead();
+=======
+                console.error(`Ошибка при загрузке сообщений: ${error}`);
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
             });
     }
     
@@ -779,6 +783,10 @@
         audio.volume = 0.5; // Громкость 50%
         audio.play().catch(e => {
             // Тихо проглатываем ошибку, если автовоспроизведение запрещено
+<<<<<<< HEAD
+=======
+            console.log('Notification sound could not be played', e);
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         });
     }
     
@@ -856,7 +864,11 @@
                 }
             })
             .catch(error => {
+<<<<<<< HEAD
                 // Скрываем отладочную информацию
+=======
+                console.error(`Ошибка при отправке сообщения: ${error}`);
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                 
                 // Отображаем ошибку в временном сообщении
                 const tempElement = document.getElementById(tempId);
@@ -898,7 +910,11 @@
                 }
             })
             .catch(error => {
+<<<<<<< HEAD
                 // Скрываем отладочную информацию
+=======
+                console.error(`Ошибка при отметке сообщений: ${error}`);
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
             });
     }
     

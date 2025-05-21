@@ -2,6 +2,7 @@
 {% load i18n %}
 {% load static %}
 
+<<<<<<< HEAD
 {% block title %}{% trans "Confirm Acceptance" %} | WorkBy{% endblock %}
 
 {% block content %}
@@ -112,4 +113,64 @@
         });
     });
 </script>
+=======
+{% block title %}{% trans "Accept Proposal" %} - WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Accept Proposal" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% trans "You are about to accept this proposal and create a contract with the freelancer." %}
+                    </div>
+                    
+                    <h4 class="mb-3">{% trans "Proposal Details" %}</h4>
+                    
+                    <div class="mb-4">
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">{% trans "Project" %}:</div>
+                            <div class="col-md-8">{{ proposal.project.title }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">{% trans "Freelancer" %}:</div>
+                            <div class="col-md-8">{{ proposal.freelancer.get_full_name }}</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">{% trans "Bid Amount" %}:</div>
+                            <div class="col-md-8">{{ proposal.bid_amount }} ₸</div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-md-4 fw-bold">{% trans "Delivery Time" %}:</div>
+                            <div class="col-md-8">{{ proposal.delivery_time }} {% trans "days" %}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% trans "By accepting this proposal, you agree to work with this freelancer under the proposed terms. This action will initiate the contract creation process." %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle me-1"></i> {% trans "Accept and Create Contract" %}
+                            </button>
+                            <a href="{% url 'jobs:proposal_detail' proposal.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times-circle me-1"></i> {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
 {% endblock %} 

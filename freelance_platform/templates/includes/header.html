@@ -29,7 +29,11 @@
             <!-- Левое меню -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if user.is_authenticated %}
+<<<<<<< HEAD
                     {% if user.user_type == 'client' %}
+=======
+                    {% if user.is_client %}
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                         <!-- Меню для клиентов -->
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'jobs:project_create' %}">{% trans "Post a Project" %}</a>
@@ -145,9 +149,14 @@
                             
                             <li><a class="dropdown-item" href="{% url 'jobs:my_proposals' %}"><i class="fas fa-paper-plane me-2"></i> {% trans "Proposals" %}</a></li>
                             
+<<<<<<< HEAD
                             {% if user.user_type == 'client' %}
                                 <li><a class="dropdown-item" href="{% url 'jobs:my_projects' %}"><i class="fas fa-clipboard-list me-2"></i> {% trans "My Projects" %}</a></li>
                                 <li><a class="dropdown-item" href="{% url 'jobs:project_create' %}"><i class="fas fa-plus-circle me-2"></i> {% trans "Post a Project" %}</a></li>
+=======
+                            {% if user.is_client %}
+                                <li><a class="dropdown-item" href="{% url 'jobs:my_projects' %}"><i class="fas fa-clipboard-list me-2"></i> {% trans "My Projects" %}</a></li>
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                             {% endif %}
                             
                             <li><a class="dropdown-item" href="{% url 'jobs:contract_list' %}"><i class="fas fa-file-contract me-2"></i> {% trans "Contracts" %}</a></li>

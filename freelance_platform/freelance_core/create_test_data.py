@@ -16,6 +16,7 @@ from payments.models import Wallet, Transaction
 # Создание категорий
 def create_categories():
     categories = [
+<<<<<<< HEAD
         {
             "name": "Web Development", 
             "name_en": "Web Development", 
@@ -83,6 +84,20 @@ def create_categories():
         category.name_ru = cat["name_ru"]
         category.name_kk = cat["name_kk"]
         category.save()
+=======
+        {"name": "Веб-разработка", "slug": "web-development"},
+        {"name": "Мобильная разработка", "slug": "mobile-development"},
+        {"name": "Дизайн", "slug": "design"},
+        {"name": "Контент и копирайтинг", "slug": "content"},
+        {"name": "Маркетинг", "slug": "marketing"},
+        {"name": "Перевод", "slug": "translation"},
+        {"name": "SEO и SMM", "slug": "seo-smm"},
+        {"name": "Аудио и видео", "slug": "audio-video"},
+    ]
+    
+    for cat in categories:
+        Category.objects.get_or_create(name=cat["name"], slug=cat["slug"])
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
     
     return Category.objects.all()
 

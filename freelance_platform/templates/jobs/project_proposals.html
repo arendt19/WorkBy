@@ -4,6 +4,7 @@
 
 {% block title %}{% trans "Proposals" %} | {{ project.title }} | WorkBy{% endblock %}
 
+<<<<<<< HEAD
 {% block extra_js %}
 <script>
     $(document).ready(function() {
@@ -51,6 +52,8 @@
 </script>
 {% endblock %}
 
+=======
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
 {% block content %}
 <div class="container py-4">
     <div class="row">
@@ -187,7 +190,11 @@
                                             <i class="fas fa-comment me-1"></i> {% trans "Message" %}
                                         </a>
                                         <a href="{% url 'accounts:freelancer_detail' proposal.freelancer.username %}" class="btn btn-sm btn-outline-primary">
+<<<<<<< HEAD
                                             <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
+=======
+                                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                                         </a>
                                     </div>
                                 </div>
@@ -227,11 +234,21 @@
                                             </div>
                                             
                                             {% if proposal.status == 'pending' %}
+<<<<<<< HEAD
                                                 <div class="proposal-actions d-grid gap-2">
                                                     {% csrf_token %}
                                                     <a href="{% url 'jobs:proposal_accept' pk=proposal.pk %}" class="btn btn-success w-100 mb-2 accept-proposal-btn" data-proposal-id="{{ proposal.pk }}">
                                                         <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
                                                     </a>
+=======
+                                                <div class="d-grid gap-2">
+                                                    <form method="post" action="{% url 'jobs:proposal_accept' pk=proposal.pk %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-success w-100 mb-2">
+                                                            <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
+                                                        </button>
+                                                    </form>
+>>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                                                     
                                                     <a href="{% url 'jobs:proposal_reject' pk=proposal.pk %}" class="btn btn-outline-danger">
                                                         <i class="fas fa-times me-1"></i> {% trans "Decline" %}
