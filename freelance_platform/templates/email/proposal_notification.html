@@ -1,0 +1,17 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Новое предложение - FreelanceKZ{% endblock %}
+
+{% block header %}Новое предложение на ваш проект{% endblock %}
+
+{% block content %}
+<h2>Здравствуйте, {{ user.get_full_name|default:user.username }}!</h2>
+
+<p>Вы получили новое предложение на ваш проект на платформе FreelanceKZ.</p>
+
+<div class="message-box">
+    {{ notification.content }}
+</div>
+
+<p>Для просмотра деталей предложения и принятия решения, нажмите на кнопку ниже:</p>
+{% endblock %} 

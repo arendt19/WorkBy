@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:project_list' %}">{% trans "Projects" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ project.title }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Основная информация о проекте -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ project.title }}</h4>
+                    <span class="badge bg-dark text-light">{{ project.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="project-meta mb-4">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-2">
+                                    <i class="fas fa-user me-2"></i> <strong>{% trans "Client" %}:</strong> 
+                                    <a href="{% url 'accounts:client_detail' project.client.username %}">{{ project.client.get_full_name|default:project.client.username }}</a>
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-calendar me-2"></i> <strong>{% trans "Posted" %}:</strong> 
+                                    {{ project.created_at|date:"d.m.Y" }}
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-folder me-2"></i> <strong>{% trans "Category" %}:</strong> 
+                                    <a href="{% url 'jobs:category_detail' project.category.slug %}">{{ project.category.get_translated_name }}</a>
+                                </p>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <p class="mb-2">
+                                    <i class="fas fa-money-bill-wave me-2"></i> <strong>{% trans "Budget" %}:</strong> 
+                                    {% if project.budget_type == 'fixed' %}
+                                        {% trans "Fixed Price" %}: {{ project.budget_min }} - {{ project.budget_max }} ₸
+                                    {% else %}
+                                        {% trans "Hourly Rate" %}: {{ project.budget_min }} - {{ project.budget_max }} ₸/{% trans "hour" %}
+                                    {% endif %}
+                                </p>
+                                {% if project.deadline %}
+                                    <p class="mb-2">
+                                        <i class="fas fa-clock me-2"></i> <strong>{% trans "Deadline" %}:</strong> 
+                                        {{ project.deadline|date:"d.m.Y H:i" }}
+                                    </p>
+                                {% endif %}
+                                <p class="mb-2">
+                                    <i class="fas fa-map-marker-alt me-2"></i> <strong>{% trans "Location" %}:</strong> 
+                                    {% if project.is_remote %}
+                                        <span class="badge bg-success">{% trans "Remote" %}</span>
+                                    {% endif %}
+                                    {% if project.location_required %}
+                                        {{ project.location_required }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="project-description mb-4">
+                        <h5>{% trans "Description" %}</h5>
+                        <div class="card bg-dark p-3 mt-2 border border-secondary">
+                            {{ project.description|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    {% if project.tags.all %}
+                        <div class="project-tags mb-4">
+                            <h5>{% trans "Skills Required" %}</h5>
+                            <div class="mt-2">
+                                {% for tag in project.tags.all %}
+                                    <span class="badge bg-dark text-light me-2 mb-2 border border-secondary">{{ tag.get_translated_name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if project.experience_required %}
+                        <div class="project-experience mb-4">
+                            <h5>{% trans "Experience Required" %}</h5>
+                            <div class="card bg-dark p-3 mt-2 border border-secondary">
+                                {{ project.experience_required }}
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Actions buttons -->
+                    <div class="card-footer bg-dark d-flex gap-2">
+                        {% if user.is_authenticated %}
+                            {% if user.user_type == 'freelancer' %}
+                                {% if user_proposal %}
+                                    <a href="{% url 'jobs:proposal_detail' pk=user_proposal.pk %}" class="btn btn-primary">
+                                        <i class="fas fa-file-contract me-1"></i> {% trans "View My Proposal" %}
+                                    </a>
+                                {% else %}
+                                    {% if project.status == 'open' %}
+                                        <a href="{% url 'jobs:proposal_create' pk=project.pk %}" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane me-1"></i> {% trans "Submit a Proposal" %}
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                                
+                                <!-- Добавляем кнопку для связи с клиентом -->
+                                <a href="{% url 'chat:start_conversation' user_id=project.client.id %}" class="btn btn-outline-light">
+                                    <i class="fas fa-comment me-1"></i> {% trans "Contact Client" %}
+                                </a>
+                            {% endif %}
+                            
+                            {% if user == project.client %}
+                                <a href="{% url 'jobs:project_edit' pk=project.pk %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i> {% trans "Edit Project" %}
+                                </a>
+                                
+                                <a href="{% url 'jobs:project_delete' pk=project.pk %}" class="btn btn-outline-danger">
+                                    <i class="fas fa-trash-alt me-1"></i> {% trans "Delete Project" %}
+                                </a>
+                                
+                                {% if project.status == 'open' %}
+                                    <!-- Кнопка для просмотра всех предложений -->
+                                    <a href="{% url 'jobs:project_proposals' pk=project.pk %}" class="btn btn-outline-light">
+                                        <i class="fas fa-list me-1"></i> {% trans "View All Proposals" %} 
+                                        <span class="badge bg-primary ms-1">{{ project.proposals.count }}</span>
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            
+                            <!-- Добавляем кнопку для сохранения проекта в избранное (будет реализовано позже) -->
+                            <button type="button" class="btn btn-outline-warning ms-auto bookmark-button" data-project-id="{{ project.id }}">
+                                <i class="far fa-bookmark me-1"></i> {% trans "Save" %}
+                            </button>
+                        {% else %}
+                            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-1"></i> {% trans "Login to Submit a Proposal" %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Боковая панель -->
+        <div class="col-md-4">
+            <!-- Информация о заказчике -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">{% trans "About the Client" %}</h5>
+                </div>
+                <div class="card-body bg-dark text-light">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if project.client.avatar %}
+                            <img src="{{ project.client.avatar.url }}" alt="{{ project.client.username }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
+                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                                <span class="text-white fw-bold">{{ project.client.get_initials }}</span>
+                            </div>
+                        {% endif %}
+                        
+                        <div>
+                            <h6 class="mb-0">
+                                <a href="{% url 'accounts:client_detail' project.client.username %}" class="text-decoration-none text-light">
+                                    {{ project.client.get_full_name|default:project.client.username }}
+                                </a>
+                            </h6>
+                            <p class="text-muted mb-0 small">
+                                {% trans "Member since" %} {{ project.client.date_joined|date:"F Y" }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p class="text-muted mb-1">{% trans "Projects Posted" %}</p>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="{{ project_stats.total_projects }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="text-muted small">{{ project_stats.total_projects }}</span>
+                            <span class="text-muted small">{{ project_stats.completion_rate }}% {% trans "completion" %}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'accounts:client_detail' project.client.username %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Похожие проекты -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">{% trans "Similar Projects" %}</h5>
+                </div>
+                <div class="card-body p-0 bg-dark">
+                    <div class="list-group list-group-flush">
+                        {% for similar_project in similar_projects|default:'' %}
+                            <a href="{% url 'jobs:project_detail' similar_project.pk %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">{{ similar_project.title|truncatechars:40 }}</h6>
+                                    <small class="text-muted">{{ similar_project.created_at|date:"d.m.Y" }}</small>
+                                </div>
+                                <small class="text-muted">{{ similar_project.budget_min }} - {{ similar_project.budget_max }} ₸</small>
+                            </a>
+                        {% empty %}
+                            <div class="list-group-item py-4 text-center bg-dark text-muted border-secondary">
+                                <p class="mb-0">{% trans "No similar projects found" %}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

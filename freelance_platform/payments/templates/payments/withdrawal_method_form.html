@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if is_new %}
+        {% trans "Add Withdrawal Method" %}
+    {% else %}
+        {% trans "Edit Withdrawal Method" %}
+    {% endif %}
+    | WorkBy
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .method-details {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card bg-dark text-white border-secondary shadow">
+                <div class="card-header bg-dark border-secondary">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card text-danger me-2"></i>
+                        {% if is_new %}
+                            {% trans "Add Withdrawal Method" %}
+                        {% else %}
+                            {% trans "Edit Withdrawal Method" %}
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="withdrawalMethodForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">{% trans "Method Information" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                {{ form.method_type|as_crispy_field }}
+                                {{ form.name|as_crispy_field }}
+                                {{ form.is_default|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- YooMoney поля -->
+                        <div class="mb-4 method-details" id="yoomoney_fields">
+                            <h5 class="mb-3">{% trans "YooMoney Details" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                {{ form.yoomoney_account|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- Kaspi поля -->
+                        <div class="mb-4 method-details" id="kaspi_fields">
+                            <h5 class="mb-3">{% trans "Kaspi Details" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                {{ form.kaspi_account|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- Банковский перевод поля -->
+                        <div class="mb-4 method-details" id="bank_transfer_fields">
+                            <h5 class="mb-3">{% trans "Bank Account Details" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                {{ form.bank_name|as_crispy_field }}
+                                {{ form.bank_account|as_crispy_field }}
+                                {{ form.swift_code|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- PayPal поля -->
+                        <div class="mb-4 method-details" id="paypal_fields">
+                            <h5 class="mb-3">{% trans "PayPal Details" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                {{ form.paypal_email|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- Криптовалюта поля -->
+                        <div class="mb-4 method-details" id="crypto_fields">
+                            <h5 class="mb-3">{% trans "Cryptocurrency Details" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                {{ form.crypto_type|as_crispy_field }}
+                                {{ form.crypto_address|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-danger">
+                                {% if is_new %}
+                                    <i class="fas fa-plus me-2"></i> {% trans "Add Method" %}
+                                {% else %}
+                                    <i class="fas fa-save me-2"></i> {% trans "Update Method" %}
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'payments:manage_withdrawal_methods' %}" class="btn btn-outline-light ms-2">
+                                <i class="fas fa-times me-2"></i> {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const methodTypeSelect = document.getElementById('id_method_type');
+        const methodDetailsContainers = document.querySelectorAll('.method-details');
+        
+        // Функция для отображения нужных полей в зависимости от типа метода
+        function showMethodFields(methodType) {
+            // Скрываем все контейнеры с полями
+            methodDetailsContainers.forEach(container => {
+                container.style.display = 'none';
+            });
+            
+            // Показываем контейнер для выбранного типа
+            const selectedContainer = document.getElementById(methodType + '_fields');
+            if (selectedContainer) {
+                selectedContainer.style.display = 'block';
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        if (methodTypeSelect) {
+            showMethodFields(methodTypeSelect.value);
+            
+            // Обработчик изменения типа метода
+            methodTypeSelect.addEventListener('change', function() {
+                showMethodFields(this.value);
+            });
+        }
+    });
+</script>
+{% endblock %} 

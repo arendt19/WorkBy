@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Leave a Review" %} | WorkBy{% endblock title %}
+
+{% block extra_css %}
+<style>
+    .star-rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .star-rating input {
+        display: none;
+    }
+    
+    .star-rating label {
+        cursor: pointer;
+        font-size: 2.5rem;
+        color: #ccc;
+        margin-right: 10px;
+        transition: color 0.3s ease;
+    }
+    
+    .star-rating label:before {
+        content: '★';
+    }
+    
+    .star-rating input:checked ~ label,
+    .star-rating input:checked ~ label ~ label,
+    .star-rating label:hover,
+    .star-rating label:hover ~ label {
+        color: #f8ce0b;
+        transform: scale(1.2);
+    }
+    
+    .review-card {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .review-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    }
+    
+    .freelancer-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .freelancer-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 20px;
+        border: 3px solid #f8ce0b;
+    }
+    
+    .freelancer-placeholder {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin-right: 20px;
+        border: 3px solid #f8ce0b;
+    }
+    
+    .review-submit-btn {
+        background: linear-gradient(135deg, #f8ce0b, #ff9800);
+        border: none;
+        padding: 12px 25px;
+        border-radius: 30px;
+        box-shadow: 0 4px 15px rgba(248, 206, 11, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .review-submit-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(248, 206, 11, 0.5);
+    }
+    
+    .contract-details {
+        border-left: 4px solid #f8ce0b;
+        padding-left: 15px;
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card review-card">
+                <div class="card-body p-4 p-md-5">
+                    <h2 class="text-center mb-4">{% trans "Leave a Review" %}</h2>
+                    
+                    <div class="freelancer-info">
+                        {% if contract.freelancer.avatar %}
+                            <img src="{{ contract.freelancer.avatar.url }}" alt="{{ contract.freelancer.get_full_name }}" class="freelancer-avatar">
+                        {% else %}
+                            <div class="freelancer-placeholder">
+                                {{ contract.freelancer.get_initials }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <h4 class="mb-1">{{ contract.freelancer.get_full_name }}</h4>
+                            <p class="text-muted mb-0">{% trans "Freelancer" %}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contract-details mb-4">
+                        <h5>{% trans "Contract:" %} #{{ contract.contract_id }}</h5>
+                        <p class="mb-1"><strong>{% trans "Title:" %}</strong> {{ contract.title }}</p>
+                        <p class="mb-1"><strong>{% trans "Completed:" %}</strong> {{ contract.updated_at|date:"d F Y" }}</p>
+                        <p><strong>{% trans "Amount:" %}</strong> ${{ contract.amount }}</p>
+                    </div>
+                    
+                    <form method="post" action="{% url 'jobs:leave_review' contract.pk %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label">{% trans "Rate your experience:" %}</label>
+                            <div class="star-rating mb-2">
+                                <input type="radio" id="star5" name="rating" value="5" />
+                                <label for="star5" title="{% trans 'Excellent' %}"></label>
+                                
+                                <input type="radio" id="star4" name="rating" value="4" />
+                                <label for="star4" title="{% trans 'Very Good' %}"></label>
+                                
+                                <input type="radio" id="star3" name="rating" value="3" />
+                                <label for="star3" title="{% trans 'Good' %}"></label>
+                                
+                                <input type="radio" id="star2" name="rating" value="2" />
+                                <label for="star2" title="{% trans 'Fair' %}"></label>
+                                
+                                <input type="radio" id="star1" name="rating" value="1" />
+                                <label for="star1" title="{% trans 'Poor' %}"></label>
+                            </div>
+                            <small class="text-muted">{% trans "Click on a star to rate" %}</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="reviewText" class="form-label">{% trans "Your review:" %}</label>
+                            <textarea class="form-control" id="reviewText" name="text" rows="5" 
+                                      placeholder="{% trans 'Share your experience working with this freelancer...' %}"></textarea>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning review-submit-btn">
+                                <i class="fas fa-paper-plane me-2"></i>{% trans "Submit Review" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %} 

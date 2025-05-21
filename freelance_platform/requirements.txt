@@ -1,0 +1,26 @@
+# Зависимости для проекта WorkBy
+Django>=5.1.0,<5.2.0
+django-allauth>=0.62.0,<0.63.0
+django-crispy-forms>=2.1.0
+crispy-bootstrap4>=2022.1
+crispy-bootstrap5>=0.7
+djangorestframework>=3.15.0
+django-filter>=23.5.0
+django-cors-headers>=4.3.1
+django-modeltranslation>=0.18.12
+django-debug-toolbar>=4.2.0
+Pillow>=10.1.0
+psycopg2-binary>=2.9.9
+stripe>=7.8.1
+channels>=4.0.0
+channels_redis>=4.1.0
+daphne>=4.0.0
+whitenoise>=6.6.0
+django-sslserver>=0.22
+gunicorn>=21.2.0
+pylint-django>=2.5.5
+pytest>=7.4.3
+pytest-django>=4.7.0
+sentry-sdk>=1.39.1
+python-dotenv>=1.0.0
+tzdata>=2023.3 

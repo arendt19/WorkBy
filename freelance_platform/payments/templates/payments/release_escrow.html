@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Release Escrow" %} - WorkBy{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">{% trans "Release Escrow Payment" %}</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Milestone" %}: {{ milestone.title }}</h5>
+                    <p class="card-text">{{ milestone.description }}</p>
+                    
+                    <div class="alert alert-warning">
+                        <h6>{% trans "Confirm Release" %}</h6>
+                        <p>{% trans "By releasing the funds, you confirm that the milestone has been completed to your satisfaction. This action cannot be undone." %}</p>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle text-muted mb-2">{% trans "Contract" %}</h6>
+                                    <p class="mb-1">{{ contract.title }}</p>
+                                    <h6 class="card-subtitle text-muted mb-2 mt-3">{% trans "Freelancer" %}</h6>
+                                    <p class="mb-1">{{ contract.freelancer.get_full_name }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-subtitle text-muted mb-2">{% trans "Amount to Release" %}</h6>
+                                    <h4 class="text-success mb-0">{{ escrow.amount }} ₸</h4>
+                                    <h6 class="card-subtitle text-muted mb-2 mt-3">{% trans "Escrow Status" %}</h6>
+                                    <p class="mb-1">
+                                        <span class="badge bg-primary">{{ escrow.get_status_display }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                {% trans "Release Funds to Freelancer" %}
+                            </button>
+                            <a href="{% url 'jobs:contract_detail' pk=contract.pk %}" class="btn btn-outline-secondary">
+                                {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

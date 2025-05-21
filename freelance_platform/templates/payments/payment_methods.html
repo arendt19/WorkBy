@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Payment Methods" %} | {% trans "WorkBy" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            {% include 'payments/wallet_sidebar.html' %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Payment Methods" %}</h5>
+                    <a href="{% url 'payments:add_payment_method' %}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-plus me-1"></i> {% trans "Add Method" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if payment_methods %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>{% trans "Method" %}</th>
+                                    <th>{% trans "Details" %}</th>
+                                    <th>{% trans "Added" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th class="text-end">{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for method in payment_methods %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if method.method_type == 'card' %}
+                                            <div class="payment-icon credit-card me-2">
+                                                <i class="far fa-credit-card fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ method.card_brand }}</div>
+                                                <small class="text-muted">•••• {{ method.card_last4 }}</small>
+                                            </div>
+                                            {% elif method.method_type == 'paypal' %}
+                                            <div class="payment-icon paypal me-2">
+                                                <i class="fab fa-paypal fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">PayPal</div>
+                                                <small class="text-muted">{{ method.user.email }}</small>
+                                            </div>
+                                            {% elif method.method_type == 'bank' %}
+                                            <div class="payment-icon bank me-2">
+                                                <i class="fas fa-university fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">{{ method.bank_name }}</div>
+                                                <small class="text-muted">•••• {{ method.bank_account_last4 }}</small>
+                                            </div>
+                                            {% elif method.method_type == 'crypto' %}
+                                            <div class="payment-icon crypto me-2">
+                                                <i class="fab fa-bitcoin fa-2x text-primary"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">Cryptocurrency</div>
+                                                <small class="text-muted">Wallet</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if method.method_type == 'card' %}
+                                        <small class="text-muted">
+                                            {% trans "Expires" %}: {{ method.card_expiry }}
+                                        </small>
+                                        {% elif method.method_type == 'bank' %}
+                                        <small class="text-muted">
+                                            {{ method.bank_name }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ method.created_at|date:"d M Y" }}</small>
+                                    </td>
+                                    <td>
+                                        {% if method.is_default %}
+                                        <span class="badge bg-success">{% trans "Default" %}</span>
+                                        {% elif method.is_active %}
+                                        <span class="badge bg-info text-dark">{% trans "Active" %}</span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">{% trans "Inactive" %}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenuButton{{ method.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ method.id }}">
+                                                {% if not method.is_default %}
+                                                <li>
+                                                    <form method="post" action="{% url 'payments:set_primary_method' method.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="dropdown-item">
+                                                            <i class="fas fa-star text-warning me-2"></i> {% trans "Set as Default" %}
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                {% endif %}
+                                                <li>
+                                                    <a href="{% url 'payments:edit_payment_method' method.id %}" class="dropdown-item">
+                                                        <i class="fas fa-pencil-alt text-primary me-2"></i> {% trans "Edit" %}
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a href="{% url 'payments:delete_payment_method' method.id %}" class="dropdown-item text-danger">
+                                                        <i class="fas fa-trash-alt me-2"></i> {% trans "Delete" %}
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="p-4 text-center">
+                        <i class="fas fa-credit-card fs-1 text-muted mb-3"></i>
+                        <p class="mb-3">{% trans "You haven't added any payment methods yet." %}</p>
+                        <a href="{% url 'payments:add_payment_method' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i> {% trans "Add Payment Method" %}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">{% trans "About Payment Methods" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="paymentMethodsAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    {% trans "Supported Payment Methods" %}
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#paymentMethodsAccordion">
+                                <div class="accordion-body">
+                                    <p>{% trans "WorkBy supports several payment methods to ensure convenient transactions for our users:" %}</p>
+                                    <ul>
+                                        <li><strong>{% trans "Credit/Debit Cards" %}</strong> - {% trans "Visa, Mastercard, American Express" %}</li>
+                                        <li><strong>{% trans "PayPal" %}</strong> - {% trans "For quick and secure online payments" %}</li>
+                                        <li><strong>{% trans "Bank Accounts" %}</strong> - {% trans "For direct withdrawals and deposits" %}</li>
+                                        <li><strong>{% trans "Cryptocurrency" %}</strong> - {% trans "Bitcoin, Ethereum, and other popular cryptocurrencies" %}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    {% trans "Primary Payment Method" %}
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#paymentMethodsAccordion">
+                                <div class="accordion-body">
+                                    <p>{% trans "Your primary payment method is used by default for all transactions unless specified otherwise. To change your primary method:" %}</p>
+                                    <ol>
+                                        <li>{% trans "Find the payment method you want to set as primary" %}</li>
+                                        <li>{% trans "Click the options menu (three dots)" %}</li>
+                                        <li>{% trans "Select 'Set as Primary'" %}</li>
+                                    </ol>
+                                    <p>{% trans "You can change your primary method at any time." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    {% trans "Payment Security" %}
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#paymentMethodsAccordion">
+                                <div class="accordion-body">
+                                    <p>{% trans "WorkBy takes payment security very seriously. We implement industry-standard security measures:" %}</p>
+                                    <ul>
+                                        <li>{% trans "All payment information is encrypted using SSL technology" %}</li>
+                                        <li>{% trans "We never store complete credit card numbers on our servers" %}</li>
+                                        <li>{% trans "We comply with PCI DSS requirements" %}</li>
+                                        <li>{% trans "Regular security audits are conducted to ensure data safety" %}</li>
+                                    </ul>
+                                    <p>{% trans "If you notice any suspicious activity on your account, please contact our support team immediately." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

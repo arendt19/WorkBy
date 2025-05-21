@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load jobs_tags %}
+
+{% block title %}{% trans "WorkBy - Find Freelancers in Kazakhstan" %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section mb-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h1 class="hero-title">{% trans "Find the perfect freelance services for your business" %}</h1>
+                <p class="hero-subtitle">{% trans "Connect with talented freelancers in Kazakhstan and around the world" %}</p>
+                
+                <div class="search-container">
+                    <form action="{% url 'jobs:project_list' %}" method="get" class="d-flex justify-content-center">
+                        <div class="input-group input-group-lg" style="max-width: 600px;">
+                            <input type="text" name="query" class="form-control" placeholder="{% trans 'Search for services...' %}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i> {% trans "Search" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="counter-wrapper">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="counter-item">
+                    <div class="counter-value" data-target="{{ projects_count }}">0</div>
+                    <div class="counter-label">{% trans "Projects Posted" %}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="counter-item">
+                    <div class="counter-value" data-target="{{ freelancers_count }}">0</div>
+                    <div class="counter-label">{% trans "Professional Freelancers" %}</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="counter-item">
+                    <div class="counter-value" data-target="{{ clients_count }}">0</div>
+                    <div class="counter-label">{% trans "Satisfied Clients" %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Categories -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">{% trans "Popular Categories" %}</h2>
+        
+        <div class="row">
+            {% for category in categories|slice:":8" %}
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <a href="{% url 'jobs:category_detail' category.slug %}" class="text-decoration-none">
+                        <div class="card category-card h-100">
+                            <div class="card-body text-center">
+                                <div class="category-icon">
+                                    {% if category.name == 'Web Development' %}
+                                        <i class="fas fa-laptop-code"></i>
+                                    {% elif category.name == 'Mobile App Development' %}
+                                        <i class="fas fa-mobile-alt"></i>
+                                    {% elif category.name == 'Graphic Design' %}
+                                        <i class="fas fa-palette"></i>
+                                    {% elif category.name == 'Content Writing' %}
+                                        <i class="fas fa-pen-fancy"></i>
+                                    {% elif category.name == 'Digital Marketing' %}
+                                        <i class="fas fa-chart-line"></i>
+                                    {% elif category.name == 'Video Production' %}
+                                        <i class="fas fa-video"></i>
+                                    {% elif category.name == 'Translation' %}
+                                        <i class="fas fa-language"></i>
+                                    {% elif category.name == 'Data Science' %}
+                                        <i class="fas fa-database"></i>
+                                    {% else %}
+                                        <i class="fas fa-briefcase"></i>
+                                    {% endif %}
+                                </div>
+                                <h5>{{ category.get_translated_name }}</h5>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>{% trans "No categories found." %}</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'jobs:categories' %}" class="btn btn-outline-primary">
+                {% trans "View All Categories" %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Latest Projects -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">{% trans "Latest Projects" %}</h2>
+        
+        <div class="row">
+            {% for project in projects %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card project-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <a href="{% url 'jobs:project_detail' project.pk %}" class="text-decoration-none">
+                                    {{ project.title }}
+                                </a>
+                            </h5>
+                            <p class="card-text">{{ project.description|truncatechars:150 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge status-badge status-{{ project.status }}">
+                                    {{ project.get_status_display }}
+                                </span>
+                                <small class="text-muted">
+                                    {{ project.budget_min }} - {{ project.budget_max }} ₸
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-tag me-1"></i> {{ project.category.name }}
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i> {{ project.created_at|date:"d M Y" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>{% trans "No projects found." %}</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'jobs:project_list' %}" class="btn btn-primary">
+                {% trans "View All Projects" %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Top Freelancers -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">{% trans "Top Rated Freelancers" %}</h2>
+        
+        <div class="row">
+            {% for freelancer in top_freelancers %}
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card freelancer-card h-100">
+                        <div class="card-body text-center">
+                            {% if freelancer.avatar %}
+                                <img src="{{ freelancer.avatar.url }}" alt="{{ freelancer.get_full_name }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px;">
+                                    <span style="font-size: 2rem;">{{ freelancer.get_initials }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <h5 class="card-title">
+                                <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="text-decoration-none">
+                                    {{ freelancer.get_full_name|default:freelancer.username }}
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted">{{ freelancer.freelancer_profile.specialization }}</p>
+                            
+                            <div class="rating mb-3">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= freelancer.freelancer_profile.rating|floatformat:"0" %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="ms-2">{{ freelancer.freelancer_profile.rating|floatformat:1 }}</span>
+                            </div>
+                            
+                            <div class="skills mb-3">
+                                {% if freelancer.skills %}
+                                    {% for skill in freelancer.skills|split:"," %}
+                                        <span class="badge bg-light text-dark me-1">{{ skill|strip }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="btn btn-sm btn-outline-primary">
+                                {% trans "View Profile" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center">
+                    <p>{% trans "No top freelancers found." %}</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="{% url 'jobs:freelancer_list' %}" class="btn btn-outline-primary">
+                {% trans "View All Freelancers" %}
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">{% trans "How It Works" %}</h2>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-4 text-primary" style="font-size: 3rem; color: #8B0000 !important;">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h4>{% trans "1. Post a Project" %}</h4>
+                        <p class="text-muted">
+                            {% trans "Describe your project and the skills required. Set your budget and deadline." %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-4 text-primary" style="font-size: 3rem; color: #8B0000 !important;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>{% trans "2. Receive Proposals" %}</h4>
+                        <p class="text-muted">
+                            {% trans "Review proposals from qualified freelancers interested in your project." %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-4 text-primary" style="font-size: 3rem; color: #8B0000 !important;">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h4>{% trans "3. Get Work Done" %}</h4>
+                        <p class="text-muted">
+                            {% trans "Choose the best freelancer and get your project completed on time." %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5" style="background-color: #8B0000; color: white;">
+    <div class="container text-center">
+        <h2 class="mb-4">{% trans "Ready to get started?" %}</h2>
+        <p class="lead mb-4">{% trans "Join thousands of clients and freelancers on WorkBy" %}</p>
+        
+        <div class="d-flex justify-content-center gap-3">
+            {% if user.is_authenticated %}
+                {% if user.user_type == 'client' %}
+                    <a href="{% url 'jobs:project_create' %}" class="btn btn-light btn-lg">
+                        {% trans "Post a Project" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'jobs:project_list' %}" class="btn btn-light btn-lg">
+                        {% trans "Find Projects" %}
+                    </a>
+                {% endif %}
+            {% else %}
+                <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg">
+                    {% trans "Sign Up" %}
+                </a>
+                <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">
+                    {% trans "Log In" %}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %} 

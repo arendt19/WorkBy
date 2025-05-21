@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Logging Out" %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <h1 class="mb-4">{% trans "Logging Out" %}</h1>
+                    <p>{% trans "You are being logged out. Please wait..." %}</p>
+                    <div class="spinner-border text-primary my-4" role="status">
+                        <span class="visually-hidden">{% trans "Loading..." %}</span>
+                    </div>
+                    <form method="post" action="{% url 'accounts:logout' %}" id="logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">{% trans "Log Out Now" %}</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Автоматический выход через POST-запрос
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('logout-form').submit();
+    });
+</script>
+{% endblock %} 

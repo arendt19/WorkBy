@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Reject Proposal" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark text-light shadow">
+                <div class="card-header border-0 bg-dark">
+                    <h2 class="h4 mb-0">{% trans "Reject Proposal" %}</h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% trans "Are you sure you want to reject this proposal?" %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5>{% trans "Project" %}: {{ proposal.project.title }}</h5>
+                        <p class="text-muted">{% trans "Freelancer" %}: {{ proposal.freelancer.get_full_name }}</p>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>{% trans "Bid amount" %}</span>
+                            <span class="text-primary fw-bold">{{ proposal.bid_amount }} ₸</span>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>{% trans "Delivery time" %}</span>
+                            <span>{{ proposal.delivery_time }} {% trans "days" %}</span>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="rejection_reason" class="form-label">{% trans "Reason for rejection (optional)" %}</label>
+                            <textarea id="rejection_reason" name="rejection_reason" class="form-control bg-dark text-light" rows="3" placeholder="{% trans 'Let the freelancer know why their proposal was rejected' %}"></textarea>
+                            <small class="text-muted">{% trans "This will be sent to the freelancer as feedback" %}</small>
+                        </div>
+                        
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times-circle me-1"></i> {% trans "Reject Proposal" %}
+                            </button>
+                            <a href="{% url 'jobs:proposal_detail' pk=proposal.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

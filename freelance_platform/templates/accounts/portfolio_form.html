@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if is_creating %}
+        {% trans "Create Portfolio Project" %}
+    {% else %}
+        {% trans "Edit Portfolio Project" %}
+    {% endif %} | WorkBy
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .image-preview {
+        max-height: 150px;
+        max-width: 100%;
+        margin-top: 10px;
+    }
+    
+    .formset-item {
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .delete-formset-row {
+        color: #dc3545;
+        cursor: pointer;
+    }
+    
+    .formset-empty {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:profile' %}">{% trans "Profile" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'accounts:portfolio_list' %}">{% trans "Portfolio" %}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if is_creating %}
+                            {% trans "Create Project" %}
+                        {% else %}
+                            {% trans "Edit Project" %}
+                        {% endif %}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if is_creating %}
+                            {% trans "Create New Portfolio Project" %}
+                        {% else %}
+                            {% trans "Edit Portfolio Project" %}
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group mb-3">
+                                    {{ form.title|as_crispy_field }}
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    {{ form.description|as_crispy_field }}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            {{ form.completed_date|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-3">
+                                            {{ form.client_name|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    {{ form.url|as_crispy_field }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    {{ form.categories|as_crispy_field }}
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="mb-3">
+                                    <h5>{% trans "Project Images" %}</h5>
+                                    <p class="text-muted small">{% trans "Add images to showcase your project. First image will be used as the thumbnail." %}</p>
+                                </div>
+                                
+                                {{ formset.management_form }}
+                                
+                                <div id="formset-container">
+                                    {% for form in formset %}
+                                        <div class="formset-item {% if forloop.last and not form.instance.pk %}formset-empty{% endif %}">
+                                            {% if form.instance.pk %}
+                                                <div class="form-group mb-3">
+                                                    {% if form.instance.image %}
+                                                        <img src="{{ form.instance.image.url }}" alt="Preview" class="image-preview">
+                                                    {% endif %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            {{ form.id }}
+                                            
+                                            <div class="form-group mb-3">
+                                                {{ form.image|as_crispy_field }}
+                                            </div>
+                                            
+                                            <div class="form-group mb-3">
+                                                {{ form.caption|as_crispy_field }}
+                                            </div>
+                                            
+                                            <div class="form-group mb-3">
+                                                {{ form.order|as_crispy_field }}
+                                            </div>
+                                            
+                                            <div class="form-check mb-3">
+                                                {{ form.DELETE }}
+                                                <label for="{{ form.DELETE.id_for_label }}" class="form-check-label delete-formset-row">
+                                                    {% trans "Delete this image" %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <button type="button" id="add-image" class="btn btn-outline-primary mb-3">
+                                    <i class="bi bi-plus-circle"></i> {% trans "Add Another Image" %}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <a href="{% url 'accounts:portfolio_list' %}" class="btn btn-secondary me-2">
+                                <i class="bi bi-x-circle"></i> {% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i> 
+                                {% if is_creating %}
+                                    {% trans "Create Project" %}
+                                {% else %}
+                                    {% trans "Save Changes" %}
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addImageBtn = document.getElementById('add-image');
+        const formsetContainer = document.getElementById('formset-container');
+        const emptyForm = document.querySelector('.formset-empty');
+        const totalForms = document.getElementById('id_images-TOTAL_FORMS');
+        
+        // Обработчик для добавления нового поля для изображения
+        addImageBtn.addEventListener('click', function() {
+            // Клонируем пустую форму
+            const newForm = emptyForm.cloneNode(true);
+            newForm.classList.remove('formset-empty');
+            
+            // Получаем текущее количество форм
+            const formCount = parseInt(totalForms.value);
+            
+            // Обновляем атрибуты id и name в новой форме
+            newForm.innerHTML = newForm.innerHTML.replace(
+                new RegExp('images-\\d+-', 'g'),
+                `images-${formCount}-`
+            );
+            
+            // Добавляем новую форму в контейнер
+            formsetContainer.appendChild(newForm);
+            
+            // Обновляем счетчик форм
+            totalForms.value = formCount + 1;
+        });
+        
+        // Предпросмотр выбранных изображений
+        formsetContainer.addEventListener('change', function(e) {
+            if (e.target.type === 'file') {
+                const fileInput = e.target;
+                const previewContainer = fileInput.closest('.formset-item');
+                
+                // Удаляем предыдущий предпросмотр, если он есть
+                const existingPreview = previewContainer.querySelector('.image-preview');
+                if (existingPreview) {
+                    existingPreview.remove();
+                }
+                
+                // Создаем новый предпросмотр, если выбран файл
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        const preview = document.createElement('img');
+                        preview.src = e.target.result;
+                        preview.alt = 'Preview';
+                        preview.className = 'image-preview';
+                        
+                        fileInput.parentNode.appendChild(preview);
+                    }
+                    
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

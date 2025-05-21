@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load jobs_tags %}
+
+{% block title %}{{ user.get_full_name }} - {% trans "Profile" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Профиль фрилансера -->
+    <div class="profile-header shadow-sm">
+        <div class="row">
+            <div class="col-md-3 text-center">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="profile-avatar">
+                {% else %}
+                    <div class="profile-avatar d-flex align-items-center justify-content-center bg-primary text-white">
+                        <span style="font-size: 80px;">{{ user.username.0|upper }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h2>{{ user.get_full_name }}</h2>
+                        <p class="lead">{{ profile.specialization }}</p>
+                        
+                        <div class="rating mb-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating|floatformat:"0" %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="ms-2">{{ avg_rating|floatformat:1 }} ({{ reviews.count }} {% trans "reviews" %})</span>
+                        </div>
+                        
+                        <p>{{ user.bio|linebreaks }}</p>
+                    </div>
+                    <div>
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> {% trans "Edit Profile" %}
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="count">{{ profile.experience_years }}</div>
+                            <div class="stat-label">{% trans "Years of Experience" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="count">{{ user.hourly_rate|floatformat:0 }}</div>
+                            <div class="stat-label">{% trans "Hourly Rate (₸)" %}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item">
+                            <div class="count">{{ portfolio_projects.count }}</div>
+                            <div class="stat-label">{% trans "Portfolio Projects" %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Подробная информация -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Contact Information" %}</h5>
+                </div>
+                <div class="card-body">
+                    <p><i class="fas fa-envelope me-2"></i> {{ user.email }}</p>
+                    {% if profile.phone_number %}
+                        <p><i class="fas fa-phone me-2"></i> {{ profile.phone_number }}</p>
+                    {% endif %}
+                    {% if profile.location %}
+                        <p><i class="fas fa-map-marker-alt me-2"></i> {{ profile.location }}</p>
+                    {% endif %}
+                    {% if profile.portfolio_website %}
+                        <p>
+                            <i class="fas fa-globe me-2"></i>
+                            <a href="{{ profile.portfolio_website }}" target="_blank" rel="noopener noreferrer">
+                                {{ profile.portfolio_website }}
+                            </a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Skills & Languages" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.skills %}
+                        <h6>{% trans "Skills" %}</h6>
+                        <div class="mb-3">
+                            {% for skill in user.skills|split:"," %}
+                                <span class="badge bg-primary me-1 mb-1">{{ skill|strip }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if profile.languages %}
+                        <h6>{% trans "Languages" %}</h6>
+                        <div>
+                            {% for language in profile.languages|split:"," %}
+                                <span class="badge bg-secondary me-1 mb-1">{{ language|strip }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Education & Certifications" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile.education %}
+                        <h6>{% trans "Education" %}</h6>
+                        <p>{{ profile.education }}</p>
+                    {% endif %}
+                    
+                    {% if profile.certifications %}
+                        <h6>{% trans "Certifications" %}</h6>
+                        <p>{{ profile.certifications }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- Портфолио -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans "Portfolio" %}</h5>
+                    <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-sm btn-light">
+                        <i class="fas fa-plus"></i> {% trans "Add Project" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if portfolio_projects %}
+                        <div class="row">
+                            {% for project in portfolio_projects %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100">
+                                        {% if project.get_first_image %}
+                                            <img src="{{ project.get_first_image.image.url }}" class="card-img-top portfolio-image" alt="{{ project.title }}">
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ project.title }}</h5>
+                                            <p class="card-text small">{{ project.description|truncatewords:20 }}</p>
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">
+                                                    <i class="far fa-calendar-alt me-1"></i>
+                                                    {{ project.completed_date|date:"M Y" }}
+                                                </small>
+                                                <a href="{% url 'accounts:portfolio_detail' project.pk %}" class="btn btn-sm btn-outline-primary">
+                                                    {% trans "View Details" %}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p>{% trans "No portfolio projects yet." %}</p>
+                            <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> {% trans "Add Your First Project" %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Отзывы -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Reviews" %} ({{ reviews.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="review-card mb-4">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <h6>{{ review.client.get_full_name }}</h6>
+                                        <div class="star-rating">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fas fa-star"></i>
+                                                {% else %}
+                                                    <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                                </div>
+                                <p class="mt-2">{{ review.comment }}</p>
+                                {% if review.project %}
+                                    <small class="text-muted">
+                                        {% trans "Project" %}: <a href="{% url 'jobs:project_detail' review.project.id %}">{{ review.project.title }}</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-center py-4">{% trans "No reviews yet." %}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

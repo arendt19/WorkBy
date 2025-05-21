@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Create Milestone" %} | WorkBy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+<script>
+    $(document).ready(function() {
+        // Инициализация выбора даты
+        flatpickr("#id_due_date", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            locale: "ru"
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 bg-dark text-light shadow-sm">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans "Create Milestone" %}</h5>
+                    <a href="{% url 'jobs:contract_detail' contract.pk %}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Contract" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Contract summary -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <h6 class="text-muted mb-0">{% trans "Contract" %}</h6>
+                                <div class="fs-5">{{ contract.title }}</div>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="text-muted mb-0">{% trans "Total Amount" %}</h6>
+                                <div class="fs-5">₸{{ contract.amount }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                {{ form.title|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.amount|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                {{ form.description|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.due_date|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {% trans "Milestones help break down the project into manageable parts with specific deliverables and payments." %}
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'jobs:contract_detail' contract.pk %}" class="btn btn-outline-light">
+                                <i class="fas fa-times me-1"></i> {% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus me-1"></i> {% trans "Create Milestone" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

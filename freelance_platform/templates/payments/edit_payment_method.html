@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Edit Payment Method" %} | {% trans "WorkBy" %}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            {% include 'payments/wallet_sidebar.html' %}
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "Edit Payment Method" %}</h5>
+                    <a href="{% url 'payments:payment_methods' %}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Payment Methods" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">{% trans "Current Payment Method" %}</h6>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            {% if payment_method.method_type == 'card' %}
+                                                <i class="fas fa-credit-card fa-2x text-primary"></i>
+                                            {% elif payment_method.method_type == 'bank' %}
+                                                <i class="fas fa-university fa-2x text-primary"></i>
+                                            {% elif payment_method.method_type == 'paypal' %}
+                                                <i class="fab fa-paypal fa-2x text-primary"></i>
+                                            {% elif payment_method.method_type == 'crypto' %}
+                                                <i class="fab fa-bitcoin fa-2x text-primary"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col">
+                                            <h6 class="mb-1">
+                                                {% if payment_method.method_type == 'card' %}
+                                                    {{ payment_method.card_brand }} •••• {{ payment_method.last_digits }}
+                                                {% elif payment_method.method_type == 'bank' %}
+                                                    {{ payment_method.bank_name }} •••• {{ payment_method.account_last_digits }}
+                                                {% elif payment_method.method_type == 'paypal' %}
+                                                    PayPal - {{ payment_method.email }}
+                                                {% elif payment_method.method_type == 'crypto' %}
+                                                    {{ payment_method.crypto_currency }}
+                                                {% endif %}
+                                            </h6>
+                                            <div class="text-muted small">
+                                                {% if payment_method.method_type == 'card' %}
+                                                    {% trans "Expires" %}: {{ payment_method.expiry_month }}/{{ payment_method.expiry_year }}
+                                                {% elif payment_method.method_type == 'bank' %}
+                                                    {{ payment_method.account_type }}
+                                                {% elif payment_method.method_type == 'crypto' %}
+                                                    {{ payment_method.wallet_address|truncatechars:20 }}
+                                                {% endif %}
+                                            </div>
+                                            {% if payment_method.is_primary %}
+                                                <span class="badge bg-success mt-1">{% trans "Default" %}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h6 class="mb-3">{% trans "Update Information" %}</h6>
+                        
+                        <!-- Card Fields -->
+                        {% if payment_method.method_type == 'card' %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Card Nickname" %}</label>
+                                <input type="text" name="nickname" class="form-control" value="{{ payment_method.nickname }}">
+                                <div class="form-text text-muted">{% trans "A name to help you remember this card" %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Expiration Date" %}</label>
+                                <div class="input-group">
+                                    <select class="form-select" name="expiry_month">
+                                        {% for i in "xxxxxxxxxxxx" %}
+                                            <option value="{{ forloop.counter }}" {% if payment_method.expiry_month == forloop.counter %}selected{% endif %}>
+                                                {{ forloop.counter|stringformat:"02d" }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <span class="input-group-text">/</span>
+                                    <select class="form-select" name="expiry_year">
+                                        <option value="2023" {% if payment_method.expiry_year == '2023' %}selected{% endif %}>2023</option>
+                                        <option value="2024" {% if payment_method.expiry_year == '2024' %}selected{% endif %}>2024</option>
+                                        <option value="2025" {% if payment_method.expiry_year == '2025' %}selected{% endif %}>2025</option>
+                                        <option value="2026" {% if payment_method.expiry_year == '2026' %}selected{% endif %}>2026</option>
+                                        <option value="2027" {% if payment_method.expiry_year == '2027' %}selected{% endif %}>2027</option>
+                                        <option value="2028" {% if payment_method.expiry_year == '2028' %}selected{% endif %}>2028</option>
+                                        <option value="2029" {% if payment_method.expiry_year == '2029' %}selected{% endif %}>2029</option>
+                                        <option value="2030" {% if payment_method.expiry_year == '2030' %}selected{% endif %}>2030</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Bank Fields -->
+                        {% if payment_method.method_type == 'bank' %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Account Nickname" %}</label>
+                                <input type="text" name="nickname" class="form-control" value="{{ payment_method.nickname }}">
+                                <div class="form-text text-muted">{% trans "A name to help you remember this account" %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Account Type" %}</label>
+                                <select class="form-select" name="account_type">
+                                    <option value="checking" {% if payment_method.account_type == 'checking' %}selected{% endif %}>{% trans "Checking" %}</option>
+                                    <option value="savings" {% if payment_method.account_type == 'savings' %}selected{% endif %}>{% trans "Savings" %}</option>
+                                    <option value="business" {% if payment_method.account_type == 'business' %}selected{% endif %}>{% trans "Business" %}</option>
+                                </select>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- PayPal Fields -->
+                        {% if payment_method.method_type == 'paypal' %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "PayPal Nickname" %}</label>
+                                <input type="text" name="nickname" class="form-control" value="{{ payment_method.nickname }}">
+                                <div class="form-text text-muted">{% trans "A name to help you remember this account" %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "PayPal Email" %}</label>
+                                <input type="email" name="email" class="form-control" value="{{ payment_method.email }}">
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Crypto Fields -->
+                        {% if payment_method.method_type == 'crypto' %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Wallet Nickname" %}</label>
+                                <input type="text" name="nickname" class="form-control" value="{{ payment_method.nickname }}">
+                                <div class="form-text text-muted">{% trans "A name to help you remember this wallet" %}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{% trans "Cryptocurrency" %}</label>
+                                <select class="form-select" name="crypto_currency">
+                                    <option value="BTC" {% if payment_method.crypto_currency == 'BTC' %}selected{% endif %}>Bitcoin (BTC)</option>
+                                    <option value="ETH" {% if payment_method.crypto_currency == 'ETH' %}selected{% endif %}>Ethereum (ETH)</option>
+                                    <option value="USDT" {% if payment_method.crypto_currency == 'USDT' %}selected{% endif %}>Tether (USDT)</option>
+                                    <option value="USDC" {% if payment_method.crypto_currency == 'USDC' %}selected{% endif %}>USD Coin (USDC)</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-3">
+                                <label class="form-label">{% trans "Wallet Address" %}</label>
+                                <input type="text" name="wallet_address" class="form-control" value="{{ payment_method.wallet_address }}">
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Default Setting -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" name="is_primary" id="is_primary" {% if payment_method.is_primary %}checked{% endif %}>
+                            <label class="form-check-label" for="is_primary">
+                                {% trans "Set as default payment method" %}
+                            </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="fas fa-trash-alt me-1"></i> {% trans "Delete Method" %}
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> {% trans "Save Changes" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">{% trans "Delete Payment Method" %}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>{% trans "Are you sure you want to delete this payment method? This action cannot be undone." %}</p>
+                {% if payment_method.is_primary %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {% trans "This is your default payment method. Deleting it will require you to set a new default." %}
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                <form method="post" action="{% url 'payments:delete_payment_method' payment_method.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">{% trans "Delete" %}</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

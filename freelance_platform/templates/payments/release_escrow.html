@@ -1,0 +1,562 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Release Escrow" %} #{{ escrow.escrow_id }} | WorkBy{% endblock %}
+
+{% block extra_css %}
+<style>
+    .escrow-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s ease;
+        overflow: hidden;
+        transform: translateY(0);
+    }
+    
+    .escrow-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .escrow-header {
+        background-color: #1a1a1a;
+        padding: 20px;
+        border-bottom: 1px solid #333;
+    }
+    
+    .escrow-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(139, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #8B0000;
+        font-size: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .escrow-card:hover .escrow-icon {
+        transform: scale(1.1) rotate(10deg);
+        background-color: rgba(139, 0, 0, 0.25);
+    }
+    
+    .action-btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        transform: translateY(0);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .action-btn:active {
+        transform: translateY(0);
+    }
+    
+    .action-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .action-btn:hover::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 0.5;
+        }
+        20% {
+            transform: scale(25, 25);
+            opacity: 0.3;
+        }
+        100% {
+            opacity: 0;
+            transform: scale(40, 40);
+        }
+    }
+    
+    .info-block {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: rgba(139, 0, 0, 0.1);
+        margin-bottom: 20px;
+        border-left: 4px solid #8B0000;
+        transition: all 0.3s ease;
+    }
+    
+    .info-block:hover {
+        background-color: rgba(139, 0, 0, 0.15);
+        transform: translateX(5px);
+    }
+    
+    .milestone-block {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #1e1e1e;
+        margin-bottom: 20px;
+        border: 1px solid #333;
+        transition: all 0.3s ease;
+    }
+    
+    .milestone-block:hover {
+        background-color: #252525;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .contract-profile {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #1e1e1e;
+        border-radius: 10px;
+        border: 1px solid #333;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .contract-profile:hover {
+        background-color: #252525;
+        transform: translateX(5px);
+    }
+    
+    .avatar-wrapper {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin-right: 15px;
+        background-color: #333;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+        border: 2px solid #444;
+        transition: all 0.3s ease;
+    }
+    
+    .contract-profile:hover .avatar-wrapper {
+        transform: scale(1.1);
+        border-color: #8B0000;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #8B0000;
+        box-shadow: 0 0 0 0.25rem rgba(139, 0, 0, 0.25);
+    }
+    
+    .form-control, .form-select {
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:hover, .form-select:hover {
+        border-color: #666;
+    }
+    
+    .badge-large {
+        font-size: 0.9rem;
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px dashed #333;
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .transaction-amount {
+        color: #8B0000;
+        font-size: 28px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+    
+    .escrow-card:hover .transaction-amount {
+        transform: scale(1.05);
+        text-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+    }
+    
+    .release-animation {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .release-animation::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(139, 0, 0, 0.2),
+            transparent
+        );
+        z-index: 1;
+        animation: shine 2s infinite linear;
+    }
+    
+    @keyframes shine {
+        0% {
+            left: -100%;
+        }
+        50% {
+            left: 100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out;
+    }
+    
+    .rating-input {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating-input input {
+        display: none;
+    }
+    
+    .rating-input label {
+        cursor: pointer;
+        font-size: 1.5rem;
+        color: #555;
+        margin-right: 8px;
+        transition: color 0.2s ease;
+    }
+    
+    .rating-input label:hover,
+    .rating-input label:hover ~ label,
+    .rating-input input:checked ~ label {
+        color: #f8ce0b;
+    }
+    
+    .timeline-steps {
+        position: relative;
+        padding-left: 45px;
+    }
+    
+    .timeline-step {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    
+    .timeline-step:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-steps::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 17px;
+        width: 2px;
+        background-color: #333;
+        z-index: 0;
+    }
+    
+    .timeline-step-icon {
+        position: absolute;
+        left: -45px;
+        top: 0;
+        width: 34px;
+        height: 34px;
+        background-color: #333;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-step.active .timeline-step-icon {
+        background-color: #8B0000;
+        transform: scale(1.1);
+        box-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+    }
+    
+    .timeline-step-content {
+        transition: all 0.3s ease;
+    }
+    
+    .timeline-step:hover .timeline-step-content {
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in-up">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="escrow-card bg-dark text-light mb-4">
+                <div class="escrow-header d-flex align-items-center">
+                    <div class="escrow-icon">
+                        <i class="fas fa-unlock-alt"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">{% trans "Release Escrow" %} #{{ escrow.escrow_id }}</h4>
+                        <p class="text-muted mb-0">{% trans "Release payment to the freelancer" %}</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="info-block mb-4">
+                        <h5><i class="fas fa-info-circle me-2"></i> {% trans "Payment Release" %}</h5>
+                        <p class="mb-0">{% trans "By releasing the funds, you confirm that the work has been completed to your satisfaction. The payment will be transferred to the freelancer immediately." %}</p>
+                    </div>
+                    
+                    <div class="milestone-block release-animation">
+                        <h5 class="mb-3">{% trans "Escrow Details" %}</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Milestone" %}</p>
+                                <p class="fw-bold">{{ escrow.title }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Status" %}</p>
+                                <span class="badge {% if escrow.status == 'pending' %}bg-warning{% elif escrow.status == 'funded' %}bg-success{% elif escrow.status == 'released' %}bg-primary{% else %}bg-secondary{% endif %} badge-large">
+                                    {{ escrow.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Funded Date" %}</p>
+                                <p class="fw-bold">{{ escrow.funded_at|date:"d M Y" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Amount" %}</p>
+                                <p class="transaction-amount">{{ escrow.amount }} ₸</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p class="text-muted mb-1">{% trans "Description" %}</p>
+                                <p>{{ escrow.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="contract-profile">
+                                <div class="avatar-wrapper">
+                                    {% if contract.client.avatar %}
+                                        <img src="{{ contract.client.avatar.url }}" alt="{{ contract.client.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        {{ contract.client.get_full_name|first }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-bold">{{ contract.client.get_full_name }}</p>
+                                    <small class="text-muted">{% trans "Client" %} ({% trans "You" %})</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="contract-profile">
+                                <div class="avatar-wrapper">
+                                    {% if contract.freelancer.avatar %}
+                                        <img src="{{ contract.freelancer.avatar.url }}" alt="{{ contract.freelancer.get_full_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                                    {% else %}
+                                        {{ contract.freelancer.get_full_name|first }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-bold">{{ contract.freelancer.get_full_name }}</p>
+                                    <small class="text-muted">{% trans "Freelancer" %} ({% trans "Recipient" %})</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3">{% trans "Escrow Progress" %}</h5>
+                        <div class="timeline-steps">
+                            <div class="timeline-step active">
+                                <div class="timeline-step-icon">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="timeline-step-content">
+                                    <h6>{% trans "Escrow Created" %}</h6>
+                                    <p class="text-muted">{{ escrow.created_at|date:"d M Y, H:i" }}</p>
+                                </div>
+                            </div>
+                            <div class="timeline-step active">
+                                <div class="timeline-step-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="timeline-step-content">
+                                    <h6>{% trans "Escrow Funded" %}</h6>
+                                    <p class="text-muted">{{ escrow.funded_at|date:"d M Y, H:i" }}</p>
+                                </div>
+                            </div>
+                            <div class="timeline-step {% if escrow.status == 'released' %}active{% endif %}">
+                                <div class="timeline-step-icon">
+                                    <i class="fas fa-unlock-alt"></i>
+                                </div>
+                                <div class="timeline-step-content">
+                                    <h6>{% trans "Funds Released" %}</h6>
+                                    <p class="text-muted">
+                                        {% if escrow.status == 'released' %}
+                                            {{ escrow.released_at|date:"d M Y, H:i" }}
+                                        {% else %}
+                                            {% trans "Pending" %}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" id="releaseEscrowForm" class="mb-4">
+                        {% csrf_token %}
+                        
+                        <div class="card bg-dark border border-light border-opacity-10 mb-4">
+                            <div class="card-body">
+                                <h5 class="mb-3">{% trans "Confirm Work Completion" %}</h5>
+                                <p>{% trans "Before releasing the funds, please confirm that the work has been completed to your satisfaction." %}</p>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="feedback" class="form-label">{% trans "Feedback" %} <small class="text-muted">({% trans "Optional" %})</small></label>
+                                    <textarea class="form-control" id="feedback" name="feedback" rows="3" placeholder="{% trans 'Write your feedback about the work...' %}"></textarea>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label class="form-label d-block">{% trans "Rate the Work" %}</label>
+                                    <div class="rating-input mb-3">
+                                        <input type="radio" id="star5" name="rating" value="5">
+                                        <label for="star5"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star4" name="rating" value="4">
+                                        <label for="star4"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star3" name="rating" value="3" checked>
+                                        <label for="star3"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star2" name="rating" value="2">
+                                        <label for="star2"><i class="fas fa-star"></i></label>
+                                        <input type="radio" id="star1" name="rating" value="1">
+                                        <label for="star1"><i class="fas fa-star"></i></label>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="confirmRelease" name="confirm_release" required>
+                                    <label class="form-check-label" for="confirmRelease">
+                                        {% trans "I confirm that the work has been completed to my satisfaction and I authorize the release of" %} {{ escrow.amount }} ₸ {% trans "to the freelancer." %}
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'jobs:contract_detail' contract.pk %}" class="btn btn-outline-light action-btn">
+                                <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Contract" %}
+                            </a>
+                            
+                            <button type="submit" class="btn btn-success action-btn">
+                                <i class="fas fa-check-circle me-1"></i> {% trans "Release Funds" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const releaseForm = document.getElementById('releaseEscrowForm');
+        const confirmCheckbox = document.getElementById('confirmRelease');
+        
+        // Инициализация всех тултипов и поповеров
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Валидация формы перед отправкой
+        if (releaseForm) {
+            releaseForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (!confirmCheckbox.checked) {
+                    WorkBy.showToast("{% trans 'Please confirm that you want to release the funds' %}", 'warning');
+                    return;
+                }
+                
+                // Подтверждение действия
+                if (confirm("{% trans 'Are you sure you want to release' %} {{ escrow.amount }} ₸ {% trans 'to' %} {{ contract.freelancer.get_full_name }}?")) {
+                    // Все проверки пройдены, отправляем форму
+                    this.submit();
+                    
+                    // Показываем уведомление
+                    WorkBy.showToast("{% trans 'Processing your payment release...' %}", 'info');
+                }
+            });
+        }
+        
+        // Эффект подсветки при наведении на кнопку выпуска средств
+        const releaseBtn = document.querySelector('.btn-success');
+        if (releaseBtn) {
+            releaseBtn.addEventListener('mouseenter', function() {
+                WorkBy.playNotificationSound(0.1);
+            });
+        }
+    });
+</script>
+{% endblock %} 

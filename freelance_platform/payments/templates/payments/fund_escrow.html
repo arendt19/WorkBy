@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Fund Escrow Payment" %} - {{ escrow.escrow_id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card bg-dark text-white border-secondary shadow">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center border-secondary">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt text-danger me-2"></i>
+                        {% trans "Fund Escrow Payment" %}
+                    </h4>
+                    <span class="badge bg-secondary">{{ escrow.escrow_id }}</span>
+                </div>
+                <div class="card-body">
+                    {% if escrow.status == 'pending' %}
+                        <div class="alert alert-info">
+                            <h5 class="alert-heading">{% trans "About Escrow Funding" %}</h5>
+                            <p>{% trans "Funding an escrow payment reserves the milestone amount in our secure escrow system. The funds will only be released to the freelancer when the milestone is completed and you approve it." %}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">{% trans "Milestone Details" %}</h5>
+                            <div class="bg-darker p-3 rounded mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <p class="mb-1"><strong>{% trans "Milestone:" %}</strong> {{ escrow.milestone.title }}</p>
+                                        <p class="mb-1"><strong>{% trans "Contract:" %}</strong> {{ escrow.milestone.contract.title }}</p>
+                                        <p class="mb-1"><strong>{% trans "Freelancer:" %}</strong> {{ escrow.milestone.contract.freelancer.get_full_name }}</p>
+                                        <p class="mb-0"><strong>{% trans "Due Date:" %}</strong> {{ escrow.milestone.due_date|date:"d M Y" }}</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <h3 class="text-danger mb-0">{{ escrow.amount }} ₸</h3>
+                                        <small class="text-muted">{% trans "Escrow Amount" %}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Status indicators -->
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="mb-0">{% trans "Status" %}</h5>
+                                    <span class="badge bg-warning">{{ escrow.get_status_display }}</span>
+                                </div>
+                                
+                                <div class="progress bg-darker" style="height: 30px;">
+                                    <div class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 33%;">
+                                        {% trans "Pending" %}
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2 text-muted small">
+                                    <span>{% trans "Created" %}</span>
+                                    <span>{% trans "Funded" %}</span>
+                                    <span>{% trans "Released" %}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">{% trans "Wallet Balance" %}</h5>
+                            {% if wallet %}
+                                <div class="bg-darker p-3 rounded d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h4 class="mb-0">{{ wallet.balance }} ₸</h4>
+                                        <small class="text-muted">{% trans "Available Balance" %}</small>
+                                    </div>
+                                    
+                                    {% if wallet.balance < escrow.amount %}
+                                    <div>
+                                        <span class="badge bg-danger">{% trans "Insufficient Funds" %}</span>
+                                        <div class="mt-2">
+                                            <a href="{% url 'payments:deposit' %}" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-plus me-1"></i> {% trans "Add Funds" %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div>
+                                        <span class="badge bg-success">{% trans "Sufficient Funds" %}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="alert alert-warning">
+                                    {% trans "You don't have a wallet set up yet." %}
+                                    <a href="{% url 'payments:wallet' %}" class="alert-link">{% trans "Set up your wallet" %}</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="confirm_funding" name="confirm_funding" required>
+                                <label class="form-check-label" for="confirm_funding">
+                                    {% trans "I confirm that I want to fund this escrow payment with" %} <strong>{{ escrow.amount }} ₸</strong>. 
+                                    {% trans "These funds will be held in escrow until I approve the milestone." %}
+                                </label>
+                            </div>
+                            
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <a href="{% url 'jobs:contract_detail' pk=escrow.milestone.contract.pk %}" class="btn btn-outline-light">
+                                    <i class="fas fa-arrow-left me-2"></i> {% trans "Back to Contract" %}
+                                </a>
+                                {% if wallet and wallet.balance >= escrow.amount %}
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-lock me-2"></i> {% trans "Fund Escrow Now" %}
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-danger" disabled>
+                                        <i class="fas fa-lock me-2"></i> {% trans "Fund Escrow Now" %}
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% elif escrow.status == 'funded' %}
+                        <div class="alert alert-success">
+                            <h5 class="alert-heading">{% trans "Escrow Payment is Funded!" %}</h5>
+                            <p>{% trans "This escrow payment is already funded. The funds are safely held in escrow until the milestone is completed and approved." %}</p>
+                            <hr>
+                            <p class="mb-0">{% trans "Funded Date:" %} {{ escrow.funded_at|date:"d M Y H:i" }}</p>
+                        </div>
+                        
+                        <!-- Status indicators -->
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="mb-0">{% trans "Status" %}</h5>
+                                <span class="badge bg-success">{{ escrow.get_status_display }}</span>
+                            </div>
+                            
+                            <div class="progress bg-darker" style="height: 30px;">
+                                <div class="progress-bar progress-bar-striped bg-success" role="progressbar" style="width: 66%;">
+                                    {% trans "Funded" %}
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2 text-muted small">
+                                <span>{% trans "Created" %}</span>
+                                <span>{% trans "Funded" %}</span>
+                                <span>{% trans "Released" %}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="{% url 'jobs:contract_detail' pk=escrow.milestone.contract.pk %}" class="btn btn-danger">
+                                <i class="fas fa-arrow-left me-2"></i> {% trans "Back to Contract" %}
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-secondary">
+                            <h5 class="alert-heading">{% trans "Escrow Payment Status:" %} {{ escrow.get_status_display }}</h5>
+                            <p>{% trans "This escrow payment is in a state that doesn't require funding." %}</p>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="{% url 'jobs:contract_detail' pk=escrow.milestone.contract.pk %}" class="btn btn-danger">
+                                <i class="fas fa-arrow-left me-2"></i> {% trans "Back to Contract" %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

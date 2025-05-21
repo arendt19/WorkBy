@@ -1,0 +1,48 @@
+[MASTER]
+load-plugins=pylint_django
+django-settings-module=freelance_core.settings
+
+[MESSAGES CONTROL]
+disable=
+    C0111, # missing docstring
+    C0103, # invalid name
+    C0330, # bad continuation
+    C1001, # old-style class
+    W0613, # unused argument
+    W0703, # broad except
+    R0903, # too few public methods
+    R0913, # too many arguments
+    R0914, # too many local variables
+    R0201, # method could be a function
+    I0011, # locally disabling %s
+    I0012, # locally enabling %s
+    W0511, # fixme
+    W0212, # protected-access
+    E1101, # no-member
+    E1103, # maybe-no-member
+    C0111, # missing-docstring
+    W0142, # star-args
+    C0103, # invalid-name
+    R0901, # too-many-ancestors
+    R0902, # too-many-instance-attributes
+    R0904, # too-many-public-methods
+    R0912, # too-many-branches
+    R0913, # too-many-arguments
+    R0915, # too-many-statements
+    R0921, # abstract-class-not-used
+    R0922, # abstract-class-little-used
+
+[FORMAT]
+max-line-length=120
+
+[SIMILARITIES]
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+min-similarity-lines=8
+
+[DESIGN]
+max-parents=15
+
+[TYPECHECK]
+generated-members=REQUEST,acl_users,aq_parent,objects,_meta,id,DoesNotExist 

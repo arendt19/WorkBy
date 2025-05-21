@@ -1,0 +1,26 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Обновление вехи проекта - FreelanceKZ{% endblock %}
+
+{% block header %}Обновление статуса вехи{% endblock %}
+
+{% block content %}
+<h2>Здравствуйте, {{ user.get_full_name|default:user.username }}!</h2>
+
+<p>Произошло обновление статуса вехи в вашем контракте на платформе FreelanceKZ.</p>
+
+{% if milestone %}
+<div style="margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px;">
+    <h3 style="margin-top: 0;">{{ milestone.title }}</h3>
+    <p><strong>Статус:</strong> {{ milestone.get_status_display }}</p>
+    <p><strong>Сумма:</strong> {{ milestone.amount }} ₸</p>
+    <p><strong>Срок:</strong> {{ milestone.due_date|date:"d.m.Y" }}</p>
+</div>
+{% endif %}
+
+<div class="message-box">
+    {{ notification.content }}
+</div>
+
+<p>Для просмотра деталей контракта и вехи, нажмите на кнопку ниже:</p>
+{% endblock %} 

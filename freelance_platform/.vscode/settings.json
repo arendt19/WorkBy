@@ -1,0 +1,30 @@
+{
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintArgs": [
+        "--load-plugins=pylint_django",
+        "--django-settings-module=freelance_core.settings"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}"
+    ],
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.inlayHints.variableTypes": false,
+    "python.analysis.inlayHints.functionReturnTypes": false,
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none",
+        "reportMissingImports": "none",
+        "reportAttributeAccessIssue": "none",
+        "reportOperatorIssue": "none",
+        "reportArgumentType": "none",
+        "reportCallIssue": "none",
+        "reportOptionalMemberAccess": "none", 
+        "reportUnboundVariable": "none",
+        "reportGeneralTypeIssues": "none",
+        "reportIndexIssue": "none",
+        "reportInvalidTypeArguments": "none"
+    },
+    "python.analysis.stubPath": "typings"
+} 

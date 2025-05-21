@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Portfolio Projects" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{% trans "Your Portfolio Projects" %}</h4>
+                    <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-sm btn-light">
+                        <i class="bi bi-plus-circle"></i> {% trans "Add New Project" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <div class="row">
+                            {% for project in projects %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100">
+                                        {% if project.images.all.0 %}
+                                            <img src="{{ project.images.all.0.image.url }}" class="card-img-top" alt="{{ project.title }}" style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light text-center py-5">
+                                                <i class="bi bi-image" style="font-size: 2rem; color: #aaa;"></i>
+                                                <p class="small text-muted mt-2">{% trans "No image" %}</p>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ project.title }}</h5>
+                                            <p class="card-text small">{{ project.description|truncatechars:100 }}</p>
+                                            
+                                            {% if project.categories.all %}
+                                                <div class="mb-2">
+                                                    {% for category in project.categories.all %}
+                                                        <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar"></i>
+                                                    {% if project.completed_date %}
+                                                        {{ project.completed_date|date:"M Y" }}
+                                                    {% else %}
+                                                        {% trans "N/A" %}
+                                                    {% endif %}
+                                                </small>
+                                                <div>
+                                                    <a href="{% url 'accounts:portfolio_edit' project.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'accounts:portfolio_delete' project.pk %}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="{% url 'accounts:portfolio_detail' project.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                                                {% trans "View Details" %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="bi bi-briefcase" style="font-size: 4rem; color: #ddd;"></i>
+                            </div>
+                            <h5>{% trans "No portfolio projects yet" %}</h5>
+                            <p class="text-muted">{% trans "Showcase your best work to attract clients" %}</p>
+                            <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-primary mt-3">
+                                <i class="bi bi-plus-circle"></i> {% trans "Add Your First Project" %}
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
