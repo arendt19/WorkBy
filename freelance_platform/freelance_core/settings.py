@@ -96,8 +96,12 @@ INSTALLED_APPS = [
     'chat',
 ]
 
-# Добавляем debug_toolbar только для отладки
-if DEBUG:
+# Добавляем debug_toolbar только для отладки и если он установлен
+import importlib.util
+
+has_debug_toolbar = importlib.util.find_spec('debug_toolbar') is not None
+
+if DEBUG and has_debug_toolbar:
     INSTALLED_APPS += ['debug_toolbar']
 
 MIDDLEWARE = [
@@ -112,8 +116,8 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',  # Добавляем middleware для django-allauth
 ]
 
-# Добавляем middleware для debug_toolbar только для отладки
-if DEBUG:
+# Добавляем middleware для debug_toolbar только для отладки и если он установлен
+if DEBUG and has_debug_toolbar:
     MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
     INTERNAL_IPS = ['127.0.0.1', 'localhost']
 

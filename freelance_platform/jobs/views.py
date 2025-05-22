@@ -261,6 +261,28 @@ def project_create_view(request):
     if request.method == 'POST':
         form = ProjectForm(request.POST)
         if form.is_valid():
+            # Проверяем, был ли уже создан проект с таким же названием от этого пользователя за последний час
+            # Это поможет избежать дублирования при случайном повторном отправлении формы
+            from django.utils import timezone
+            import datetime
+            recent_time = timezone.now() - datetime.timedelta(hours=1)
+            
+            if Project.objects.filter(
+                client=request.user,
+                title=form.cleaned_data['title'],
+                created_at__gte=recent_time
+            ).exists():
+                # Если проект уже существует, просто перенаправляем на страницу успеха
+                # и показываем сообщение пользователю
+                messages.info(request, _('This project has already been created recently'))
+                # Получаем последний созданный проект пользователя
+                project = Project.objects.filter(
+                    client=request.user,
+                    title=form.cleaned_data['title']
+                ).order_by('-created_at').first()
+                return redirect('jobs:project_detail', pk=project.pk)
+            
+            # Создаем новый проект
             project = form.save(commit=False)
             project.client = request.user
             project.status = 'open'  # Автоматически делаем проект открытым
@@ -270,7 +292,7 @@ def project_create_view(request):
             form.save_m2m()
             
             messages.success(request, _('Project created successfully'))
-            return render(request, 'jobs/project_create_success.html', {'project': project})
+            return redirect('jobs:project_create_success', pk=project.pk)
     else:
         form = ProjectForm()
     
@@ -280,6 +302,19 @@ def project_create_view(request):
     }
     
     return render(request, 'jobs/project_form.html', context)
+
+@login_required
+def project_create_success_view(request, pk):
+    """
+    Отображение страницы успешного создания проекта
+    """
+    project = get_object_or_404(Project, pk=pk)
+    
+    # Проверяем, что проект принадлежит текущему пользователю
+    if project.client != request.user:
+        return HttpResponseForbidden(_('You do not have permission to view this page'))
+    
+    return render(request, 'jobs/project_create_success.html', {'project': project})
 
 @login_required
 def project_edit_view(request, pk):

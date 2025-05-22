@@ -14,6 +14,7 @@ urlpatterns = [
     
     # Управление проектами для клиентов
     path('projects/create/', views.project_create_view, name='project_create'),
+    path('projects/create/success/<int:pk>/', views.project_create_success_view, name='project_create_success'),
     path('projects/<int:pk>/edit/', views.project_edit_view, name='project_edit'),
     path('projects/<int:pk>/delete/', views.project_delete_view, name='project_delete'),
     path('projects/<int:pk>/proposals/', views.project_proposals_view, name='project_proposals'),

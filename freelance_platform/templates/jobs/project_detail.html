@@ -11,8 +11,12 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:project_list' %}">{% trans "Projects" %}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ project.title }}</li>
+                    {% if user == project.client %}
+                        <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}">{% trans "My Projects" %}</a></li>
+                    {% else %}
+                        <li class="breadcrumb-item"><a href="{% url 'jobs:project_list' %}">{% trans "Projects" %}</a></li>
+                    {% endif %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ project.title|title }}</li>
                 </ol>
             </nav>
         </div>
@@ -32,7 +36,7 @@
                             <div class="col-md-6 mb-3">
                                 <p class="mb-2">
                                     <i class="fas fa-user me-2"></i> <strong>{% trans "Client" %}:</strong> 
-                                    <a href="{% url 'accounts:client_detail' project.client.username %}">{{ project.client.get_full_name|default:project.client.username }}</a>
+                                    <a href="{% url 'accounts:client_detail' project.client.username %}" class="client-link">{{ project.client.get_full_name|default:project.client.username }}</a>
                                 </p>
                                 <p class="mb-2">
                                     <i class="fas fa-calendar me-2"></i> <strong>{% trans "Posted" %}:</strong> 
@@ -40,16 +44,16 @@
                                 </p>
                                 <p class="mb-2">
                                     <i class="fas fa-folder me-2"></i> <strong>{% trans "Category" %}:</strong> 
-                                    <a href="{% url 'jobs:category_detail' project.category.slug %}">{{ project.category.get_translated_name }}</a>
+                                    <a href="{% url 'jobs:category_detail' project.category.slug %}">{{ project.category.get_translated_name|title }}</a>
                                 </p>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <p class="mb-2">
                                     <i class="fas fa-money-bill-wave me-2"></i> <strong>{% trans "Budget" %}:</strong> 
                                     {% if project.budget_type == 'fixed' %}
-                                        {% trans "Fixed Price" %}: {{ project.budget_min }} - {{ project.budget_max }} ₸
+                                        {{ project.budget_min }} - {{ project.budget_max }} ₸
                                     {% else %}
-                                        {% trans "Hourly Rate" %}: {{ project.budget_min }} - {{ project.budget_max }} ₸/{% trans "hour" %}
+                                        {{ project.budget_min }} - {{ project.budget_max }} ₸/{% trans "hour" %}
                                     {% endif %}
                                 </p>
                                 {% if project.deadline %}
@@ -61,7 +65,7 @@
                                 <p class="mb-2">
                                     <i class="fas fa-map-marker-alt me-2"></i> <strong>{% trans "Location" %}:</strong> 
                                     {% if project.is_remote %}
-                                        <span class="badge bg-success">{% trans "Remote" %}</span>
+                                        <span class="badge bg-success"><i class="fas fa-plane-departure me-1"></i> {% trans "Remote" %}</span>
                                     {% endif %}
                                     {% if project.location_required %}
                                         {{ project.location_required }}
@@ -99,6 +103,30 @@
                     {% endif %}
                     
                     <!-- Actions buttons -->
+                    <div class="card-header bg-dark d-flex justify-content-between align-items-center py-2 mt-4 mb-0 border-top">
+                        <div class="d-flex gap-2">
+                            {% if user.is_authenticated and user == project.client %}
+                                <a href="{% url 'jobs:project_edit' pk=project.pk %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit me-1"></i> {% trans "Edit" %}
+                                </a>
+                                
+                                <a href="{% url 'jobs:project_delete' pk=project.pk %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash-alt me-1"></i> {% trans "Delete" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                        
+                        <div>
+                            {% if user.is_authenticated %}
+                                <!-- Кнопка сохранения в избранное -->
+                                <button type="button" class="btn btn-outline-light btn-sm bookmark-button" data-project-id="{{ project.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Save to favorites' %}">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Actions footer -->
                     <div class="card-footer bg-dark d-flex gap-2">
                         {% if user.is_authenticated %}
                             {% if user.user_type == 'freelancer' %}
@@ -120,28 +148,13 @@
                                 </a>
                             {% endif %}
                             
-                            {% if user == project.client %}
-                                <a href="{% url 'jobs:project_edit' pk=project.pk %}" class="btn btn-outline-primary">
-                                    <i class="fas fa-edit me-1"></i> {% trans "Edit Project" %}
+                            {% if user == project.client and project.status == 'open' and project.proposals.count > 0 %}
+                                <!-- Кнопка для просмотра всех предложений -->
+                                <a href="{% url 'jobs:project_proposals' pk=project.pk %}" class="btn btn-primary">
+                                    <i class="fas fa-list me-1"></i> {% trans "View Proposals" %} 
+                                    <span class="badge bg-light text-dark ms-1">{{ project.proposals.count }}</span>
                                 </a>
-                                
-                                <a href="{% url 'jobs:project_delete' pk=project.pk %}" class="btn btn-outline-danger">
-                                    <i class="fas fa-trash-alt me-1"></i> {% trans "Delete Project" %}
-                                </a>
-                                
-                                {% if project.status == 'open' %}
-                                    <!-- Кнопка для просмотра всех предложений -->
-                                    <a href="{% url 'jobs:project_proposals' pk=project.pk %}" class="btn btn-outline-light">
-                                        <i class="fas fa-list me-1"></i> {% trans "View All Proposals" %} 
-                                        <span class="badge bg-primary ms-1">{{ project.proposals.count }}</span>
-                                    </a>
-                                {% endif %}
                             {% endif %}
-                            
-                            <!-- Добавляем кнопку для сохранения проекта в избранное (будет реализовано позже) -->
-                            <button type="button" class="btn btn-outline-warning ms-auto bookmark-button" data-project-id="{{ project.id }}">
-                                <i class="far fa-bookmark me-1"></i> {% trans "Save" %}
-                            </button>
                         {% else %}
                             <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">
                                 <i class="fas fa-sign-in-alt me-1"></i> {% trans "Login to Submit a Proposal" %}
@@ -171,7 +184,7 @@
                         
                         <div>
                             <h6 class="mb-0">
-                                <a href="{% url 'accounts:client_detail' project.client.username %}" class="text-decoration-none text-light">
+                                <a href="{% url 'accounts:client_detail' project.client.username %}" class="client-profile-link">
                                     {{ project.client.get_full_name|default:project.client.username }}
                                 </a>
                             </h6>
@@ -181,20 +194,46 @@
                         </div>
                     </div>
                     
+                    {% if project_stats.total_projects > 0 %}
                     <div class="mb-3">
-                        <p class="text-muted mb-1">{% trans "Projects Posted" %}</p>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="text-muted">{% trans "Projects Posted" %}</span>
+                            <span class="badge bg-primary">{{ project_stats.total_projects }}</span>
+                        </div>
                         <div class="progress" style="height: 6px;">
-                            <div class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="{{ project_stats.total_projects }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="progress-bar bg-primary" role="progressbar" 
+                                style="width: {{ project_stats.completion_rate }}%;" 
+                                aria-valuenow="{{ project_stats.completion_rate }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100"></div>
                         </div>
-                        <div class="d-flex justify-content-between mt-1">
-                            <span class="text-muted small">{{ project_stats.total_projects }}</span>
-                            <span class="text-muted small">{{ project_stats.completion_rate }}% {% trans "completion" %}</span>
+                        <div class="text-end mt-1">
+                            <span class="text-muted small">{{ project_stats.completion_rate }}% {% trans "completion rate" %}</span>
                         </div>
+                    </div>
+                    {% else %}
+                    <div class="mb-3 text-center py-2">
+                        <span class="text-muted">{% trans "New client" %}</span>
+                        <p class="text-muted small mb-0">{% trans "This is their first project" %}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="client-stats mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="small text-muted">{% trans "Payment verified" %}</span>
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        {% if project_stats.response_time %}
+                        <div class="d-flex justify-content-between">
+                            <span class="small text-muted">{% trans "Avg. response time" %}</span>
+                            <span class="small">{{ project_stats.response_time }}</span>
+                        </div>
+                        {% endif %}
                     </div>
                     
                     <div class="d-grid gap-2">
                         <a href="{% url 'accounts:client_detail' project.client.username %}" class="btn btn-outline-light btn-sm">
-                            <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
+                            <i class="fas fa-user me-1"></i> {% trans "View Full Profile" %}
                         </a>
                     </div>
                 </div>
@@ -207,13 +246,19 @@
                 </div>
                 <div class="card-body p-0 bg-dark">
                     <div class="list-group list-group-flush">
-                        {% for similar_project in similar_projects|default:'' %}
-                            <a href="{% url 'jobs:project_detail' similar_project.pk %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary">
+                        {% for similar_project in similar_projects|slice:":3"|default:'' %}
+                            <a href="{% url 'jobs:project_detail' similar_project.pk %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary similar-project-item">
                                 <div class="d-flex justify-content-between">
-                                    <h6 class="mb-1">{{ similar_project.title|truncatechars:40 }}</h6>
+                                    <h6 class="mb-1">{{ similar_project.title|title|truncatechars:30 }}</h6>
                                     <small class="text-muted">{{ similar_project.created_at|date:"d.m.Y" }}</small>
                                 </div>
-                                <small class="text-muted">{{ similar_project.budget_min }} - {{ similar_project.budget_max }} ₸</small>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <small class="text-muted">{{ similar_project.budget_min }} - {{ similar_project.budget_max }} ₸</small>
+                                    {% if similar_project.proposals.count > 0 %}
+                                        <span class="badge bg-primary">{{ similar_project.proposals.count }} {% trans "proposals" %}</span>
+                                    {% endif %}
+                                </div>
+                                <p class="small text-muted text-truncate mt-1 mb-0">{{ similar_project.description|truncatechars:60 }}</p>
                             </a>
                         {% empty %}
                             <div class="list-group-item py-4 text-center bg-dark text-muted border-secondary">

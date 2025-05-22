@@ -1495,6 +1495,50 @@ a:hover {
     color: var(--text-color);
 }
 
+/* Стили для страницы деталей проекта */
+.client-profile-link {
+    color: var(--primary-color-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.client-profile-link:hover {
+    color: var(--text-color);
+    text-decoration: underline;
+}
+
+.client-link {
+    color: var(--primary-color-light);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.client-link:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+.similar-project-item {
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.similar-project-item:hover {
+    background-color: var(--hover-color);
+    border-left: 3px solid var(--primary-color);
+}
+
+.bookmark-button {
+    transition: all 0.2s ease;
+}
+
+.bookmark-button:hover .fa-bookmark,
+.bookmark-button.active .fa-bookmark {
+    color: var(--warning-color);
+    transform: scale(1.2);
+}
+
 /* Стили для полей ввода в темной теме */
 .form-control {
     background-color: var(--input-bg);
