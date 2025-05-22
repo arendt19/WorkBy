@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+echo "============================="
+echo "WorkBy Platform Build Script"
+echo "============================="
+
+# Проверка на наличие незакоммиченных конфликтов Git
+echo "Checking for Git conflict markers..."
+python scripts/check_for_git_conflicts.py
+if [ $? -ne 0 ]; then
+    echo "ERROR: Git conflict markers found. Please resolve conflicts before building."
+    exit 1
+fi
+
 # Вывод информации о среде
 echo "=== Информация о среде ==="
 echo "Python version: $(python --version)"
@@ -31,12 +43,18 @@ find . -type f -name "settings.py" | xargs ls -la
 echo "Содержимое settings.py:"
 find . -type f -name "settings.py" | xargs cat | grep -A 10 -B 10 "sslserver"
 
-# Подготовка статических файлов
-echo "=== Сбор статических файлов ==="
+# Сборка статических файлов
+echo "Collecting static files..."
 python manage.py collectstatic --noinput
 
-# Применение миграций
-echo "=== Применение миграций ==="
+# Компиляция переводов
+echo "Compiling translations..."
+python manage.py compilemessages
+
+# Миграции базы данных
+echo "Running database migrations..."
 python manage.py migrate
 
-echo "=== Сборка завершена успешно ===" 
+echo "============================="
+echo "Build completed successfully!"
+echo "=============================" 

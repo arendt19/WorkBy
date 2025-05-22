@@ -112,7 +112,7 @@ def conversation_detail_view(request, conversation_id):
     
     context = {
         'conversation': conversation,
-        'conversations': conversations_list,
+        'conversations_list': conversations_list,
         'other_participant': other_participant,
         'related_project': conversation.related_project,
         'active_conversation_id': conversation.id,

@@ -1,363 +1,254 @@
-import os
-import django
+# coding=utf-8
 import random
-from datetime import timedelta
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.db import transaction
+from django.core.files.uploadedfile import SimpleUploadedFile
+import os
+from pathlib import Path
 
-# Настройка Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'freelance_core.settings')
-django.setup()
-
-# Импорт моделей
-from accounts.models import User, FreelancerProfile, ClientProfile, PortfolioProject, Review
 from jobs.models import Category, Tag, Project, Proposal, Contract, Milestone
+from accounts.models import UserProfile, Skill, Education, Experience, Review
 from payments.models import Wallet, Transaction
 
-# Создание категорий
-def create_categories():
-    categories = [
-<<<<<<< HEAD
-        {
-            "name": "Web Development", 
-            "name_en": "Web Development", 
-            "name_ru": "Веб-разработка", 
-            "name_kk": "Веб-әзірлеу", 
-            "slug": "web-development"
-        },
-        {
-            "name": "Mobile App Development", 
-            "name_en": "Mobile App Development", 
-            "name_ru": "Мобильная разработка", 
-            "name_kk": "Мобильді қосымшаларды әзірлеу", 
-            "slug": "mobile-development"
-        },
-        {
-            "name": "Design", 
-            "name_en": "Design", 
-            "name_ru": "Дизайн", 
-            "name_kk": "Дизайн", 
-            "slug": "design"
-        },
-        {
-            "name": "Content and Copywriting", 
-            "name_en": "Content and Copywriting", 
-            "name_ru": "Контент и копирайтинг", 
-            "name_kk": "Контент және көшіру", 
-            "slug": "content"
-        },
-        {
-            "name": "Marketing", 
-            "name_en": "Marketing", 
-            "name_ru": "Маркетинг", 
-            "name_kk": "Маркетинг", 
-            "slug": "marketing"
-        },
-        {
-            "name": "Translation", 
-            "name_en": "Translation", 
-            "name_ru": "Перевод", 
-            "name_kk": "Аударма", 
-            "slug": "translation"
-        },
-        {
-            "name": "SEO and SMM", 
-            "name_en": "SEO and SMM", 
-            "name_ru": "SEO и SMM", 
-            "name_kk": "SEO және SMM", 
-            "slug": "seo-smm"
-        },
-        {
-            "name": "Audio and Video", 
-            "name_en": "Audio and Video", 
-            "name_ru": "Аудио и видео", 
-            "name_kk": "Аудио және видео", 
-            "slug": "audio-video"
-        },
-    ]
-    
-    for cat in categories:
-        category, created = Category.objects.get_or_create(slug=cat["slug"])
-        
-        # Обновляем поля категории независимо от того, новая она или существующая
-        category.name = cat["name"]
-        category.name_en = cat["name_en"]
-        category.name_ru = cat["name_ru"]
-        category.name_kk = cat["name_kk"]
-        category.save()
-=======
-        {"name": "Веб-разработка", "slug": "web-development"},
-        {"name": "Мобильная разработка", "slug": "mobile-development"},
-        {"name": "Дизайн", "slug": "design"},
-        {"name": "Контент и копирайтинг", "slug": "content"},
-        {"name": "Маркетинг", "slug": "marketing"},
-        {"name": "Перевод", "slug": "translation"},
-        {"name": "SEO и SMM", "slug": "seo-smm"},
-        {"name": "Аудио и видео", "slug": "audio-video"},
-    ]
-    
-    for cat in categories:
-        Category.objects.get_or_create(name=cat["name"], slug=cat["slug"])
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
-    
-    return Category.objects.all()
+User = get_user_model()
 
-# Создание тегов
-def create_tags():
-    tags = [
-        "Python", "JavaScript", "Django", "React", "Angular", "Vue.js", "HTML", "CSS", 
-        "SQL", "NoSQL", "Swift", "Kotlin", "Java", "Flutter", "PHP", "Laravel", "Wordpress",
-        "UI/UX", "Logo Design", "Branding", "Illustration", "Photoshop", "Figma", "SEO", 
-        "Content Writing", "Copywriting", "Translation", "Data Analysis", "Machine Learning"
-    ]
-    
-    for tag_name in tags:
-        Tag.objects.get_or_create(name=tag_name, slug=tag_name.lower().replace(" ", "-"))
-    
-    return Tag.objects.all()
+# Получаем путь к тестовым изображениям
+BASE_DIR = Path(__file__).resolve().parent.parent
+TEST_IMAGES_DIR = os.path.join(BASE_DIR, 'static/test_images')
 
-# Создание пользователей - фрилансеров и клиентов
-def create_users():
-    # Создаем фрилансеров
-    freelancers = []
-    for i in range(1, 6):
-        username = f"freelancer{i}"
-        email = f"freelancer{i}@example.com"
-        
-        try:
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password="password123",
-                first_name=f"Фрилансер{i}",
-                last_name=f"Фамилия{i}",
-                user_type="freelancer"
-            )
-            
-            # Создаем профиль фрилансера
-            profile = FreelancerProfile.objects.get(user=user)
-            profile.portfolio_website = f"https://portfolio{i}.example.com"
-            profile.rating = round(random.uniform(3.5, 5.0), 1)
-            profile.is_available = random.choice([True, False])
-            profile.experience_years = random.randint(1, 10)
-            profile.education = f"Университет №{i}, Факультет Компьютерных Наук"
-            profile.certifications = f"Сертификат {i} по веб-разработке"
-            profile.languages = "Русский, Казахский, Английский"
-            profile.specialization = random.choice(["Веб-разработка", "Мобильная разработка", "Дизайн"])
-            profile.save()
-            
-            # Дополняем информацию пользователя
-            user.skills = "Python, JavaScript, Django, HTML, CSS, SQL"
-            user.hourly_rate = random.randint(10, 50) * 1000
-            user.bio = f"Профессиональный разработчик с {profile.experience_years} годами опыта в сфере IT."
-            user.save()
-            
-            freelancers.append(user)
-        except:
-            pass
-    
-    # Создаем клиентов
-    clients = []
-    for i in range(1, 4):
-        username = f"client{i}"
-        email = f"client{i}@example.com"
-        
-        try:
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password="password123",
-                first_name=f"Клиент{i}",
-                last_name=f"Фамилия{i}",
-                user_type="client"
-            )
-            
-            # Создаем профиль клиента
-            profile = ClientProfile.objects.get(user=user)
-            profile.company_website = f"https://company{i}.example.com"
-            profile.industry = random.choice(["IT", "Финансы", "Образование", "Медицина"])
-            profile.company_size = random.randint(5, 100)
-            profile.save()
-            
-            # Дополняем информацию пользователя
-            user.company_name = f"ООО Компания {i}"
-            user.bio = f"Компания, специализирующаяся на {profile.industry}."
-            user.save()
-            
-            clients.append(user)
-        except:
-            pass
-    
-    return freelancers, clients
-
-# Создание портфолио для фрилансеров
-def create_portfolios(freelancers, categories):
-    for freelancer in freelancers:
-        for i in range(1, random.randint(2, 5)):
-            project = PortfolioProject.objects.create(
-                freelancer=freelancer,
-                title=f"Проект {i} в портфолио",
-                description=f"Описание проекта {i} в портфолио фрилансера {freelancer.username}.",
-                completed_date=timezone.now() - timedelta(days=random.randint(30, 365)),
-                client_name=f"Клиент для портфолио {i}",
-                url=f"https://portfolio-project{i}.example.com"
-            )
-            
-            # Добавляем категории к проекту
-            project.categories.add(random.choice(categories))
-
-# Создание проектов
-def create_projects(clients, categories, tags):
-    projects = []
-    
-    for client in clients:
-        for i in range(1, random.randint(3, 6)):
-            budget_min = random.randint(50, 200) * 1000
-            budget_max = budget_min + random.randint(50, 300) * 1000
-            
-            project = Project.objects.create(
-                client=client,
-                title=f"Проект {i} от {client.username}",
-                description=f"Подробное описание проекта {i}. Требуется {random.choice(['разработка', 'дизайн', 'контент', 'маркетинг'])}.",
-                category=random.choice(categories),
-                budget_min=budget_min,
-                budget_max=budget_max,
-                budget_type=random.choice(["fixed", "hourly"]),
-                deadline=timezone.now() + timedelta(days=random.randint(10, 60)),
-                is_remote=random.choice([True, False]),
-                experience_required=random.choice(["entry", "intermediate", "expert"])
-            )
-            
-            # Добавляем теги к проекту
-            for _ in range(random.randint(2, 5)):
-                project.tags.add(random.choice(tags))
-            
-            projects.append(project)
-    
-    return projects
-
-# Создание предложений на проекты
-def create_proposals(freelancers, projects):
-    proposals = []
-    
-    for project in projects:
-        # Случайное количество предложений на проект
-        num_proposals = random.randint(1, min(3, len(freelancers)))
-        selected_freelancers = random.sample(freelancers, num_proposals)
-        
-        for freelancer in selected_freelancers:
-            bid_amount = random.randint(
-                int(project.budget_min),
-                int(project.budget_max)
-            )
-            
-            proposal = Proposal.objects.create(
-                project=project,
-                freelancer=freelancer,
-                cover_letter=f"Предложение от {freelancer.username} на проект {project.title}. У меня есть опыт в подобных проектах.",
-                bid_amount=bid_amount,
-                delivery_time=random.randint(5, 30),
-                status=random.choice(["pending", "accepted", "rejected"])
-            )
-            
-            proposals.append(proposal)
-    
-    return proposals
-
-# Создание контрактов на основе принятых предложений
-def create_contracts(proposals):
-    contracts = []
-    
-    for proposal in proposals:
-        if proposal.status == "accepted":
-            contract = Contract.objects.create(
-                title=f"Контракт по проекту {proposal.project.title}",
-                description=f"Контракт между {proposal.project.client.username} и {proposal.freelancer.username}",
-                project=proposal.project,
-                client=proposal.project.client,
-                freelancer=proposal.freelancer,
-                proposal=proposal,
-                amount=proposal.bid_amount,
-                deadline=proposal.project.deadline,
-                status=random.choice(["active", "completed", "cancelled"])
-            )
-            
-            # Создаем этапы для контракта
-            num_milestones = random.randint(2, 4)
-            milestone_amount = contract.amount / num_milestones
-            
-            for i in range(1, num_milestones + 1):
-                days_offset = (i * contract.deadline.day) // num_milestones
-                
-                Milestone.objects.create(
-                    contract=contract,
-                    title=f"Этап {i} для {contract.title}",
-                    description=f"Описание этапа {i} для контракта",
-                    amount=milestone_amount,
-                    due_date=timezone.now() + timedelta(days=days_offset),
-                    status=random.choice(["pending", "submitted", "approved", "paid"])
-                )
-            
-            contracts.append(contract)
-    
-    return contracts
-
-# Создание кошельков и транзакций
-def create_wallets_and_transactions(users):
-    for user in users:
-        wallet, created = Wallet.objects.get_or_create(user=user)
-        
-        # Создаем несколько транзакций для каждого пользователя
-        for i in range(1, random.randint(3, 8)):
-            amount = random.randint(50, 500) * 1000
-            transaction_type = random.choice(["deposit", "withdrawal", "payment", "refund", "fee"])
-            
-            Transaction.objects.create(
-                user=user,
-                wallet=wallet,
-                amount=amount,
-                transaction_type=transaction_type,
-                status="completed",
-                description=f"{transaction_type.capitalize()} транзакция {i}",
-            )
-        
-        # Обновляем баланс кошелька
-        wallet.update_balance()
-
-# Создание отзывов
-def create_reviews(contracts):
-    for contract in contracts:
-        if contract.status == "completed":
-            Review.objects.create(
-                freelancer=contract.freelancer,
-                client=contract.client,
-                project=contract.project,
-                rating=random.randint(3, 5),
-                comment=f"Отзыв о работе фрилансера {contract.freelancer.username} на проекте {contract.project.title}. Работа выполнена качественно и в срок."
-            )
-
-# Главная функция
+# Обработчик загрузки тестовых данных
+@transaction.atomic
 def create_test_data():
     print("Создание тестовых данных...")
     
-    # Создаем базовые данные
-    categories = create_categories()
-    tags = create_tags()
-    freelancers, clients = create_users()
+    # Создаем суперпользователя, если его нет
+    if not User.objects.filter(username='admin').exists():
+        admin = User.objects.create_superuser(
+            username='admin',
+            email='admin@workby.io',
+            password='admin'
+        )
+        
+        # Создаем профиль для админа
+        UserProfile.objects.create(
+            user=admin,
+            first_name='Admin',
+            last_name='User',
+            bio='Администратор платформы',
+            phone_number='+7777777777',
+        )
+        
+        # Создаем кошелек для админа
+        Wallet.objects.create(
+            user=admin,
+            balance=50000.00
+        )
     
-    # Создаем портфолио для фрилансеров
-    create_portfolios(freelancers, categories)
+    # Создаем клиентов
+    clients = []
     
-    # Создаем проекты, предложения и контракты
-    projects = create_projects(clients, categories, tags)
-    proposals = create_proposals(freelancers, projects)
-    contracts = create_contracts(proposals)
+    if not User.objects.filter(username='client1').exists():
+        client1 = User.objects.create_user(
+            username='client1',
+            email='client1@example.com',
+            password='workby123'
+        )
+        
+        UserProfile.objects.create(
+            user=client1,
+            first_name='Алексей',
+            last_name='Клиентов',
+            bio='Владелец агентства цифрового маркетинга',
+            is_freelancer=False,
+            phone_number='+7777111111',
+        )
+        
+        Wallet.objects.create(
+            user=client1,
+            balance=100000.00
+        )
+        
+        clients.append(client1)
     
-    # Создаем финансовые данные и отзывы
-    all_users = freelancers + clients
-    create_wallets_and_transactions(all_users)
-    create_reviews(contracts)
+    if not User.objects.filter(username='client2').exists():
+        client2 = User.objects.create_user(
+            username='client2',
+            email='client2@example.com',
+            password='workby123'
+        )
+        
+        UserProfile.objects.create(
+            user=client2,
+            first_name='Елена',
+            last_name='Заказчикова',
+            bio='Руководитель IT-отдела',
+            is_freelancer=False,
+            phone_number='+7777222222',
+        )
+        
+        Wallet.objects.create(
+            user=client2,
+            balance=75000.00
+        )
+        
+        clients.append(client2)
     
-    print("Тестовые данные успешно созданы!")
+    # Создаем фрилансеров
+    freelancers = []
+    
+    if not User.objects.filter(username='freelancer1').exists():
+        freelancer1 = User.objects.create_user(
+            username='freelancer1',
+            email='freelancer1@example.com',
+            password='workby123'
+        )
+        
+        UserProfile.objects.create(
+            user=freelancer1,
+            first_name='Иван',
+            last_name='Фрилансеров',
+            bio='Опытный веб-разработчик с 5-летним опытом',
+            is_freelancer=True,
+            hourly_rate=2000,
+            phone_number='+7777333333',
+        )
+        
+        Wallet.objects.create(
+            user=freelancer1,
+            balance=25000.00
+        )
+        
+        freelancers.append(freelancer1)
+    
+    if not User.objects.filter(username='freelancer2').exists():
+        freelancer2 = User.objects.create_user(
+            username='freelancer2',
+            email='freelancer2@example.com',
+            password='workby123'
+        )
+        
+        UserProfile.objects.create(
+            user=freelancer2,
+            first_name='Мария',
+            last_name='Дизайнерова',
+            bio='UX/UI дизайнер с портфолио мирового уровня',
+            is_freelancer=True,
+            hourly_rate=2500,
+            phone_number='+7777444444',
+        )
+        
+        Wallet.objects.create(
+            user=freelancer2,
+            balance=30000.00
+        )
+        
+        freelancers.append(freelancer2)
+    
+    # Создаем категории и теги
+    categories = []
+    for name in ['Веб-разработка', 'Мобильная разработка', 'Дизайн', 
+                'Контент и копирайтинг', 'Маркетинг']:
+        if not Category.objects.filter(name=name).exists():
+            category = Category.objects.create(name=name)
+            categories.append(category)
+    
+    tags = []
+    for name in ['Python', 'JavaScript', 'Django', 'React', 'Angular', 'Vue.js', 
+                'HTML', 'CSS', 'SQL', 'NoSQL']:
+        if not Tag.objects.filter(name=name).exists():
+            tag = Tag.objects.create(name=name)
+            tags.append(tag)
+    
+    # Создаем проекты
+    if not Project.objects.exists():
+        for i in range(5):
+            project = Project.objects.create(
+                title=f'Тестовый проект {i+1}',
+                description=f'Описание тестового проекта {i+1}. Это пример проекта для демонстрации функционала платформы.',
+                client=random.choice(clients),
+                category=random.choice(categories),
+                budget_type=random.choice(['fixed', 'hourly']),
+                budget_min=5000,
+                budget_max=15000,
+                deadline=timezone.now() + timezone.timedelta(days=random.randint(10, 30)),
+                status='open',
+                is_remote=True
+            )
+            
+            # Добавляем случайные теги
+            project_tags = random.sample(list(tags), random.randint(2, 5))
+            project.tags.add(*project_tags)
+            
+            # Создаем предложения для проекта
+            for freelancer in freelancers:
+                if random.choice([True, False]):
+                    Proposal.objects.create(
+                        freelancer=freelancer,
+                        project=project,
+                        cover_letter=f'Предлагаю свои услуги для выполнения проекта {project.title}.',
+                        bid_amount=random.randint(int(project.budget_min), int(project.budget_max)),
+                        delivery_time=random.randint(5, 20),
+                        status=random.choice(['pending', 'accepted', 'rejected'])
+                    )
+    
+    # Создаем контракты и вехи
+    if not Contract.objects.exists():
+        projects = list(Project.objects.filter(status='open')[:2])
+        
+        for i, project in enumerate(projects):
+            freelancer = freelancers[i % len(freelancers)]
+            
+            # Создаем предложение, если его нет
+            proposal, created = Proposal.objects.get_or_create(
+                freelancer=freelancer,
+                project=project,
+                defaults={
+                    'cover_letter': f'Предлагаю свои услуги для выполнения проекта {project.title}.',
+                    'bid_amount': random.randint(int(project.budget_min), int(project.budget_max)),
+                    'delivery_time': random.randint(5, 20),
+                    'status': 'accepted'
+                }
+            )
+            
+            # Создаем контракт
+            contract = Contract.objects.create(
+                title=f'Контракт для {project.title}',
+                description=f'Условия выполнения проекта {project.title}',
+                client=project.client,
+                freelancer=freelancer,
+                project=project,
+                proposal=proposal,
+                amount=proposal.bid_amount,
+                deadline=timezone.now() + timezone.timedelta(days=proposal.delivery_time),
+                status='active'
+            )
+            
+            # Обновляем статус проекта и предложения
+            project.status = 'in_progress'
+            project.save()
+            
+            proposal.status = 'accepted'
+            proposal.save()
+            
+            # Создаем вехи для контракта
+            milestones_count = random.randint(2, 4)
+            amount_per_milestone = contract.amount / milestones_count
+            
+            for j in range(milestones_count):
+                milestone_status = 'completed' if j == 0 else 'pending' if j == 1 else 'in_progress'
+                payment_status = 'paid' if milestone_status == 'completed' else 'escrow' if milestone_status == 'in_progress' else 'not_paid'
+                
+                Milestone.objects.create(
+                    contract=contract,
+                    title=f'Веха {j+1} - {project.title}',
+                    description=f'Описание вехи {j+1} для проекта {project.title}',
+                    amount=amount_per_milestone,
+                    due_date=timezone.now() + timezone.timedelta(days=(j+1)*7),
+                    status=milestone_status,
+                    payment_status=payment_status
+                )
+    
+    print("Тестовые данные созданы успешно!")
+    return True
 
-if __name__ == "__main__":
-    create_test_data() 

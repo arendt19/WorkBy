@@ -11,13 +11,22 @@
     <div class="row">
         <!-- Боковая панель с фильтрами -->
         <div class="col-lg-3">
-            <div class="card mb-4 sticky-top" style="top: 20px; z-index: 100;">
-                <div class="card-header bg-primary text-white">
+            <div class="card mb-4">
+                <!-- Закрепленная панель заголовка фильтров -->
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center sticky-top" style="top: 0; z-index: 1030;">
                     <h5 class="mb-0">
                         <i class="fas fa-filter me-2"></i>{% trans "Search Filters" %}
                     </h5>
+                    <div class="filter-actions">
+                        <button type="submit" form="project-filter-form" class="btn btn-sm btn-light">
+                            <i class="fas fa-search me-1"></i> {% trans "Apply" %}
+                        </button>
+                        <a href="{% url 'jobs:project_list' %}" class="btn btn-sm btn-outline-light ms-1">
+                            <i class="fas fa-times me-1"></i> {% trans "Clear" %}
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="max-height: calc(100vh - 70px); overflow-y: auto;">
                     <form method="get" id="project-filter-form">
                         <div class="mb-3">
                             {{ form.query|as_crispy_field }}
@@ -35,9 +44,11 @@
                                 <small class="text-muted">{% trans "Popular tags:" %}</small>
                                 <div class="popular-tags mt-1">
                                     {% for tag in popular_tags %}
+                                        {% if tag.project_count > 0 %}
                                     <span class="badge bg-light text-dark tag-badge mb-1" data-tag="{{ tag.name }}">
                                         {{ tag.name }} ({{ tag.project_count }})
                                     </span>
+                                        {% endif %}
                                     {% endfor %}
                                 </div>
                             </div>
@@ -52,10 +63,22 @@
                         
                         <div class="row">
                             <div class="col-md-6">
-                                {{ form.min_budget|as_crispy_field }}
+                                <div class="input-group mb-3">
+                                    {{ form.min_budget }}
+                                    <span class="input-group-text">₸</span>
+                                </div>
+                                <script>
+                                    document.getElementById('id_min_budget').placeholder = '{% trans "Min" %} ₸';
+                                </script>
                             </div>
                             <div class="col-md-6">
-                                {{ form.max_budget|as_crispy_field }}
+                                <div class="input-group mb-3">
+                                    {{ form.max_budget }}
+                                    <span class="input-group-text">₸</span>
+                                </div>
+                                <script>
+                                    document.getElementById('id_max_budget').placeholder = '{% trans "Max" %} ₸';
+                                </script>
                             </div>
                         </div>
                         
@@ -65,7 +88,7 @@
                             {{ form.is_remote|as_crispy_field }}
                         </div>
                         
-                        <div class="mb-3">
+                        <div class="mb-3" id="location-field">
                             {{ form.location|as_crispy_field }}
                         </div>
                         
@@ -80,15 +103,6 @@
                         <div class="mb-3">
                             {{ form.sort_by|as_crispy_field }}
                         </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-1"></i> {% trans "Apply Filters" %}
-                            </button>
-                            <a href="{% url 'jobs:project_list' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-1"></i> {% trans "Clear Filters" %}
-                            </a>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -97,27 +111,69 @@
         <!-- Список проектов -->
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1>{% trans "Available Projects" %}</h1>
-                
-                <div class="results-count">
+                <div class="d-flex align-items-center">
+                    <h1 class="me-3">{% trans "Available Projects" %}</h1>
                     <span class="badge bg-primary">
-                        {{ total_count }} {% trans "projects found" %}
+                        {{ total_count }} {% if total_count == 1 %}{% trans "project found" %}{% else %}{% trans "projects found" %}{% endif %}
                     </span>
                 </div>
             </div>
+            
+            <!-- Детальное отображение активных фильтров -->
+            {% if request.GET %}
+            <div class="active-filters-card mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-filter me-2"></i> 
+                        <span class="fw-bold">{% trans "Active filters:" %}</span>
+                        
+                        {% if request.GET.category %}
+                        <span class="filter-item">{% trans "Category" %} = {{ request.GET.category }}</span>
+                        {% endif %}
+                        
+                        {% if request.GET.is_remote %}
+                        <span class="filter-item">{% trans "Remote only" %}</span>
+                        {% endif %}
+                        
+                        {% if request.GET.min_budget or request.GET.max_budget %}
+                        <span class="filter-item">
+                            {% trans "Budget" %} 
+                            {% if request.GET.min_budget %}{{ request.GET.min_budget }}{% endif %}
+                            -
+                            {% if request.GET.max_budget %}{{ request.GET.max_budget }}{% endif %} ₸
+                        </span>
+                        {% endif %}
+                        
+                        {% if request.GET.tags %}
+                        <span class="filter-item">{% trans "Tags" %}: {{ request.GET.tags }}</span>
+                        {% endif %}
+                        
+                        {% if request.GET.experience_level and request.GET.experience_level != 'any' %}
+                        <span class="filter-item">{% trans "Experience" %}: {{ request.GET.experience_level }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'jobs:project_list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i> {% trans "Clear All" %}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
             
             {% if projects %}
                 <div class="row">
                     {% for project in projects %}
                         <div class="col-lg-6 mb-4">
-                            <div class="card project-card h-100 bg-dark text-light border-secondary">
+                            <div class="card project-card h-100 bg-dark text-light border-secondary shadow-sm">
                                 <!-- Заголовок карточки проекта -->
                                 <div class="card-header d-flex justify-content-between align-items-center py-3">
+                                    <div>
+                                        <span class="badge bg-secondary mb-1">{{ project.category.get_translated_name }}</span>
                                     <h5 class="mb-0">
                                         <a href="{% url 'jobs:project_detail' project.pk %}" class="text-light text-decoration-none">
                                             {{ project.title|truncatechars:40 }}
                                         </a>
                                     </h5>
+                                    </div>
                                     <span class="badge status-badge status-{{ project.status }}">{{ project.get_status_display }}</span>
                                 </div>
                                 
@@ -132,11 +188,6 @@
                                         <div class="d-flex align-items-center mb-2">
                                             <i class="fas fa-user-circle text-primary me-2"></i>
                                             <span>{{ project.client.get_full_name|default:project.client.username }}</span>
-                                        </div>
-                                        
-                                        <div class="d-flex align-items-center mb-2">
-                                            <i class="fas fa-folder text-primary me-2"></i>
-                                            <span>{{ project.category.get_translated_name }}</span>
                                         </div>
                                         
                                         <div class="d-flex align-items-center mb-2">
@@ -171,8 +222,8 @@
                                     <!-- Действия с проектом -->
                                     <div class="mt-auto">
                                         <div class="d-grid gap-2 d-md-flex justify-content-md-between mt-3">
-                                            <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-secondary">
-                                                <i class="fas fa-eye me-1"></i> {% trans "Details" %}
+                                            <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-light">
+                                                <i class="fas fa-eye me-1"></i> {% trans "View Project" %}
                                             </a>
                                             
                                             {% if user.is_authenticated and user.is_freelancer and project.status == 'open' %}
@@ -199,6 +250,27 @@
                         </div>
                     {% endfor %}
                 </div>
+
+                <!-- При малом количестве проектов центрируем -->
+                {% if projects|length == 1 %}
+                <style>
+                    @media (min-width: 992px) {
+                        .col-lg-6 {
+                            margin-left: auto;
+                            margin-right: auto;
+                            width: 66.66%;
+                        }
+                    }
+                </style>
+                {% elif projects|length == 2 %}
+                <style>
+                    @media (min-width: 992px) {
+                        .row {
+                            justify-content: center;
+                        }
+                    }
+                </style>
+                {% endif %}
             {% else %}
                 <div class="alert alert-info">
                     <p>{% trans "No projects found matching your search criteria." %}</p>
@@ -231,6 +303,25 @@
                 }
             });
         });
+
+        // Управление полем Location при включении Remote only
+        const remoteCheckbox = document.getElementById('id_is_remote');
+        const locationField = document.getElementById('location-field');
+
+        function updateLocationField() {
+            if (remoteCheckbox.checked) {
+                locationField.style.opacity = '0.5';
+                locationField.querySelector('input').disabled = true;
+            } else {
+                locationField.style.opacity = '1';
+                locationField.querySelector('input').disabled = false;
+            }
+        }
+
+        remoteCheckbox.addEventListener('change', updateLocationField);
+        
+        // Инициализация состояния при загрузке страницы
+        updateLocationField();
     });
 </script>
 {% endblock %}

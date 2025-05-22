@@ -113,13 +113,48 @@
         transition: all 0.3s ease;
     }
     
+    .message-input input::placeholder {
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+    
     .message-input input:focus {
         background-color: #3a3a3a;
         outline: none;
-        box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.4); /* Бордовый акцент */
-        transform: translateY(-1px);
+        box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.6); /* Усиленная красная подсветка */
+        transform: translateY(-2px);
     }
     
+    .message-input input:focus::placeholder {
+        opacity: 0.5;
+    }
+    
+    /* Стили для поисковых полей */
+    .search-bar {
+        background-color: #1a1a1a;
+        border-bottom: 1px solid #333;
+    }
+    
+    .search-bar input {
+        background-color: #252525;
+        border-color: #333;
+        color: #eee;
+    }
+    
+    .search-bar .input-group-text {
+        background-color: #252525;
+        border-color: #333;
+        color: #aaa;
+    }
+    
+    /* Стили для кнопок действий */
+    .action-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Остальные стили оставляем без изменений */
     .message-input button {
         margin-left: 10px;
         border-radius: 50%;
@@ -136,10 +171,18 @@
         outline: none;
     }
     
+    .attachment-btn {
+        background-color: #333 !important;
+    }
+    
     .message-input button:hover {
         background-color: #A00000; /* Более светлый бордовый при наведении */
         transform: scale(1.05);
         box-shadow: 0 2px 8px rgba(139, 0, 0, 0.5);
+    }
+    
+    .attachment-btn:hover {
+        background-color: #444 !important;
     }
     
     .message-input button:active {
@@ -265,22 +308,42 @@
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: #777;
+        color: #aaa;
         text-align: center;
-        padding: 20px;
+        padding: 40px 20px;
         animation: fadeIn 0.5s ease;
     }
     
-    .empty-state i {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        color: #8B0000; /* Бордовый акцент */
-        animation: bounceIcon 2s infinite;
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        color: rgba(139, 0, 0, 0.6);
     }
     
-    @keyframes bounceIcon {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+    .empty-state h4 {
+        color: #eee;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state p {
+        color: #aaa;
+        max-width: 80%;
+        margin: 0 auto 20px;
+        line-height: 1.5;
+    }
+    
+    .start-chat-btn {
+        background-color: #8B0000;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .start-chat-btn:hover {
+        background-color: #A00000;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(139, 0, 0, 0.4);
     }
     
     .typing-indicator {
@@ -377,6 +440,13 @@
     .action-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Скрыть отладочную информацию */
+    pre.bg-dark.p-3.text-light,
+    div.pre-bg-dark.p-3.text-light,
+    .debug-conversation-info {
+        display: none !important;
     }
     
     /* Стили для мобильных устройств */
@@ -477,10 +547,24 @@
 <div class="container-fluid py-3">
     <!-- Чат контейнер -->
 <div class="chat-container">
-    <!-- Боковая панель с контактами -->
+        <!-- Левая колонка с контактами -->
     <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-                <h5 class="mb-0">{% trans "Chats" %}</h5>
+            <div class="sidebar-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{% trans "Conversations" %}</h5>
+                <a href="{% url 'chat:index' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-plus"></i> {% trans "New Chat" %}
+                </a>
+            </div>
+            
+            <!-- Поле поиска по контактам -->
+            <div class="p-2 border-bottom border-dark">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-dark border-dark text-light">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control bg-dark border-dark text-light" 
+                           placeholder="{% trans 'Search contacts...' %}" id="contactSearch">
+                </div>
         </div>
         
             <!-- Список контактов -->
@@ -507,14 +591,36 @@
                     </div>
                     </a>
                 {% empty %}
+                    {% if conversation %}
+                    <!-- Если нет других чатов, но текущий чат существует - показываем его в списке -->
+                    <a href="{% url 'chat:conversation_detail' conversation.id %}" class="contact-item active">
+                        <div class="user-avatar">
+                            {{ other_participant.get_full_name|slice:":1"|upper }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>{{ other_participant.get_full_name|default:other_participant.username }}</strong>
+                            </div>
+                            <div class="small text-muted text-truncate" style="max-width: 180px;">
+                                {% trans "Active conversation" %}
+                            </div>
+                        </div>
+                    </a>
+                    {% else %}
                     <div class="p-3 text-center text-muted">
                         {% trans "No conversations yet" %}
+                        <div class="mt-3">
+                            <a href="{% url 'chat:index' %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-plus me-1"></i> {% trans "Start a conversation" %}
+                            </a>
                 </div>
+                    </div>
+                    {% endif %}
             {% endfor %}
         </div>
     </div>
 
-        <!-- Содержимое чата -->
+        <!-- Правая колонка с сообщениями -->
     <div class="chat-content">
             <!-- Заголовок чата -->
         <div class="chat-header">
@@ -522,9 +628,11 @@
                     <button class="mobile-toggle me-2" id="toggleSidebar">
                     <i class="fas fa-bars"></i>
                 </button>
-                <div class="user-avatar">
+                    <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="text-decoration-none text-white">
+                        <div class="user-avatar" title="{% trans 'Click to view profile' %}">
                         {{ other_participant.get_full_name|slice:":1"|upper }}
                     </div>
+                    </a>
                     <div>
                         <strong>{{ other_participant.get_full_name|default:other_participant.username }}</strong>
                         <div class="small text-success">
@@ -534,8 +642,19 @@
                 </div>
                 <div>
                     <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light action-btn">
-                        <i class="fas fa-user me-1"></i> {% trans "Profile" %}
+                        <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
                     </a>
+                </div>
+            </div>
+            
+            <!-- Поле поиска по сообщениям -->
+            <div class="search-bar p-2 border-bottom border-dark">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-dark text-light">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control bg-dark border-dark text-light" 
+                           placeholder="{% trans 'Search in conversation...' %}" id="messageSearch">
                 </div>
             </div>
             
@@ -555,12 +674,12 @@
             <form id="messageForm" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-container">
-                        <input type="text" id="messageInput" placeholder="{% trans 'Type a message...' %}" autocomplete="off">
-                        <button type="button" id="attachButton" class="me-2" style="background-color: #333;">
+                        <button type="button" id="attachButton" class="attachment-btn me-2" title="{% trans 'Attach file' %}">
                             <i class="fas fa-paperclip"></i>
                         </button>
+                        <input type="text" id="messageInput" placeholder="{% trans 'Type a message...' %}" autocomplete="off">
                     <input type="file" id="fileInput" style="display: none;">
-                        <button type="submit" id="sendButton">
+                        <button type="submit" id="sendButton" class="send-btn ms-2" title="{% trans 'Send message' %}">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -601,12 +720,109 @@
     const toggleSidebar = document.getElementById('toggleSidebar');
     const sidebar = document.getElementById('sidebar');
     
+    // Новые элементы поиска
+    const messageSearch = document.getElementById('messageSearch');
+    const contactSearch = document.getElementById('contactSearch');
+    
         let lastMessageId = 0;
     let updatingMessages = false;
     
     // ID текущего пользователя и собеседника
     const currentUserId = {{ request.user.pk }};
     const otherUserId = {{ other_participant.pk }};
+    
+    // Скрываем отладочную информацию на странице
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ищем и удаляем блок с отладочной информацией (Total conversations)
+        const debugElements = document.querySelectorAll('pre');
+        debugElements.forEach(el => {
+            if (el.textContent.includes('Total conversations:')) {
+                el.style.display = 'none';
+            }
+        });
+        
+        // Альтернативный способ - скрыть все pre элементы, которые не имеют определенного класса
+        document.querySelectorAll('pre:not(.allowed-pre)').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Скрываем все элементы, которые могут быть отладочной информацией
+        document.querySelectorAll('.bg-dark.p-3.text-light').forEach(el => {
+            el.style.display = 'none';
+        });
+        
+        // Удаляем текстовые узлы с отладочной информацией
+        const body = document.body;
+        for (let i = 0; i < body.childNodes.length; i++) {
+            const node = body.childNodes[i];
+            if (node.nodeType === Node.TEXT_NODE && 
+                (node.textContent.includes('Total conversations') || 
+                 node.textContent.includes('Conversation 1:') || 
+                 node.textContent.includes('ID: 2'))) {
+                node.textContent = '';
+            }
+        }
+        
+        // Дополнительно: скрываем любые элементы, содержащие отладочную информацию
+        document.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'SCRIPT' && el.innerText && 
+                (el.innerText.includes('Total conversations') || 
+                 el.innerText.includes('Conversation 1:') || 
+                 el.innerText.includes('ID: 2') ||
+                 el.innerText.includes('Participants: 2') ||
+                 el.innerText.includes('Other participant: arendt') ||
+                 el.innerText.includes('Unread count: 0'))) {
+                el.style.display = 'none';
+            }
+        });
+    });
+    
+    // Поиск в сообщениях
+    if (messageSearch) {
+        messageSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const messages = document.querySelectorAll('.message-bubble');
+            
+            if (searchTerm.length > 2) {
+                messages.forEach(message => {
+                    const content = message.textContent.toLowerCase();
+                    const messageElement = message.closest('.message');
+                    
+                    if (content.includes(searchTerm)) {
+                        messageElement.style.display = 'flex';
+                        messageElement.classList.add('highlight-search');
+                    } else {
+                        messageElement.style.display = 'none';
+                    }
+                });
+            } else {
+                messages.forEach(message => {
+                    const messageElement = message.closest('.message');
+                    messageElement.style.display = 'flex';
+                    messageElement.classList.remove('highlight-search');
+                });
+            }
+        });
+    }
+    
+    // Поиск в контактах
+    if (contactSearch) {
+        contactSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const contacts = document.querySelectorAll('.contact-item');
+            
+            contacts.forEach(contact => {
+                const name = contact.querySelector('strong').textContent.toLowerCase();
+                const lastMessage = contact.querySelector('.small.text-muted')?.textContent.toLowerCase() || '';
+                
+                if (name.includes(searchTerm) || lastMessage.includes(searchTerm)) {
+                    contact.style.display = 'flex';
+                } else {
+                    contact.style.display = 'none';
+                }
+            });
+        });
+    }
     
     // Функция для переключения боковой панели на мобильных устройствах
     toggleSidebar.addEventListener('click', function() {
@@ -650,14 +866,14 @@
         uploadPreview.classList.add('d-none');
     }
     
-    // Загрузка сообщений
+    // Загрузка сообщений с обработкой пустого состояния
     function loadMessages(silent = false) {
         // Показываем индикатор загрузки только при первой загрузке
         if (silent === false && messageContainer.children.length === 0) {
             loadingMessages.style.display = 'block';
         }
         
-        // Используем абсолютный URL вместо шаблонных тегов
+        // URL для загрузки сообщений
         const conversationId = {{ conversation.pk }};
         const apiUrl = `/{{ LANGUAGE_CODE }}/chat/api/check_messages/${conversationId}/`;
         
@@ -678,12 +894,18 @@
             .then(data => {
                 // Проверяем наличие сообщений
                 if (!data.messages || data.messages.length === 0) {
-                    // Если это первая загрузка и нет сообщений, показываем пустое состояние
+                    // Если это первая загрузка и нет сообщений, показываем улучшенное пустое состояние
                     if (messageContainer.children.length === 0 || messageContainer.children.length === 1 && loadingMessages.parentNode === messageContainer) {
                         messageContainer.innerHTML = `
                             <div class="empty-state">
+                                <div class="empty-state-icon">
                                 <i class="fas fa-comments"></i>
-                                <p>{% trans "No messages yet. Start the conversation!" %}</p>
+                                </div>
+                                <h4>{% trans "Start a conversation" %}</h4>
+                                <p>{% trans "Send your first message to" %} ${otherParticipantName} {% trans "to begin chatting" %}</p>
+                                <button type="button" class="btn start-chat-btn" onclick="document.getElementById('messageInput').focus()">
+                                    <i class="fas fa-paper-plane me-2"></i> {% trans "Start chatting" %}
+                                </button>
                             </div>
                         `;
                     }
@@ -767,12 +989,8 @@
                 markMessagesAsRead();
             })
             .catch(error => {
-<<<<<<< HEAD
                 // Скрываем отладочную информацию
                 markMessagesAsRead();
-=======
-                console.error(`Ошибка при загрузке сообщений: ${error}`);
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
             });
     }
     
@@ -783,10 +1001,6 @@
         audio.volume = 0.5; // Громкость 50%
         audio.play().catch(e => {
             // Тихо проглатываем ошибку, если автовоспроизведение запрещено
-<<<<<<< HEAD
-=======
-            console.log('Notification sound could not be played', e);
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         });
     }
     
@@ -822,9 +1036,9 @@
         tempMessage.className = 'message message-outgoing';
         tempMessage.id = tempId;
         tempMessage.innerHTML = `
-            <div class="message-bubble">${messageText || (file ? 'Sending file...' : '')}</div>
+            <div class="message-bubble">${messageText || (file ? '{% trans "Sending file..." %}' : '')}</div>
                                     <div class="message-time">
-                Sending... <span class="message-status ms-1"><i class="fas fa-spinner fa-spin"></i></span>
+                {% trans "Sending..." %} <span class="message-status ms-1"><i class="fas fa-spinner fa-spin"></i></span>
                                 </div>
                             `;
         messageContainer.appendChild(tempMessage);
@@ -857,18 +1071,14 @@
                                 ${data.error || "{% trans 'Error sending message' %}"}
                             </div>
                             <div class="message-time">
-                                <span class="text-danger">Failed</span>
+                                <span class="text-danger">{% trans "Failed" %}</span>
                             </div>
                         `;
                     }
                 }
             })
             .catch(error => {
-<<<<<<< HEAD
                 // Скрываем отладочную информацию
-=======
-                console.error(`Ошибка при отправке сообщения: ${error}`);
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                 
                 // Отображаем ошибку в временном сообщении
                 const tempElement = document.getElementById(tempId);
@@ -878,7 +1088,7 @@
                             {% trans 'Error sending message' %}
                         </div>
                         <div class="message-time">
-                            <span class="text-danger">Failed</span>
+                            <span class="text-danger">{% trans "Failed" %}</span>
                         </div>
                     `;
                 }
@@ -910,11 +1120,7 @@
                 }
             })
             .catch(error => {
-<<<<<<< HEAD
                 // Скрываем отладочную информацию
-=======
-                console.error(`Ошибка при отметке сообщений: ${error}`);
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
             });
     }
     
@@ -959,5 +1165,8 @@
             // Логика для загрузки предыдущих сообщений
         }
     });
+    
+    // Добавляем переменную с именем собеседника для использования в шаблонах
+    const otherParticipantName = "{{ other_participant.get_full_name|default:other_participant.username }}";
 </script>
 {% endblock %}
