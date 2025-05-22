@@ -109,9 +109,7 @@
                                     </div>
                                     
                                     <div class="mb-3">
-                                        {% if 'skills' in user_form.fields %}
-                                            {{ user_form.skills|as_crispy_field }}
-                                        {% elif freelancer_form and 'skills' in freelancer_form.fields %}
+                                        {% if freelancer_form %}
                                             {{ freelancer_form.skills|as_crispy_field }}
                                         {% endif %}
                                         <small class="form-text text-muted">{% trans "Enter skills separated by commas (e.g. JavaScript, Python, Design)" %}</small>
@@ -125,9 +123,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                {% if 'hourly_rate' in user_form.fields %}
-                                                    {{ user_form.hourly_rate|as_crispy_field }}
-                                                {% elif freelancer_form and 'hourly_rate' in freelancer_form.fields %}
+                                                {% if freelancer_form %}
                                                     {{ freelancer_form.hourly_rate|as_crispy_field }}
                                                 {% endif %}
                                             </div>
@@ -162,32 +158,42 @@
                                     <hr>
                                     
                                     <div class="mb-3">
-                                        {% if client_form and 'company_name' in client_form.fields %}
+                                        {% if client_form %}
                                             {{ client_form.company_name|as_crispy_field }}
-                                        {% elif 'company_name' in user_form.fields %}
-                                            {{ user_form.company_name|as_crispy_field }}
                                         {% endif %}
                                     </div>
                                     
                                     <div class="mb-3">
-                                        {{ profile_form.company_website|as_crispy_field }}
+                                        {% if profile_form.company_website %}
+                                            {{ profile_form.company_website|as_crispy_field }}
+                                        {% endif %}
                                     </div>
                                     
                                     <div class="mb-3">
-                                        {{ profile_form.industry|as_crispy_field }}
+                                        {% if profile_form.industry %}
+                                            {{ profile_form.industry|as_crispy_field }}
+                                        {% endif %}
                                     </div>
                                     
                                     <div class="mb-3">
-                                        {{ profile_form.company_size|as_crispy_field }}
+                                        {% if profile_form.company_size %}
+                                            {{ profile_form.company_size|as_crispy_field }}
+                                        {% endif %}
                                     </div>
                                 </div>
                                 
                                 <div class="mb-3">
-                                    {{ profile_form.phone_number|as_crispy_field }}
+                                    {% if user_form.phone_number %}
+                                        {{ user_form.phone_number|as_crispy_field }}
+                                    {% endif %}
                                 </div>
                                 
                                 <div class="mb-3">
-                                    {{ profile_form.location|as_crispy_field }}
+                                    <div class="form-group">
+                                        <label for="id_location">{% trans "Location" %}</label>
+                                        <input type="text" name="location" class="form-control" id="id_location" placeholder="{% trans 'City, Country' %}">
+                                        <small class="form-text text-muted">{% trans "Enter your current location" %}</small>
+                                    </div>
                                 </div>
                             </div>
                         </div>

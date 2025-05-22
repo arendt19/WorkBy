@@ -73,21 +73,30 @@ def profile_edit_view(request):
     if request.method == 'POST':
         user_form = UserUpdateForm(request.POST, request.FILES, instance=user)
         
+        # Обработка поля location
+        location = request.POST.get('location', '')
+        
         if user.user_type == 'freelancer':
+            # Убедимся, что профиль существует
             profile, created = FreelancerProfile.objects.get_or_create(user=user)
-            profile_form = FreelancerProfileForm(request.POST, instance=profile)
+            profile_form = FreelancerProfileForm(request.POST, request.FILES, instance=profile)
             freelancer_form = FreelancerUserForm(request.POST, instance=user)
             valid_forms = user_form.is_valid() and profile_form.is_valid() and freelancer_form.is_valid()
         else:
+            # Убедимся, что профиль существует
             profile, created = ClientProfile.objects.get_or_create(user=user)
             profile_form = ClientProfileForm(request.POST, instance=profile)
             client_form = ClientUserForm(request.POST, instance=user)
             valid_forms = user_form.is_valid() and profile_form.is_valid() and client_form.is_valid()
         
         if valid_forms:
+            # Сначала сохраним основного пользователя
             user_form.save()
+            
+            # Затем сохраним связанный профиль
             profile_form.save()
             
+            # И специфичную информацию для типа пользователя
             if user.user_type == 'freelancer':
                 freelancer_form.save()
             else:
@@ -99,10 +108,12 @@ def profile_edit_view(request):
         user_form = UserUpdateForm(instance=user)
         
         if user.user_type == 'freelancer':
+            # Убедимся, что профиль существует
             profile, created = FreelancerProfile.objects.get_or_create(user=user)
             profile_form = FreelancerProfileForm(instance=profile)
             freelancer_form = FreelancerUserForm(instance=user)
         else:
+            # Убедимся, что профиль существует
             profile, created = ClientProfile.objects.get_or_create(user=user)
             profile_form = ClientProfileForm(instance=profile)
             client_form = ClientUserForm(instance=user)

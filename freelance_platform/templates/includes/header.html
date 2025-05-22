@@ -32,44 +32,40 @@
                     {% if user.is_client %}
                         <!-- Меню для клиентов -->
                         <li class="nav-item">
-                            <a class="nav-link {% if '/project/create/' in request.path %}active{% endif %}" href="{% url 'jobs:project_create' %}">{% trans "Post a Project" %}</a>
+                            <a class="nav-link" href="{% url 'jobs:project_create' %}">{% trans "Post a Project" %}</a>
                         </li>
                     {% endif %}
                     
                     <!-- Общие пункты меню для всех авторизованных пользователей -->
                     <li class="nav-item">
-                        <a class="nav-link {% if '/projects/' in request.path %}active{% endif %}" href="{% url 'jobs:project_list' %}"><i class="fas fa-search me-1"></i> {% trans "Find Projects" %}</a>
+                        <a class="nav-link" href="{% url 'jobs:project_list' %}"><i class="fas fa-search me-1"></i> {% trans "Find Projects" %}</a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link {% if '/proposals/' in request.path or 'proposal_' in request.path %}active{% endif %}" href="{% url 'jobs:my_proposals' %}">
+                        <a class="nav-link" href="{% url 'jobs:my_proposals' %}">
                             <i class="fas fa-paper-plane me-1"></i> {% trans "Proposals" %}
                         </a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link {% if '/categories/' in request.path %}active{% endif %}" href="{% url 'jobs:categories' %}">
-                            {% trans "Categories" %}
-                        </a>
+                        <a class="nav-link" href="{% url 'jobs:categories' %}">{% trans "Categories" %}</a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link {% if '/about/' in request.path %}active{% endif %}" href="{% url 'jobs:about' %}">{% trans "About Us" %}</a>
+                        <a class="nav-link" href="{% url 'jobs:about' %}">{% trans "About Us" %}</a>
                     </li>
                 {% else %}
                     <!-- Меню для неавторизованных пользователей -->
                     <li class="nav-item">
-                        <a class="nav-link {% if '/projects/' in request.path %}active{% endif %}" href="{% url 'jobs:project_list' %}">{% trans "Find Projects" %}</a>
+                        <a class="nav-link" href="{% url 'jobs:project_list' %}">{% trans "Find Projects" %}</a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link {% if '/categories/' in request.path %}active{% endif %}" href="{% url 'jobs:categories' %}">
-                            {% trans "Categories" %}
-                        </a>
+                        <a class="nav-link" href="{% url 'jobs:categories' %}">{% trans "Categories" %}</a>
                     </li>
                     
                     <li class="nav-item">
-                        <a class="nav-link {% if '/about/' in request.path %}active{% endif %}" href="{% url 'jobs:about' %}">{% trans "About Us" %}</a>
+                        <a class="nav-link" href="{% url 'jobs:about' %}">{% trans "About Us" %}</a>
                     </li>
                 {% endif %}
             </ul>
@@ -79,7 +75,7 @@
                 {% if user.is_authenticated and user_balance is not None %}
                 <!-- Баланс кошелька -->
                 <li class="nav-item me-3">
-                    <a href="{% url 'payments:wallet' %}" class="nav-link {% if '/wallet/' in request.path %}active{% endif %}">
+                    <a href="{% url 'payments:wallet' %}" class="nav-link">
                         <i class="fas fa-wallet me-1"></i>
                         <span class="fw-bold">₸{{ user_balance }}</span>
                     </a>
@@ -125,7 +121,7 @@
                 {% if user.is_authenticated %}
                     <!-- Сообщения - скрыты на мобильном (показаны выше) -->
                     <li class="nav-item d-none d-lg-block">
-                        <a class="nav-link {% if '/chat/' in request.path %}active{% endif %}" href="{% url 'chat:inbox' %}" title="{% trans 'Messages' %}">
+                        <a class="nav-link" href="{% url 'chat:inbox' %}" title="{% trans 'Messages' %}">
                             <i class="fas fa-envelope"></i>
                         </a>
                     </li>
@@ -141,21 +137,21 @@
                             {{ user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item {% if '/profile/' in request.path %}active{% endif %}" href="{% url 'accounts:profile' %}"><i class="fas fa-user me-2"></i> {% trans "Profile" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user me-2"></i> {% trans "Profile" %}</a></li>
                             
                             {% if user.is_freelancer %}
-                                <li><a class="dropdown-item {% if '/portfolio/' in request.path %}active{% endif %}" href="{% url 'accounts:portfolio_list' %}"><i class="fas fa-briefcase me-2"></i> {% trans "Portfolio" %}</a></li>
+                                <li><a class="dropdown-item" href="{% url 'accounts:portfolio_list' %}"><i class="fas fa-briefcase me-2"></i> {% trans "Portfolio" %}</a></li>
                             {% endif %}
                             
-                            <li><a class="dropdown-item {% if '/proposals/' in request.path or 'proposal_' in request.path %}active{% endif %}" href="{% url 'jobs:my_proposals' %}"><i class="fas fa-paper-plane me-2"></i> {% trans "Proposals" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'jobs:my_proposals' %}"><i class="fas fa-paper-plane me-2"></i> {% trans "Proposals" %}</a></li>
                             
                             {% if user.is_client %}
-                                <li><a class="dropdown-item {% if '/my-projects/' in request.path %}active{% endif %}" href="{% url 'jobs:my_projects' %}"><i class="fas fa-clipboard-list me-2"></i> {% trans "My Projects" %}</a></li>
-                                <li><a class="dropdown-item {% if '/project/create/' in request.path %}active{% endif %}" href="{% url 'jobs:project_create' %}"><i class="fas fa-plus-circle me-2"></i> {% trans "Post a Project" %}</a></li>
+                                <li><a class="dropdown-item" href="{% url 'jobs:my_projects' %}"><i class="fas fa-clipboard-list me-2"></i> {% trans "My Projects" %}</a></li>
+                                <li><a class="dropdown-item" href="{% url 'jobs:project_create' %}"><i class="fas fa-plus-circle me-2"></i> {% trans "Post a Project" %}</a></li>
                             {% endif %}
                             
-                            <li><a class="dropdown-item {% if '/contracts/' in request.path %}active{% endif %}" href="{% url 'jobs:contract_list' %}"><i class="fas fa-file-contract me-2"></i> {% trans "Contracts" %}</a></li>
-                            <li><a class="dropdown-item {% if '/wallet/' in request.path %}active{% endif %}" href="{% url 'payments:wallet' %}"><i class="fas fa-wallet me-2"></i> {% trans "Wallet" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'jobs:contract_list' %}"><i class="fas fa-file-contract me-2"></i> {% trans "Contracts" %}</a></li>
+                            <li><a class="dropdown-item" href="{% url 'payments:wallet' %}"><i class="fas fa-wallet me-2"></i> {% trans "Wallet" %}</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt me-2"></i> {% trans "Log Out" %}</a></li>
                         </ul>
@@ -163,10 +159,10 @@
                 {% else %}
                     <!-- Кнопки для неавторизованных пользователей -->
                     <li class="nav-item">
-                        <a class="nav-link {% if '/login/' in request.path %}active{% endif %}" href="{% url 'accounts:login' %}">{% trans "Log In" %}</a>
+                        <a class="nav-link" href="{% url 'accounts:login' %}">{% trans "Log In" %}</a>
                     </li>
                     <li class="nav-item">
-                        <a class="btn btn-primary ms-2 {% if '/register/' in request.path %}active{% endif %}" href="{% url 'accounts:register' %}">{% trans "Sign Up" %}</a>
+                        <a class="btn btn-primary ms-2" href="{% url 'accounts:register' %}">{% trans "Sign Up" %}</a>
                     </li>
                 {% endif %}
             </ul>

@@ -39,7 +39,7 @@
                         <p>{{ user.bio|linebreaks }}</p>
                     </div>
                     <div>
-                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline-primary">
+                        <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
                             <i class="fas fa-edit"></i> {% trans "Edit Profile" %}
                         </a>
                     </div>
@@ -48,20 +48,47 @@
                 <div class="row mt-3">
                     <div class="col-md-4">
                         <div class="stat-item">
-                            <div class="count">{{ profile.experience_years }}</div>
-                            <div class="stat-label">{% trans "Years of Experience" %}</div>
+                            {% if profile.experience_years > 0 %}
+                                <div class="count">{{ profile.experience_years }}</div>
+                                <div class="stat-label">{% trans "Years of Experience" %}</div>
+                            {% else %}
+                                <div class="count text-muted">—</div>
+                                <div class="stat-label">
+                                    <a href="{% url 'accounts:profile_edit' %}" class="text-primary">
+                                        <i class="fas fa-plus-circle"></i> {% trans "Add Experience" %}
+                                    </a>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-item">
-                            <div class="count">{{ user.hourly_rate|floatformat:0 }}</div>
-                            <div class="stat-label">{% trans "Hourly Rate (₸)" %}</div>
+                            {% if user.hourly_rate %}
+                                <div class="count">{{ user.hourly_rate|floatformat:0 }}</div>
+                                <div class="stat-label">{% trans "Hourly Rate (₸)" %}</div>
+                            {% else %}
+                                <div class="count text-muted">—</div>
+                                <div class="stat-label">
+                                    <a href="{% url 'accounts:profile_edit' %}" class="text-primary">
+                                        <i class="fas fa-plus-circle"></i> {% trans "Set Hourly Rate" %}
+                                    </a>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="stat-item">
-                            <div class="count">{{ portfolio_projects.count }}</div>
-                            <div class="stat-label">{% trans "Portfolio Projects" %}</div>
+                            {% if portfolio_projects.count > 0 %}
+                                <div class="count">{{ portfolio_projects.count }}</div>
+                                <div class="stat-label">{% trans "Portfolio Projects" %}</div>
+                            {% else %}
+                                <div class="count text-muted">—</div>
+                                <div class="stat-label">
+                                    <a href="{% url 'accounts:portfolio_create' %}" class="text-primary">
+                                        <i class="fas fa-plus-circle"></i> {% trans "Add First Project" %}
+                                    </a>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -92,9 +119,18 @@
                             </a>
                         </p>
                     {% endif %}
+                    
+                    {% if not profile.phone_number or not profile.location or not profile.portfolio_website %}
+                        <div class="mt-3">
+                            <a href="{% url 'accounts:profile_edit' %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-plus-circle"></i> {% trans "Add More Contact Methods" %}
+                            </a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
             
+            {% if user.skills or profile.languages %}
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">{% trans "Skills & Languages" %}</h5>
@@ -119,7 +155,21 @@
                     {% endif %}
                 </div>
             </div>
+            {% else %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Skills & Languages" %}</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <p>{% trans "Add your skills to stand out" %}</p>
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {% trans "Add Skills" %}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
             
+            {% if profile.education or profile.certifications %}
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">{% trans "Education & Certifications" %}</h5>
@@ -136,93 +186,222 @@
                     {% endif %}
                 </div>
             </div>
+            {% else %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{% trans "Education & Certifications" %}</h5>
+                </div>
+                <div class="card-body text-center py-4">
+                    <p>{% trans "Add your education and certifications" %}</p>
+                    <a href="{% url 'accounts:profile_edit' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> {% trans "Add Education" %}
+                    </a>
+                </div>
+            </div>
+            {% endif %}
         </div>
         
         <div class="col-md-8">
-            <!-- Портфолио -->
+            <!-- Портфолио и Отзывы в табах -->
             <div class="card mb-4">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">{% trans "Portfolio" %}</h5>
-                    <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-sm btn-light">
-                        <i class="fas fa-plus"></i> {% trans "Add Project" %}
-                    </a>
+                <div class="card-header bg-primary text-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="profile-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-white active" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio" type="button" role="tab" aria-controls="portfolio" aria-selected="true">
+                                {% trans "Portfolio" %} ({{ portfolio_projects.count }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link text-white" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">
+                                {% trans "Reviews" %} ({{ reviews.count }})
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-                <div class="card-body">
-                    {% if portfolio_projects %}
-                        <div class="row">
-                            {% for project in portfolio_projects %}
-                                <div class="col-md-6 mb-4">
-                                    <div class="card h-100">
-                                        {% if project.get_first_image %}
-                                            <img src="{{ project.get_first_image.image.url }}" class="card-img-top portfolio-image" alt="{{ project.title }}">
-                                        {% endif %}
-                                        <div class="card-body">
-                                            <h5 class="card-title">{{ project.title }}</h5>
-                                            <p class="card-text small">{{ project.description|truncatewords:20 }}</p>
-                                            
-                                            <div class="d-flex justify-content-between">
-                                                <small class="text-muted">
-                                                    <i class="far fa-calendar-alt me-1"></i>
-                                                    {{ project.completed_date|date:"M Y" }}
-                                                </small>
-                                                <a href="{% url 'accounts:portfolio_detail' project.pk %}" class="btn btn-sm btn-outline-primary">
-                                                    {% trans "View Details" %}
-                                                </a>
+                <div class="card-body tab-content">
+                    <div class="tab-pane fade show active" id="portfolio" role="tabpanel" aria-labelledby="portfolio-tab">
+                        <div class="d-flex justify-content-end mb-3">
+                            <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus"></i> {% trans "Add Project" %}
+                            </a>
+                        </div>
+                        
+                        {% if portfolio_projects %}
+                            <div class="row">
+                                {% for project in portfolio_projects %}
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            {% if project.get_first_image %}
+                                                <img src="{{ project.get_first_image.image.url }}" class="card-img-top portfolio-image" alt="{{ project.title }}">
+                                            {% endif %}
+                                            <div class="card-body">
+                                                <h5 class="card-title">{{ project.title }}</h5>
+                                                <p class="card-text small">{{ project.description|truncatewords:20 }}</p>
+                                                
+                                                <div class="d-flex justify-content-between">
+                                                    <small class="text-muted">
+                                                        <i class="far fa-calendar-alt me-1"></i>
+                                                        {{ project.completed_date|date:"M Y" }}
+                                                    </small>
+                                                    <a href="{% url 'accounts:portfolio_detail' project.pk %}" class="btn btn-sm btn-outline-primary">
+                                                        {% trans "View Details" %}
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-4">
+                                <p>{% trans "No portfolio projects yet." %}</p>
+                                <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> {% trans "Add Your First Project" %}
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                        {% if reviews %}
+                            {% for review in reviews %}
+                                <div class="review-card mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                {% if review.client.avatar %}
+                                                    <img src="{{ review.client.avatar.url }}" alt="{{ review.client.username }}" class="rounded-circle" width="50">
+                                                {% else %}
+                                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                        {{ review.client.get_initials }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div>
+                                                <h6 class="mb-0">{{ review.client.get_full_name }}</h6>
+                                                <div class="star-rating">
+                                                    {% for i in "12345" %}
+                                                        {% if forloop.counter <= review.rating %}
+                                                            <i class="fas fa-star"></i>
+                                                        {% else %}
+                                                            <i class="far fa-star"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
+                                    </div>
+                                    <p class="mt-2">{{ review.comment }}</p>
+                                    {% if review.project %}
+                                        <small class="text-muted">
+                                            {% trans "Project" %}: <a href="{% url 'jobs:project_detail' review.project.id %}">{{ review.project.title }}</a>
+                                        </small>
+                                    {% endif %}
                                 </div>
                             {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <p>{% trans "No portfolio projects yet." %}</p>
-                            <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> {% trans "Add Your First Project" %}
-                            </a>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- Отзывы -->
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">{% trans "Reviews" %} ({{ reviews.count }})</h5>
-                </div>
-                <div class="card-body">
-                    {% if reviews %}
-                        {% for review in reviews %}
-                            <div class="review-card mb-4">
-                                <div class="d-flex justify-content-between">
-                                    <div>
-                                        <h6>{{ review.client.get_full_name }}</h6>
-                                        <div class="star-rating">
-                                            {% for i in "12345" %}
-                                                {% if forloop.counter <= review.rating %}
-                                                    <i class="fas fa-star"></i>
-                                                {% else %}
-                                                    <i class="far fa-star"></i>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    <small class="text-muted">{{ review.created_at|date:"d.m.Y" }}</small>
-                                </div>
-                                <p class="mt-2">{{ review.comment }}</p>
-                                {% if review.project %}
-                                    <small class="text-muted">
-                                        {% trans "Project" %}: <a href="{% url 'jobs:project_detail' review.project.id %}">{{ review.project.title }}</a>
-                                    </small>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-center py-4">{% trans "No reviews yet." %}</p>
-                    {% endif %}
+                        {% else %}
+                            <p class="text-center py-4">{% trans "No reviews yet." %}</p>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Анимация элементов при загрузке
+        const statItems = document.querySelectorAll('.stat-item');
+        const cards = document.querySelectorAll('.card');
+        
+        // Добавляем анимацию появления
+        function animateElementsOnLoad() {
+            statItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        item.style.transition = 'all 0.5s ease';
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+            
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, (index * 100) + 300);
+            });
+        }
+        
+        // Запускаем анимацию
+        animateElementsOnLoad();
+        
+        // Активация табов
+        const profileTabs = document.querySelectorAll('#profile-tabs button');
+        profileTabs.forEach(tab => {
+            tab.addEventListener('click', function(event) {
+                event.preventDefault();
+                profileTabs.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Активация соответствующего контента с анимацией
+                const targetId = this.dataset.bsTarget;
+                const target = document.querySelector(targetId);
+                
+                // Плавно скрываем текущий активный таб
+                const activePane = document.querySelector('.tab-pane.show.active');
+                activePane.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                activePane.style.opacity = '0';
+                activePane.style.transform = 'translateY(10px)';
+                
+                setTimeout(() => {
+                    // Скрываем все табы
+                    document.querySelectorAll('.tab-pane').forEach(pane => {
+                        pane.classList.remove('show', 'active');
+                    });
+                    
+                    // Показываем выбранный таб
+                    target.classList.add('show', 'active');
+                    target.style.opacity = '0';
+                    target.style.transform = 'translateY(10px)';
+                    
+                    // Запускаем анимацию появления
+                    setTimeout(() => {
+                        target.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        target.style.opacity = '1';
+                        target.style.transform = 'translateY(0)';
+                    }, 50);
+                }, 300);
+            });
+        });
+        
+        // Анимация при наведении на кнопки
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transition = 'transform 0.3s ease';
+                this.style.transform = this.classList.contains('btn-sm') ? 'scale(1.05)' : 'scale(1.05) translateY(-2px)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transition = 'transform 0.3s ease';
+                this.style.transform = 'scale(1) translateY(0)';
+            });
+        });
+    });
+</script>
 {% endblock %} 
