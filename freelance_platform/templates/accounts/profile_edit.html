@@ -21,190 +21,307 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">{% trans "Edit Profile" %}</h4>
+                    <button type="submit" form="profile-form" class="btn btn-light btn-sm">
+                        <i class="bi bi-save"></i> {% trans "Save Changes" %}
+                    </button>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <form method="post" enctype="multipart/form-data" id="profile-form">
                         {% csrf_token %}
                         
-                        <div class="row">
-                            <!-- Основные данные пользователя -->
-                            <div class="col-md-6">
-                                <h5>{% trans "Basic Information" %}</h5>
-                                <hr>
-                                
-                                <div class="mb-3">
-                                    {{ user_form.username|as_crispy_field }}
-                                </div>
-                                
+                        <!-- Навигация по секциям формы -->
+                        <ul class="nav nav-tabs mb-4" id="profileTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="account-tab" data-bs-toggle="tab" data-bs-target="#account" type="button" role="tab" aria-controls="account" aria-selected="true">
+                                    <i class="bi bi-person-badge"></i> {% trans "Account Details" %}
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="false">
+                                    <i class="bi bi-person"></i> {% trans "Personal Info" %}
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab" aria-controls="professional" aria-selected="false">
+                                    <i class="bi bi-briefcase"></i> {% trans "Professional Info" %}
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <!-- Содержимое вкладок -->
+                        <div class="tab-content" id="profileTabsContent">
+                            <!-- 1. ACCOUNT DETAILS -->
+                            <div class="tab-pane fade show active" id="account" role="tabpanel" aria-labelledby="account-tab">
                                 <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            {{ user_form.first_name|as_crispy_field }}
+                                    <div class="col-md-8 mx-auto">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> {% trans "These are your basic account details used for login and system identification." %}
                                         </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            {{ user_form.last_name|as_crispy_field }}
+                                        
+                                        <div class="mb-4">
+                                            {{ user_form.username|as_crispy_field }}
+                                            <div class="invalid-feedback" id="username-error"></div>
                                         </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    {{ user_form.email|as_crispy_field }}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    {{ user_form.bio|as_crispy_field }}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    {{ user_form.avatar|as_crispy_field }}
-                                    {% if user.avatar %}
-                                        <div class="mt-2">
-                                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded" style="max-width: 150px;">
-                                            <div class="form-check mt-2">
-                                                <input class="form-check-input" type="checkbox" name="delete_avatar" id="delete_avatar">
-                                                <label class="form-check-label" for="delete_avatar">
-                                                    {% trans "Delete current avatar" %}
-                                                </label>
+                                        
+                                        <div class="mb-4">
+                                            {{ user_form.email|as_crispy_field }}
+                                            <div class="invalid-feedback" id="email-error"></div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <input type="hidden" name="user_type" id="id_user_type" value="{{ user.user_type }}">
+                                            <!-- Тип аккаунта перенесен в настройки -->
+                                            <div class="alert alert-secondary">
+                                                <i class="bi bi-info-circle"></i> {% trans "Current account type" %}: <strong>{% if user.user_type == 'freelancer' %}{% trans "Freelancer" %}{% else %}{% trans "Client" %}{% endif %}</strong>
+                                                <br>
+                                                <small>{% trans "To change your account type, please visit" %} <a href="#" class="alert-link">{% trans "Account Settings" %}</a></small>
                                             </div>
                                         </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="form-group">
-                                        <label for="id_user_type">{% trans "Account Type" %}</label>
-                                        <select name="user_type" class="form-select" id="id_user_type">
-                                            <option value="client" {% if user.user_type == 'client' %}selected{% endif %}>{% trans "Client" %}</option>
-                                            <option value="freelancer" {% if user.user_type == 'freelancer' %}selected{% endif %}>{% trans "Freelancer" %}</option>
-                                        </select>
-                                        <small class="form-text text-muted">{% trans "You can change your account type at any time." %}</small>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="form-group">
-                                        <label for="id_preferred_language">{% trans "Preferred Language" %}</label>
-                                        <select name="preferred_language" class="form-select" id="id_preferred_language">
-                                            <option value="en" {% if user.preferred_language == 'en' %}selected{% endif %}>{% trans "English" %}</option>
-                                            <option value="ru" {% if user.preferred_language == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
-                                            <option value="kk" {% if user.preferred_language == 'kk' %}selected{% endif %}>{% trans "Kazakh" %}</option>
-                                        </select>
+                                        
+                                        <div class="mb-4">
+                                            <div class="form-group">
+                                                <label for="id_preferred_language">{% trans "Preferred Language" %}</label>
+                                                <select name="preferred_language" class="form-select" id="id_preferred_language">
+                                                    <option value="en" {% if user.preferred_language == 'en' %}selected{% endif %}>{% trans "English" %}</option>
+                                                    <option value="ru" {% if user.preferred_language == 'ru' %}selected{% endif %}>{% trans "Russian" %}</option>
+                                                    <option value="kk" {% if user.preferred_language == 'kk' %}selected{% endif %}>{% trans "Kazakh" %}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between mt-4">
+                                            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                                                <i class="bi bi-arrow-left"></i> {% trans "Back to Profile" %}
+                                            </a>
+                                            <button type="button" class="btn btn-primary" onclick="document.getElementById('personal-tab').click()">
+                                                {% trans "Next" %} <i class="bi bi-arrow-right"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Специфичные данные в зависимости от типа пользователя -->
-                            <div class="col-md-6">
-                                <!-- Информация для фрилансера -->
-                                <div id="freelancer-info" {% if user.user_type != 'freelancer' %}style="display: none;"{% endif %}>
-                                    <h5>{% trans "Freelancer Information" %}</h5>
-                                    <hr>
-                                    
-                                    <div class="mb-3">
-                                        {{ profile_form.specialization|as_crispy_field }}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {% if freelancer_form %}
-                                            {{ freelancer_form.skills|as_crispy_field }}
-                                        {% endif %}
-                                        <small class="form-text text-muted">{% trans "Enter skills separated by commas (e.g. JavaScript, Python, Design)" %}</small>
-                                    </div>
-                                    
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                {{ profile_form.experience_years|as_crispy_field }}
+                            <!-- 2. PERSONAL INFO -->
+                            <div class="tab-pane fade" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                                <div class="row">
+                                    <div class="col-md-8 mx-auto">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-4">
+                                                    {{ user_form.first_name|as_crispy_field }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-4">
+                                                    {{ user_form.last_name|as_crispy_field }}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <div class="mb-3">
-                                                {% if freelancer_form %}
-                                                    {{ freelancer_form.hourly_rate|as_crispy_field }}
+                                        
+                                        <div class="mb-4">
+                                            {{ user_form.bio|as_crispy_field }}
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            {{ user_form.avatar|as_crispy_field }}
+                                            {% if user.avatar %}
+                                                <div class="mt-2">
+                                                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}" class="rounded" style="max-width: 150px;">
+                                                    <div class="form-check mt-2">
+                                                        <input class="form-check-input" type="checkbox" name="delete_avatar" id="delete_avatar">
+                                                        <label class="form-check-label" for="delete_avatar">
+                                                            {% trans "Delete current avatar" %}
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            {% if user_form.phone_number %}
+                                                <div class="form-group">
+                                                    <label for="id_phone_number">{% trans "Phone Number" %}</label>
+                                                    <input type="tel" name="phone_number" class="form-control" id="id_phone_number" 
+                                                           placeholder="+7 701 123 4567" autocomplete="tel"
+                                                           value="{{ user_form.phone_number.value|default:'' }}">
+                                                    <div class="invalid-feedback" id="phone-error"></div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <div class="form-group">
+                                                <label for="id_location">{% trans "Location" %}</label>
+                                                <input type="text" name="location" class="form-control" id="id_location" 
+                                                       placeholder="{% trans 'Almaty, Kazakhstan' %}"
+                                                       value="{{ user.location|default:'' }}">
+                                                <small class="form-text text-muted">{% trans "Enter your city and country" %}</small>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex justify-content-between mt-4">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('account-tab').click()">
+                                                <i class="bi bi-arrow-left"></i> {% trans "Previous" %}
+                                            </button>
+                                            <button type="button" class="btn btn-primary" onclick="document.getElementById('professional-tab').click()">
+                                                {% trans "Next" %} <i class="bi bi-arrow-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 3. PROFESSIONAL INFO -->
+                            <div class="tab-pane fade" id="professional" role="tabpanel" aria-labelledby="professional-tab">
+                                <!-- Информация для фрилансера -->
+                                <div id="freelancer-info" {% if user.user_type != 'freelancer' %}style="display: none;"{% endif %}>
+                                    <div class="row">
+                                        <div class="col-md-8 mx-auto">
+                                            <div class="mb-4">
+                                                {% if user.user_type == 'freelancer' %}
+                                                    {{ profile_form.specialization|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <div class="form-group">
+                                                    <label for="id_skills">{% trans "Skills" %} <span class="text-danger">*</span></label>
+                                                    <div class="tag-input-container">
+                                                        <input type="text" id="skill-input" class="form-control" 
+                                                               placeholder="{% trans 'Type a skill and press Enter (e.g. JavaScript)' %}">
+                                                        <div id="skills-tags" class="tags-container mt-2"></div>
+                                                        <input type="hidden" name="skills" id="id_skills" 
+                                                               value="{% if freelancer_form %}{{ freelancer_form.skills.value|default:'' }}{% endif %}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-4">
+                                                        {% if user.user_type == 'freelancer' %}
+                                                            {{ profile_form.experience_years|as_crispy_field }}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-4">
+                                                        {% if freelancer_form %}
+                                                            {{ freelancer_form.hourly_rate|as_crispy_field }}
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <div class="form-group">
+                                                    <label for="id_portfolio_website">{% trans "Portfolio Website" %}</label>
+                                                    <input type="url" name="portfolio_website" class="form-control" id="id_portfolio_website" 
+                                                           placeholder="https://myportfolio.com"
+                                                           value="{{ profile_form.portfolio_website.value|default:'' }}">
+                                                    <div class="invalid-feedback" id="website-error"></div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if user.user_type == 'freelancer' %}
+                                                    {{ profile_form.education|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if user.user_type == 'freelancer' %}
+                                                    {{ profile_form.certifications|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if user.user_type == 'freelancer' %}
+                                                <div class="form-group">
+                                                    <label for="id_languages">{% trans "Languages" %}</label>
+                                                    <div class="tag-input-container">
+                                                        <input type="text" id="language-input" class="form-control" 
+                                                               placeholder="{% trans 'Type a language and press Enter' %}">
+                                                        <div id="languages-tags" class="tags-container mt-2"></div>
+                                                        <input type="hidden" name="languages" id="id_languages" 
+                                                               value="{{ profile_form.languages.value|default:'' }}">
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if user.user_type == 'freelancer' %}
+                                                    {{ profile_form.is_available|as_crispy_field }}
                                                 {% endif %}
                                             </div>
                                         </div>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {{ profile_form.portfolio_website|as_crispy_field }}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {{ profile_form.education|as_crispy_field }}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {{ profile_form.certifications|as_crispy_field }}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {{ profile_form.languages|as_crispy_field }}
-                                        <small class="form-text text-muted">{% trans "Enter languages separated by commas (e.g. English, Russian, Kazakh)" %}</small>
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {{ profile_form.is_available|as_crispy_field }}
                                     </div>
                                 </div>
                                 
                                 <!-- Информация для клиента -->
                                 <div id="client-info" {% if user.user_type != 'client' %}style="display: none;"{% endif %}>
-                                    <h5>{% trans "Client Information" %}</h5>
-                                    <hr>
-                                    
-                                    <div class="mb-3">
-                                        {% if client_form %}
-                                            {{ client_form.company_name|as_crispy_field }}
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {% if profile_form.company_website %}
-                                            {{ profile_form.company_website|as_crispy_field }}
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {% if profile_form.industry %}
-                                            {{ profile_form.industry|as_crispy_field }}
-                                        {% endif %}
-                                    </div>
-                                    
-                                    <div class="mb-3">
-                                        {% if profile_form.company_size %}
-                                            {{ profile_form.company_size|as_crispy_field }}
-                                        {% endif %}
+                                    <div class="row">
+                                        <div class="col-md-8 mx-auto">
+                                            <div class="mb-4">
+                                                {% if client_form %}
+                                                    {{ client_form.company_name|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if profile_form.company_website %}
+                                                    <div class="form-group">
+                                                        <label for="id_company_website">{% trans "Company Website" %}</label>
+                                                        <input type="url" name="company_website" class="form-control" id="id_company_website" 
+                                                               placeholder="https://company.com"
+                                                               value="{{ profile_form.company_website.value|default:'' }}">
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if profile_form.industry %}
+                                                    {{ profile_form.industry|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                {% if profile_form.company_size %}
+                                                    {{ profile_form.company_size|as_crispy_field }}
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    {% if user_form.phone_number %}
-                                        {{ user_form.phone_number|as_crispy_field }}
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="form-group">
-                                        <label for="id_location">{% trans "Location" %}</label>
-                                        <input type="text" name="location" class="form-control" id="id_location" placeholder="{% trans 'City, Country' %}">
-                                        <small class="form-text text-muted">{% trans "Enter your current location" %}</small>
+                                <div class="row">
+                                    <div class="col-md-8 mx-auto">
+                                        <div class="d-flex justify-content-between mt-4">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('personal-tab').click()">
+                                                <i class="bi bi-arrow-left"></i> {% trans "Previous" %}
+                                            </button>
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="bi bi-save"></i> {% trans "Save Profile" %}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="mt-4 text-center">
-                            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary me-2">
-                                <i class="bi bi-x-circle"></i> {% trans "Cancel" %}
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> {% trans "Save Changes" %}
-                            </button>
+                        <!-- Фиксированная панель действий -->
+                        <div class="action-panel-sticky d-none">
+                            <div class="d-flex justify-content-between align-items-center bg-light p-3 border-top">
+                                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> {% trans "Cancel" %}
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-save"></i> {% trans "Save Profile" %}
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -217,28 +334,328 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Переключение между фрилансером и клиентом
         const userTypeSelect = document.getElementById('id_user_type');
         const freelancerInfo = document.getElementById('freelancer-info');
         const clientInfo = document.getElementById('client-info');
         
-        // Функция для переключения отображения разделов
-        function toggleUserTypeSections() {
-            const selectedType = userTypeSelect.value;
+        if (userTypeSelect) {
+            // Функция для переключения отображения разделов
+            function toggleUserTypeSections() {
+                const selectedType = userTypeSelect.value;
+                
+                if (selectedType === 'freelancer') {
+                    freelancerInfo.style.display = 'block';
+                    clientInfo.style.display = 'none';
+                } else if (selectedType === 'client') {
+                    freelancerInfo.style.display = 'none';
+                    clientInfo.style.display = 'block';
+                }
+            }
             
-            if (selectedType === 'freelancer') {
-                freelancerInfo.style.display = 'block';
-                clientInfo.style.display = 'none';
-            } else if (selectedType === 'client') {
-                freelancerInfo.style.display = 'none';
-                clientInfo.style.display = 'block';
+            // Применяем при первой загрузке
+            toggleUserTypeSections();
+            
+            // Добавляем обработчик события изменения
+            userTypeSelect.addEventListener('change', toggleUserTypeSections);
+        }
+        
+        // Система тегов для навыков
+        const skillInput = document.getElementById('skill-input');
+        const skillsContainer = document.getElementById('skills-tags');
+        const skillsHiddenInput = document.getElementById('id_skills');
+        
+        if (skillInput && skillsContainer && skillsHiddenInput) {
+            // Загрузка существующих навыков
+            let skills = [];
+            if (skillsHiddenInput.value) {
+                skills = skillsHiddenInput.value.split(',').map(skill => skill.trim()).filter(skill => skill !== '');
+                renderSkillTags();
+            }
+            
+            // Добавление нового навыка
+            skillInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const skill = this.value.trim();
+                    if (skill && !skills.includes(skill)) {
+                        skills.push(skill);
+                        this.value = '';
+                        renderSkillTags();
+                        updateSkillsHiddenInput();
+                    }
+                }
+            });
+            
+            // Отображение тегов навыков
+            function renderSkillTags() {
+                skillsContainer.innerHTML = '';
+                skills.forEach((skill, index) => {
+                    const tag = document.createElement('span');
+                    tag.className = 'badge bg-primary me-2 mb-2 p-2';
+                    tag.innerHTML = `${skill} <i class="bi bi-x-circle" data-index="${index}" style="cursor: pointer;"></i>`;
+                    skillsContainer.appendChild(tag);
+                    
+                    // Обработчик для удаления тега
+                    tag.querySelector('i').addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        skills.splice(index, 1);
+                        renderSkillTags();
+                        updateSkillsHiddenInput();
+                    });
+                });
+            }
+            
+            // Обновление скрытого поля ввода
+            function updateSkillsHiddenInput() {
+                skillsHiddenInput.value = skills.join(', ');
             }
         }
         
-        // Применяем при первой загрузке
-        toggleUserTypeSections();
+        // Система тегов для языков
+        const languageInput = document.getElementById('language-input');
+        const languagesContainer = document.getElementById('languages-tags');
+        const languagesHiddenInput = document.getElementById('id_languages');
         
-        // Добавляем обработчик события изменения
-        userTypeSelect.addEventListener('change', toggleUserTypeSections);
+        if (languageInput && languagesContainer && languagesHiddenInput) {
+            // Словарь языков с флагами
+            const languageFlags = {
+                'English': '🇬🇧',
+                'Russian': '🇷🇺',
+                'Kazakh': '🇰🇿',
+                'Spanish': '🇪🇸',
+                'French': '🇫🇷',
+                'German': '🇩🇪',
+                'Chinese': '🇨🇳',
+                'Japanese': '🇯🇵',
+                'Korean': '🇰🇷',
+                'Arabic': '🇸🇦',
+                'Hindi': '🇮🇳',
+                'Portuguese': '🇵🇹',
+                'Italian': '🇮🇹',
+                'Dutch': '🇳🇱',
+                'Turkish': '🇹🇷',
+                'Polish': '🇵🇱',
+                'Ukrainian': '🇺🇦',
+                'Swedish': '🇸🇪',
+                'Norwegian': '🇳🇴',
+                'Finnish': '🇫🇮',
+                'Danish': '🇩🇰',
+                'Czech': '🇨🇿',
+                'Greek': '🇬🇷',
+                'Hungarian': '🇭🇺',
+                'Romanian': '🇷🇴',
+                'Thai': '🇹🇭',
+                'Vietnamese': '🇻🇳',
+                'Indonesian': '🇮🇩',
+                'Hebrew': '🇮🇱',
+                'Bengali': '🇧🇩'
+            };
+            
+            // Загрузка существующих языков
+            let languages = [];
+            if (languagesHiddenInput.value) {
+                languages = languagesHiddenInput.value.split(',').map(lang => lang.trim()).filter(lang => lang !== '');
+                renderLanguageTags();
+            }
+            
+            // Автодополнение для языков
+            const languagesList = Object.keys(languageFlags);
+            let currentFocus = -1;
+            
+            // Создание списка автодополнения
+            const autocompleteContainer = document.createElement('div');
+            autocompleteContainer.className = 'autocomplete-items';
+            autocompleteContainer.style.display = 'none';
+            autocompleteContainer.style.position = 'absolute';
+            autocompleteContainer.style.zIndex = '99';
+            autocompleteContainer.style.width = languageInput.offsetWidth + 'px';
+            autocompleteContainer.style.maxHeight = '200px';
+            autocompleteContainer.style.overflowY = 'auto';
+            autocompleteContainer.style.border = '1px solid #ddd';
+            autocompleteContainer.style.borderTop = 'none';
+            autocompleteContainer.style.borderRadius = '0 0 4px 4px';
+            languageInput.parentNode.style.position = 'relative';
+            languageInput.parentNode.appendChild(autocompleteContainer);
+            
+            // Обработчик ввода для автодополнения
+            languageInput.addEventListener('input', function() {
+                const val = this.value.trim();
+                closeAllLists();
+                if (!val) { return false; }
+                currentFocus = -1;
+                
+                const matches = languagesList.filter(lang => 
+                    lang.toLowerCase().includes(val.toLowerCase())
+                );
+                
+                if (matches.length > 0) {
+                    autocompleteContainer.style.display = 'block';
+                    matches.forEach(match => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item p-2';
+                        item.style.cursor = 'pointer';
+                        item.style.backgroundColor = '#fff';
+                        item.style.borderBottom = '1px solid #ddd';
+                        item.innerHTML = `${languageFlags[match] || ''} ${match}`;
+                        item.addEventListener('click', function() {
+                            languageInput.value = match;
+                            closeAllLists();
+                            // Добавление языка при выборе из списка
+                            if (!languages.includes(match)) {
+                                languages.push(match);
+                                languageInput.value = '';
+                                renderLanguageTags();
+                                updateLanguagesHiddenInput();
+                            }
+                        });
+                        item.addEventListener('mouseover', function() {
+                            this.style.backgroundColor = '#e9ecef';
+                        });
+                        item.addEventListener('mouseout', function() {
+                            this.style.backgroundColor = '#fff';
+                        });
+                        autocompleteContainer.appendChild(item);
+                    });
+                }
+            });
+            
+            // Закрытие списка автодополнения
+            function closeAllLists() {
+                autocompleteContainer.style.display = 'none';
+                autocompleteContainer.innerHTML = '';
+            }
+            
+            // Закрытие при клике вне списка
+            document.addEventListener('click', function(e) {
+                if (e.target !== languageInput) {
+                    closeAllLists();
+                }
+            });
+            
+            // Добавление нового языка
+            languageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const lang = this.value.trim();
+                    if (lang && !languages.includes(lang)) {
+                        languages.push(lang);
+                        this.value = '';
+                        renderLanguageTags();
+                        updateLanguagesHiddenInput();
+                    }
+                    closeAllLists();
+                }
+            });
+            
+            // Отображение тегов языков
+            function renderLanguageTags() {
+                languagesContainer.innerHTML = '';
+                languages.forEach((lang, index) => {
+                    const tag = document.createElement('span');
+                    tag.className = 'badge bg-info text-dark me-2 mb-2 p-2';
+                    const flag = languageFlags[lang] || '';
+                    tag.innerHTML = `${flag} ${lang} <i class="bi bi-x-circle" data-index="${index}" style="cursor: pointer;"></i>`;
+                    languagesContainer.appendChild(tag);
+                    
+                    // Обработчик для удаления тега
+                    tag.querySelector('i').addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        languages.splice(index, 1);
+                        renderLanguageTags();
+                        updateLanguagesHiddenInput();
+                    });
+                });
+            }
+            
+            // Обновление скрытого поля ввода
+            function updateLanguagesHiddenInput() {
+                languagesHiddenInput.value = languages.join(', ');
+            }
+        }
+        
+        // Фиксированная панель действий при прокрутке
+        const actionPanel = document.querySelector('.action-panel-sticky');
+        const formBottom = document.querySelector('#profile-form').getBoundingClientRect().bottom;
+        const windowHeight = window.innerHeight;
+        
+        if (actionPanel) {
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 300) { // Показываем панель после прокрутки на 300px
+                    actionPanel.classList.remove('d-none');
+                    actionPanel.classList.add('fixed-bottom');
+                } else {
+                    actionPanel.classList.add('d-none');
+                    actionPanel.classList.remove('fixed-bottom');
+                }
+            });
+        }
+        
+        // Валидация форм
+        const profileForm = document.getElementById('profile-form');
+        if (profileForm) {
+            profileForm.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Валидация email
+                const emailInput = document.getElementById('id_email');
+                const emailError = document.getElementById('email-error');
+                if (emailInput && emailError) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailInput.value)) {
+                        emailError.textContent = 'Пожалуйста, введите корректный email';
+                        emailInput.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        emailError.textContent = '';
+                        emailInput.classList.remove('is-invalid');
+                    }
+                }
+                
+                // Валидация URL
+                const websiteInput = document.getElementById('id_portfolio_website');
+                const websiteError = document.getElementById('website-error');
+                if (websiteInput && websiteError && websiteInput.value) {
+                    try {
+                        new URL(websiteInput.value);
+                        websiteError.textContent = '';
+                        websiteInput.classList.remove('is-invalid');
+                    } catch (e) {
+                        websiteError.textContent = 'Пожалуйста, введите корректный URL (например, https://example.com)';
+                        websiteInput.classList.add('is-invalid');
+                        isValid = false;
+                    }
+                }
+                
+                // Если форма невалидна, предотвращаем отправку
+                if (!isValid) {
+                    e.preventDefault();
+                } else {
+                    // Показываем индикатор загрузки
+                    const submitBtn = profileForm.querySelector('button[type="submit"]');
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Сохранение...';
+                    submitBtn.disabled = true;
+                }
+            });
+        }
+        
+        // Добавление стилей для тегов
+        const style = document.createElement('style');
+        style.textContent = `
+            .tag-input-container {
+                position: relative;
+            }
+            .tags-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                min-height: 30px;
+            }
+            .autocomplete-item:hover {
+                background-color: #e9ecef !important;
+            }
+        `;
+        document.head.appendChild(style);
     });
 </script>
 {% endblock %} 

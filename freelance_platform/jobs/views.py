@@ -1302,6 +1302,25 @@ def milestone_create_view(request, pk):
     
     return render(request, 'jobs/milestone_form.html', context)
 
+# API эндпоинты
+def api_project_proposals_count(request, pk):
+    """
+    API эндпоинт для получения количества предложений по проекту
+    """
+    project = get_object_or_404(Project, pk=pk)
+    
+    # Проверяем, что пользователь имеет право на просмотр этой информации
+    if not request.user.is_authenticated or (request.user != project.client and not project.is_public()):
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    # Получаем количество предложений
+    proposals_count = Proposal.objects.filter(project=project).count()
+    
+    return JsonResponse({
+        'count': proposals_count,
+        'project_id': project.id
+    })
+
 # Применяем декоратор к представлениям, которые используют базовый шаблон
 home_view = check_pending_reviews(home_view)
 project_list_view = check_pending_reviews(project_list_view)

@@ -5,78 +5,477 @@
 {% block title %}{% trans "Project Created" %}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-lg-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}">{% trans "My Projects" %}</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{% trans "Project Created" %}</li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-
+<div class="container-fluid success-container py-5">
+    {% if user.user_type == 'client' %}
     <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">{% trans "Project Created Successfully" %}</h4>
-                </div>
-                <div class="card-body text-center py-5">
-                    <div class="mb-4">
-                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+        <div class="col-lg-8 col-xl-7">
+            <div class="success-card">
+                <div class="success-content p-4 p-md-5">
+                    <div class="success-icon">
+                        <i class="bi bi-check-circle-fill"></i>
                     </div>
-                    <h3>{% trans "Your project has been posted!" %}</h3>
-                    <p class="text-muted mb-4">{% trans "Freelancers can now view your project and submit proposals." %}</p>
+                    <h2 class="mb-3 mt-2">{% trans "Your project has been posted!" %}</h2>
+                    <p class="text-muted mb-4 px-md-5">{% trans "Freelancers can now view your project and submit proposals." %}</p>
                     
-                    <div class="d-flex justify-content-center">
-                        <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-primary mx-2">
-                            <i class="fas fa-eye me-2"></i> {% trans "View Project" %}
+                    <!-- Динамическая информация о проекте -->
+                    <div class="project-stats mb-4">
+                        <div class="d-flex justify-content-center align-items-center">
+                            {% if project.deadline %}
+                                <a href="{% url 'jobs:project_edit' project.pk %}" class="stat-item stat-link" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Edit deadline' %}">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{% trans "Deadline" %}: {{ project.deadline|date:"d M Y" }}</span>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'jobs:project_edit' project.pk %}" class="stat-item stat-link" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Set deadline' %}">
+                                    <i class="bi bi-clock"></i>
+                                    <span>{% trans "No deadline set" %}</span>
+                                </a>
+                            {% endif %}
+                            <a href="{% url 'jobs:project_proposals' project.pk %}" class="stat-item stat-link" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'View proposals' %}">
+                                <i class="bi bi-people"></i>
+                                <span id="proposals-count">0</span> {% trans "proposals" %}
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center flex-wrap">
+                        <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-primary btn-lg mx-2 mb-2">
+                            <i class="bi bi-eye-fill me-2"></i> {% trans "Go to Project" %}
                         </a>
-                        <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-primary mx-2">
-                            <i class="fas fa-list me-2"></i> {% trans "My Projects" %}
+                        <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-secondary mx-2 mb-2">
+                            <i class="bi bi-arrow-left me-2"></i> {% trans "Back to My Projects" %}
                         </a>
+                        <button type="button" class="btn btn-share mx-2 mb-2" id="shareButton" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Copy link' %}">
+                            <i class="bi bi-share-fill me-2"></i> {% trans "Share" %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Что дальше? Секция с кликабельными элементами -->
+            <div class="whats-next-section mt-4">
+                <div class="whats-next-header">
+                    <h4 class="mb-0">{% trans "What's Next?" %}</h4>
+                </div>
+                <div class="whats-next-body">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <a href="{% url 'jobs:project_proposals' project.pk %}" class="next-step-card active">
+                                <div class="next-step-number">1</div>
+                                <div class="next-step-icon">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+                                <h5>{% trans "Review Proposals" %}</h5>
+                                <p class="text-muted small">{% trans "Check for proposals from freelancers interested in your project." %}</p>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'jobs:project_detail' project.pk %}#messages" class="next-step-card active">
+                                <div class="next-step-number">2</div>
+                                <div class="next-step-icon">
+                                    <i class="bi bi-chat-dots-fill"></i>
+                                </div>
+                                <h5>{% trans "Discuss Details" %}</h5>
+                                <p class="text-muted small">{% trans "Communicate with potential freelancers to clarify requirements." %}</p>
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="next-step-card disabled" id="contract-step-container" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Available after receiving proposals' %}">
+                                <div class="next-step-number">3</div>
+                                <div class="next-step-icon">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                </div>
+                                <h5>{% trans "Create Contract" %}</h5>
+                                <p class="text-muted small">{% trans "Once you find the right freelancer, create a contract to begin work." %}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">{% trans "What's Next?" %}</h5>
+    <!-- Тоаст для уведомления о копировании ссылки -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-body bg-success text-white">
+                <i class="bi bi-check-circle-fill me-2"></i> {% trans "Link copied to clipboard!" %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для шаринга проекта -->
+    <div class="modal fade" id="shareProjectModal" tabindex="-1" aria-labelledby="shareProjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareProjectModalLabel">{% trans "Share Your Project" %}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 text-center mb-3 mb-md-0">
-                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
-                                <i class="fas fa-user-check text-primary" style="font-size: 2.5rem;"></i>
+                <div class="modal-body">
+                    <div class="share-options">
+                        <div class="share-link-container mb-4">
+                            <label class="form-label">{% trans "Project link" %}</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="project-url" value="{{ request.scheme }}://{{ request.get_host }}{% url 'jobs:project_detail' project.pk %}" readonly>
+                                <button class="btn btn-primary" type="button" id="copy-url-btn">
+                                    <i class="bi bi-clipboard me-1"></i> {% trans "Copy" %}
+                                </button>
                             </div>
-                            <h5>{% trans "Review Proposals" %}</h5>
-                            <p class="text-muted small">{% trans "Check for proposals from freelancers interested in your project." %}</p>
                         </div>
-                        <div class="col-md-4 text-center mb-3 mb-md-0">
-                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
-                                <i class="fas fa-comments text-primary" style="font-size: 2.5rem;"></i>
+                        
+                        <div class="row align-items-center">
+                            <div class="col-md-6 text-center mb-4 mb-md-0">
+                                <div class="qr-code-container">
+                                    <div id="project-qr-code"></div>
+                                    <p class="text-muted small mt-2">{% trans "Scan with your phone camera" %}</p>
+                                </div>
                             </div>
-                            <h5>{% trans "Discuss Details" %}</h5>
-                            <p class="text-muted small">{% trans "Communicate with potential freelancers to clarify requirements." %}</p>
-                        </div>
-                        <div class="col-md-4 text-center mb-3 mb-md-0">
-                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px;">
-                                <i class="fas fa-file-contract text-primary" style="font-size: 2.5rem;"></i>
+                            <div class="col-md-6">
+                                <p class="mb-3">{% trans "Share on social media:" %}</p>
+                                <div class="social-share-buttons">
+                                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{% url 'jobs:project_detail' project.pk %}" target="_blank" class="btn btn-social btn-facebook">
+                                        <i class="bi bi-facebook"></i>
+                                    </a>
+                                    <a href="https://twitter.com/intent/tweet?url={{ request.scheme }}://{{ request.get_host }}{% url 'jobs:project_detail' project.pk %}&text={{ project.title }}" target="_blank" class="btn btn-social btn-twitter">
+                                        <i class="bi bi-twitter"></i>
+                                    </a>
+                                    <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.scheme }}://{{ request.get_host }}{% url 'jobs:project_detail' project.pk %}&title={{ project.title }}" target="_blank" class="btn btn-social btn-linkedin">
+                                        <i class="bi bi-linkedin"></i>
+                                    </a>
+                                    <a href="mailto:?subject={{ project.title }}&body={{ request.scheme }}://{{ request.get_host }}{% url 'jobs:project_detail' project.pk %}" class="btn btn-social btn-email">
+                                        <i class="bi bi-envelope"></i>
+                                    </a>
+                                </div>
                             </div>
-                            <h5>{% trans "Create Contract" %}</h5>
-                            <p class="text-muted small">{% trans "Once you find the right freelancer, create a contract to begin work." %}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    {% else %}
+    <!-- Если пользователь не клиент, перенаправляем на список проектов -->
+    <script>
+        window.location.href = "{% url 'jobs:project_list' %}";
+    </script>
+    {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Основной контейнер */
+    .success-container {
+        background-color: var(--body-bg);
+        min-height: calc(100vh - 60px);
+    }
+    
+    /* Карточка успеха */
+    .success-card {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: var(--box-shadow);
+        text-align: center;
+        border: 1px solid var(--card-border);
+    }
+    
+    .success-content {
+        position: relative;
+    }
+    
+    /* Иконка успеха */
+    .success-icon {
+        width: 100px;
+        height: 100px;
+        background-color: rgba(139, 0, 0, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        border: 2px solid rgba(139, 0, 0, 0.3);
+    }
+    
+    .success-icon i {
+        font-size: 50px;
+        color: #8B0000;
+    }
+    
+    /* Статистика проекта */
+    .project-stats {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .stat-item {
+        margin: 0 15px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .stat-link {
+        color: inherit;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    
+    .stat-link:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #2c7be5;
+    }
+    
+    .stat-item i {
+        margin-right: 8px;
+        font-size: 1.2rem;
+    }
+    
+    /* Кнопка шаринга */
+    .btn-share {
+        background-color: #8B0000;
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-share:hover {
+        background-color: #6b0000;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(139, 0, 0, 0.4);
+    }
+    
+    /* Секция What's Next */
+    .whats-next-section {
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--card-border);
+    }
+    
+    .whats-next-header {
+        background-color: #8B0000;
+        color: white;
+        padding: 15px 20px;
+    }
+    
+    .whats-next-body {
+        padding: 20px;
+    }
+    
+    /* Карточки шагов */
+    .next-step-card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        background-color: var(--card-bg);
+        border-radius: 10px;
+        padding: 20px;
+        height: 100%;
+        text-align: center;
+        position: relative;
+        transition: all 0.3s ease;
+        border: 1px solid var(--card-border);
+        overflow: hidden;
+    }
+    
+    .next-step-card.active:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+        color: white;
+        border-color: rgba(139, 0, 0, 0.5);
+        background-color: var(--hover-color);
+    }
+    
+    .next-step-card.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        filter: grayscale(1);
+    }
+    
+    .next-step-number {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #8B0000;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .next-step-icon {
+        font-size: 2.5rem;
+        color: #8B0000;
+        margin-bottom: 15px;
+        margin-top: 15px;
+    }
+    
+    /* Модальное окно шаринга */
+    .qr-code-container {
+        background-color: white;
+        padding: 15px;
+        border-radius: 10px;
+        display: inline-block;
+    }
+    
+    .social-share-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .btn-social {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-social:hover {
+        transform: translateY(-3px);
+        color: white;
+    }
+    
+    .btn-facebook {
+        background-color: #3b5998;
+    }
+    
+    .btn-twitter {
+        background-color: #1da1f2;
+    }
+    
+    .btn-linkedin {
+        background-color: #0077b5;
+    }
+    
+    .btn-email {
+        background-color: #ea4335;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/qrcode.js/lib/qrcode.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация подсказок
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Генерация QR-кода
+        const projectUrl = "{{ request.scheme }}://{{ request.get_host }}{% url 'jobs:project_detail' project.pk %}";
+        const qrCodeContainer = document.getElementById('project-qr-code');
+        
+        if (qrCodeContainer) {
+            new QRCode(qrCodeContainer, {
+                text: projectUrl,
+                width: 128,
+                height: 128,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+        
+        // Инициализация тоаста
+        const copyToast = new bootstrap.Toast(document.getElementById('copyToast'), {
+            delay: 2000
+        });
+        
+        // Копирование URL в буфер обмена из модального окна
+        const copyUrlBtn = document.getElementById('copy-url-btn');
+        if (copyUrlBtn) {
+            copyUrlBtn.addEventListener('click', function() {
+                const projectUrl = document.getElementById('project-url');
+                projectUrl.select();
+                document.execCommand('copy');
+                
+                // Изменяем иконку и текст кнопки на короткое время
+                const originalContent = copyUrlBtn.innerHTML;
+                copyUrlBtn.innerHTML = '<i class="bi bi-check2 me-1"></i> {% trans "Copied!" %}';
+                setTimeout(function() {
+                    copyUrlBtn.innerHTML = originalContent;
+                }, 2000);
+            });
+        }
+        
+        // Копирование URL при нажатии на кнопку Share
+        const shareButton = document.getElementById('shareButton');
+        if (shareButton) {
+            shareButton.addEventListener('click', function() {
+                navigator.clipboard.writeText(projectUrl).then(function() {
+                    // Показываем тоаст
+                    copyToast.show();
+                    
+                    // Изменяем иконку и текст кнопки на короткое время
+                    const originalContent = shareButton.innerHTML;
+                    shareButton.innerHTML = '<i class="bi bi-check2-all me-2"></i> {% trans "Copied!" %}';
+                    setTimeout(function() {
+                        shareButton.innerHTML = originalContent;
+                    }, 2000);
+                }).catch(function(err) {
+                    // Если не удалось скопировать, открываем модальное окно
+                    const shareModal = new bootstrap.Modal(document.getElementById('shareProjectModal'));
+                    shareModal.show();
+                });
+            });
+        }
+        
+        // Периодическое обновление счетчика предложений
+        function updateProposalsCount() {
+            fetch('{% url "jobs:api_project_proposals_count" project.pk %}')
+                .then(response => response.json())
+                .then(data => {
+                    const proposalsCount = document.getElementById('proposals-count');
+                    if (proposalsCount) {
+                        proposalsCount.textContent = data.count;
+                        
+                        // Активируем шаг с контрактом, если есть предложения
+                        if (data.count > 0) {
+                            const contractStepContainer = document.getElementById('contract-step-container');
+                            if (contractStepContainer) {
+                                // Создаем ссылку внутри контейнера
+                                contractStepContainer.classList.remove('disabled');
+                                contractStepContainer.classList.add('active');
+                                contractStepContainer.removeAttribute('data-bs-toggle');
+                                contractStepContainer.removeAttribute('data-bs-placement');
+                                contractStepContainer.removeAttribute('title');
+                                
+                                // Превращаем div в ссылку
+                                const contractLink = document.createElement('a');
+                                contractLink.href = '{% url "jobs:project_proposals" project.pk %}';
+                                contractLink.className = 'next-step-card active';
+                                contractLink.innerHTML = contractStepContainer.innerHTML;
+                                contractStepContainer.parentNode.replaceChild(contractLink, contractStepContainer);
+                            }
+                        }
+                    }
+                })
+                .catch(error => console.error('Error updating proposals count:', error));
+        }
+        
+        // Обновляем счетчик сразу и затем каждые 15 секунд
+        updateProposalsCount();
+        setInterval(updateProposalsCount, 15000);
+    });
+</script>
+{% endblock %}

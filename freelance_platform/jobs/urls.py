@@ -52,4 +52,7 @@ urlpatterns = [
     
     # URL для обратной совместимости (единственное число)
     path('project/<int:pk>/propose/', views.proposal_create_view, name='proposal_create_singular'),
+    
+    # API эндпоинты
+    path('api/projects/<int:pk>/proposals-count/', views.api_project_proposals_count, name='api_project_proposals_count'),
 ] 
