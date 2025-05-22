@@ -315,3 +315,26 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
+
+# Payment API settings
+EPAY_API_URL = os.environ.get('EPAY_API_URL', 'https://epay-api.kz/api')
+
+# Payment settings
+EPAY_PAYMENT_CLIENT_ID = os.environ.get('EPAY_PAYMENT_CLIENT_ID', '')
+EPAY_PAYMENT_CLIENT_SECRET = os.environ.get('EPAY_PAYMENT_CLIENT_SECRET', '')
+EPAY_PAYMENT_TERMINAL_ID = os.environ.get('EPAY_PAYMENT_TERMINAL_ID', '')
+
+# P2P settings
+EPAY_P2P_CLIENT_ID = os.environ.get('EPAY_P2P_CLIENT_ID', '')
+EPAY_P2P_CLIENT_SECRET = os.environ.get('EPAY_P2P_CLIENT_SECRET', '')
+EPAY_P2P_TERMINAL_ID = os.environ.get('EPAY_P2P_TERMINAL_ID', '')
+
+# OCT settings
+EPAY_OCT_CLIENT_ID = os.environ.get('EPAY_OCT_CLIENT_ID', '')
+EPAY_OCT_CLIENT_SECRET = os.environ.get('EPAY_OCT_CLIENT_SECRET', '')
+EPAY_OCT_TERMINAL_ID = os.environ.get('EPAY_OCT_TERMINAL_ID', '')
+
+# Link payment settings
+EPAY_LINK_CLIENT_ID = os.environ.get('EPAY_LINK_CLIENT_ID', '')
+EPAY_LINK_CLIENT_SECRET = os.environ.get('EPAY_LINK_CLIENT_SECRET', '')
+EPAY_LINK_SHOP_ID = os.environ.get('EPAY_LINK_SHOP_ID', '')

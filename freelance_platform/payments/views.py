@@ -94,42 +94,6 @@ def wallet_view(request):
     return render(request, 'payments/wallet.html', context)
 
 @login_required
-def demo_add_balance_view(request, amount=10000):
-    """
-    Демонстрационная функция для тестирования - добавляет средства на баланс пользователя
-    Только для локальной разработки!
-    """
-    if not settings.DEBUG:
-        messages.error(request, _("This feature is only available in development mode."))
-        return redirect('payments:wallet')
-        
-    wallet, created = Wallet.objects.get_or_create(user=request.user)
-    
-    try:
-        with db_transaction.atomic():
-            # Создаем демонстрационную транзакцию
-            transaction_id = f"demo-{uuid.uuid4()}"
-            transaction = Transaction.objects.create(
-                user=request.user,
-                amount=amount,
-                transaction_type='deposit',
-                status='completed',
-                description=_("Demo balance for testing"),
-                transaction_id=transaction_id,
-                payment_method='demo'  # Добавляем payment_method, который требуется в БД
-            )
-            
-            # Обновляем баланс кошелька
-            wallet.balance += Decimal(amount)
-            wallet.save(update_fields=['balance'])
-            
-            messages.success(request, _(f"Successfully added {amount} ₸ to your balance for testing."))
-    except Exception as e:
-        messages.error(request, str(e))
-    
-    return redirect('payments:wallet')
-
-@login_required
 def transaction_list_view(request):
     """
     Страница со списком всех транзакций

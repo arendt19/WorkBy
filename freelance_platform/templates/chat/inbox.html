@@ -108,13 +108,23 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 20px;
+        min-width: 20px;
         height: 20px;
         background-color: #8B0000;
         color: white;
         border-radius: 50%;
         font-size: 0.7rem;
         margin-top: 8px;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        animation: pulse 1.5s infinite;
+        padding: 0 4px;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(0.8); opacity: 0.8; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.8); opacity: 0.8; }
     }
     
     .empty-state {
@@ -209,9 +219,11 @@
                     </div>
                     
                     <div class="chat-meta">
-                        <div class="chat-time">{{ item.updated_at|date:"d M, H:i" }}</div>
-                        {% if item.unread_count > 0 %}
-                            <div class="badge-unread">{{ item.unread_count }}</div>
+                        {% if item.last_message %}
+                            <div class="chat-time">{{ item.last_message.timestamp|date:"H:i" }}</div>
+                            {% if item.unread_count > 0 %}
+                                <div class="badge-unread">{{ item.unread_count }}</div>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </a>
@@ -230,22 +242,6 @@
         </div>
     </div>
     
-    {% if debug %}
-    <!-- Для отладки -->
-    <div class="mt-5 text-white">
-        <h4>Debug Info:</h4>
-        <pre class="bg-dark p-3 text-light">
-Total conversations: {{ conversations|length }}
-
-{% for item in conversations %}
-Conversation {{ forloop.counter }}:
-  ID: {{ item.conversation.id }}
-  Participants: {{ item.conversation.participants.all|length }}
-  Other participant: {{ item.other_participant.username }}
-  Unread count: {{ item.unread_count }}
-{% endfor %}
-        </pre>
-    </div>
-    {% endif %}
+    <!-- Вся отладочная информация удалена -->
 </div>
 {% endblock %} 

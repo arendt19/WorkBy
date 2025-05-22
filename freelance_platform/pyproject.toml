@@ -26,14 +26,7 @@ profile = "black"
 line_length = 120
 skip = ["migrations"]
 
-[tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "freelance_core.settings"
-python_files = ["test_*.py", "*_test.py"]
-testpaths = ["tests"]
-filterwarnings = [
-    "ignore::DeprecationWarning",
-    "ignore::PendingDeprecationWarning",
-]
+# Настройки тестирования удалены в ходе очистки кода
 
 [tool.pyright]
 include = ["**/*.py"]

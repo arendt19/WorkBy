@@ -6,6 +6,8 @@ from django.contrib.auth import get_user_model
 from django.db.models import Q
 from django.utils import timezone
 from django.conf import settings
+from django.contrib import messages
+from django.shortcuts import redirect
 import random
 import json
 
@@ -80,6 +82,12 @@ def conversation_detail_view(request, conversation_id):
     # Получаем всех собеседников
     other_participant = conversation.get_other_participant(request.user)
     
+    # Проверяем, что собеседник существует
+    # Если пользователь был удален, перенаправляем на список бесед
+    if other_participant is None:
+        messages.error(request, _("Участник беседы был удален"))
+        return redirect('chat:inbox')
+    
     # Получаем все доступные беседы для бокового меню
     conversations = Conversation.objects.filter(
         participants=request.user
@@ -110,12 +118,14 @@ def conversation_detail_view(request, conversation_id):
         key=lambda x: (not x['unread_count'], -x['updated_at'].timestamp())
     )
     
+    # Удалена логика отображения отладочной информации
+
     context = {
         'conversation': conversation,
         'conversations_list': conversations_list,
         'other_participant': other_participant,
         'related_project': conversation.related_project,
-        'active_conversation_id': conversation.id,
+        'active_conversation_id': conversation.id
     }
     
     return render(request, 'chat/conversation_detail.html', context)

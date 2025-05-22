@@ -21,6 +21,37 @@
     <!-- Основные стили (темная тема) -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
     
+    <!-- Flatpickr - улучшенный выбор даты -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+    <style>
+        .flatpickr-calendar.dark {
+            background: #222;
+            border-color: #444;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 9999 !important;
+        }
+        .flatpickr-calendar.dark .flatpickr-months .flatpickr-month,
+        .flatpickr-calendar.dark .flatpickr-months .flatpickr-next-month, 
+        .flatpickr-calendar.dark .flatpickr-months .flatpickr-prev-month {
+            color: #fff;
+            fill: #fff;
+        }
+        .flatpickr-calendar.dark .flatpickr-day {
+            color: #eee;
+        }
+        .flatpickr-calendar.dark .flatpickr-day.selected {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+        .flatpickr-calendar.dark .flatpickr-day:hover {
+            background: #333;
+        }
+        input[type="date"], input[type="datetime-local"], input.datepicker {
+            cursor: pointer;
+        }
+    </style>
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -74,10 +105,17 @@
     {% include 'includes/footer.html' %}
     {% endblock full_content %}
 
-    <!-- JavaScript -->
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    
+    <!-- Flatpickr загружается динамически в файле datepicker.js -->
+    <script src="{% static 'js/datepicker.js' %}?v={% now 'U' %}"></script>
+    
+    <!-- Основной JavaScript -->
+    <script src="{% static 'js/main.js' %}?v={% now 'U' %}"></script>
     
     <script>
         // Функция для удаления отладочных сообщений в режиме отладки 

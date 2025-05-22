@@ -14,8 +14,7 @@ urlpatterns = [
     path('withdraw/', views.withdraw_view, name='withdraw'),
     
     # Демонстрационное пополнение баланса (только для разработки)
-    path('demo-add-balance/', views.demo_add_balance_view, name='demo_add_balance'),
-    path('demo-add-balance/<int:amount>/', views.demo_add_balance_view, name='demo_add_balance_amount'),
+    # Демо-маршруты удалены в ходе очистки кода
     
     # Оплата вех
     path('milestone/<int:milestone_id>/pay/', views.pay_milestone_view, name='pay_milestone'),

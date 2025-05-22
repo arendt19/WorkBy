@@ -10,7 +10,7 @@
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="card border-0 bg-dark text-light shadow-sm">
-                <div class="card-header bg-dark">
+                <div class="card-header bg-dark py-3">
                     <h4 class="mb-0">{% trans "Withdraw Funds" %}</h4>
                 </div>
                 <div class="card-body">
@@ -23,8 +23,8 @@
                                 <div class="card bg-dark bg-opacity-50 border-light border-opacity-10 mb-4">
                                     <div class="card-body">
                                         <div class="mb-4">
-                                            <label class="form-label">{% trans "Amount" %}</label>
-                                            {{ form.amount }}
+                                            <label class="form-label">{% trans "Amount" %} (₸)</label>
+                                            <input type="number" name="amount" class="form-control bg-dark text-light" placeholder="Введите сумму" required id="id_amount">
                                             {% if form.amount.errors %}
                                             <div class="invalid-feedback d-block">
                                                 {{ form.amount.errors }}
@@ -35,17 +35,18 @@
                                         <div class="mb-4">
                                             <label class="form-label">{% trans "Payment Method" %}</label>
                                             <div class="d-flex align-items-center p-3 bg-dark bg-opacity-50 rounded">
+                                                <input type="radio" name="payment_method" id="yoomoney" value="yoomoney" checked class="me-3">
                                                 <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
                                                     <i class="fas fa-money-bill text-primary fa-2x"></i>
                                                 </div>
                                                 <div>
-                                                    <h6 class="mb-0">ЮMoney</h6>
-                                                    <small class="text-muted">{% trans "Default payment method" %}</small>
+                                                    <label for="yoomoney" class="mb-0 form-check-label">ЮMoney</label>
+                                                    <small class="text-muted d-block">{% trans "Default payment method" %}</small>
                                                 </div>
                                             </div>
                                         </div>
                                         
-                                        <button type="submit" class="btn btn-primary w-100">
+                                        <button type="submit" class="btn btn-outline-danger w-100 btn-lg">
                                             <i class="fas fa-minus me-2"></i> {% trans "Withdraw" %}
                                         </button>
                                     </div>
@@ -67,6 +68,7 @@
                                         <div class="mb-3">
                                             <h6 class="text-primary">{% trans "Minimum Withdrawal" %}</h6>
                                             <p class="mb-0">₸100</p>
+                                            <small class="text-muted">{% trans "Minimum amount required for withdrawal" %}</small>
                                         </div>
                                         
                                         <div class="mb-3">

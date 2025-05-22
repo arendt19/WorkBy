@@ -24,14 +24,7 @@
                                 </div>
                             </div>
                             <h2 class="card-title mb-0">₸{{ wallet.balance }}</h2>
-                            <div class="d-flex mt-3">
-                                <a href="{% url 'payments:deposit' %}" class="btn btn-sm btn-primary me-2">
-                                    <i class="fas fa-plus me-1"></i> {% trans "Deposit" %}
-                                </a>
-                                <a href="{% url 'payments:withdraw' %}" class="btn btn-sm btn-outline-light">
-                                    <i class="fas fa-minus me-1"></i> {% trans "Withdraw" %}
-                                </a>
-                            </div>
+                            <!-- Кнопки удалены отсюда, чтобы избежать дублирования с нижней частью страницы -->
                         </div>
                     </div>
                 </div>
@@ -126,9 +119,17 @@
                                     </td>
                                 </tr>
                                 {% empty %}
+                                <tr class="text-muted">
+                                    <td>1</td>
+                                    <td>22 May 2025</td>
+                                    <td><span class="badge text-bg-success">{% trans "Deposit" %}</span></td>
+                                    <td>{% trans "Example transaction" %}</td>
+                                    <td class="text-end text-success">+₸100</td>
+                                    <td><span class="badge text-bg-success">{% trans "Completed" %}</span></td>
+                                </tr>
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">
-                                        <p class="mb-0 text-muted">{% trans "No transactions yet" %}</p>
+                                    <td colspan="6" class="text-center py-2">
+                                        <p class="mb-0 text-muted">{% trans "No actual transactions yet" %}</p>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -160,6 +161,7 @@
             </div>
 
             <!-- Статистика по типам транзакций -->
+            {% if type_stats %}
             <div class="card border-0 bg-dark text-light shadow-sm">
                 <div class="card-header bg-dark">
                     <h5 class="mb-0">{% trans "Transaction Statistics" %}</h5>
@@ -173,22 +175,18 @@
                     {% endfor %}
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 
     <!-- Кнопки действий с кошельком -->
-    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-        <a href="{% url 'payments:deposit' %}" class="btn btn-primary">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4 sticky-bottom py-3 bg-dark">
+        <a href="{% url 'payments:deposit' %}" class="btn btn-danger btn-lg">
             <i class="fas fa-plus-circle me-2"></i> {% trans "Deposit Funds" %}
         </a>
-        <a href="{% url 'payments:withdraw' %}" class="btn btn-outline-primary">
+        <a href="{% url 'payments:withdraw' %}" class="btn btn-outline-danger">
             <i class="fas fa-minus-circle me-2"></i> {% trans "Withdraw Funds" %}
         </a>
-        {% if debug %}
-        <a href="{% url 'payments:demo_add_balance' %}" class="btn btn-lg btn-success">
-            <i class="fas fa-vial me-2"></i> {% trans "Demo: Add 10,000 ₸" %}
-        </a>
-        {% endif %}
     </div>
 </div>
 {% endblock %} 

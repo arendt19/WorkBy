@@ -54,8 +54,18 @@ class Conversation(models.Model):
     def get_other_participant(self, user):
         """
         Возвращает другого участника беседы, не являющегося текущим пользователем
+        
+        Если другой участник был удален, возвращает None
         """
-        return self.participants.exclude(id=user.id).first()
+        other = self.participants.exclude(id=user.id).first()
+        
+        # Проверка на случай, если участник беседы был удален
+        if other is None and self.participants.count() == 1:
+            # Если в беседе остался только один участник (текущий пользователь)
+            # значит другой был удален
+            return None
+        
+        return other
     
     def get_unread_count(self, user=None):
         """

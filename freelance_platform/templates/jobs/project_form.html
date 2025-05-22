@@ -328,9 +328,12 @@
                             </div>
                             
                             <div class="mb-4">
-                                <label for="{{ form.deadline.id_for_label }}" class="form-label required-field">{{ form.deadline.label }}</label>
+                                <label for="{{ form.deadline.id_for_label }}" class="form-label required-field d-flex align-items-center">
+                                    <i class="bi bi-calendar me-2"></i>
+                                    {{ form.deadline.label }}
+                                </label>
                                 <input type="datetime-local" name="deadline" id="{{ form.deadline.id_for_label }}" 
-                                       class="form-control" 
+                                       class="form-control date-input" 
                                        value="{{ form.deadline.value|date:'Y-m-d\TH:i'|default:'' }}">
                                 {% if form.deadline.errors %}
                                     <div class="invalid-feedback d-block">

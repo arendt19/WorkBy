@@ -7,100 +7,60 @@
 
 {% block content %}
 <div class="container py-4">
-    <div class="row">
+    <div class="row g-3"> <!-- Уменьшаем отступ между колонками -->
         <div class="col-lg-3 mb-4">
             <!-- Боковая панель с фильтрами -->
-            <div class="card border-0 bg-dark text-light shadow-sm mb-4">
-                <div class="card-header bg-dark">
+            <div class="card border-0 bg-dark text-light shadow-sm mb-4 sticky-top" style="top: 16px; max-height: calc(100vh - 32px); overflow-y: auto;">
+                <div class="card-header bg-dark py-2"> <!-- Уменьшаем отступы заголовка -->
                     <h5 class="mb-0">{% trans "Filter Transactions" %}</h5>
                 </div>
                 <div class="card-body">
                     <form method="get" action="{% url 'payments:transaction_list' %}">
-                        {{ form.type|as_crispy_field }}
-                        {{ form.status|as_crispy_field }}
+                        <div class="mb-3 border-bottom border-secondary pb-3">
+                            <h6 class="text-muted small mb-2">{% trans "Transaction Type & Status" %}</h6>
+                            {{ form.type|as_crispy_field }}
+                            {{ form.status|as_crispy_field }}
+                        </div>
                         
-                        <div class="mb-3">
-                            <label class="form-label">{% trans "Date Range" %}</label>
-                            <div class="input-group">
-                                {{ form.date_from|as_crispy_field }}
+                        <div class="mb-3 border-bottom border-secondary pb-3">
+                            <h6 class="text-muted small mb-2">{% trans "Date Range" %}</h6>
+                            <div class="input-group mb-2">
+                                <span class="input-group-text bg-dark border-secondary">
+                                    <i class="far fa-calendar-alt"></i>
+                                </span>
+                                <input type="text" name="date_from" placeholder="{% trans "From" %}" 
+                                       class="form-control bg-dark text-light border-secondary datepicker" 
+                                       id="id_date_from" value="{{ form.date_from.value|default:'' }}" autocomplete="off">
                             </div>
-                            <div class="input-group mt-2">
-                                {{ form.date_to|as_crispy_field }}
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary">
+                                    <i class="far fa-calendar-alt"></i>
+                                </span>
+                                <input type="text" name="date_to" placeholder="{% trans "To" %}" 
+                                       class="form-control bg-dark text-light border-secondary datepicker" 
+                                       id="id_date_to" value="{{ form.date_to.value|default:'' }}" autocomplete="off">
                             </div>
                         </div>
                         
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter me-2"></i>{% trans "Apply Filters" %}
-                            </button>
-                            <a href="{% url 'payments:transaction_list' %}" class="btn btn-outline-light">
-                                <i class="fas fa-undo me-2"></i>{% trans "Reset" %}
-                            </a>
+                        <div class="sticky-bottom bg-dark py-2 border-top border-secondary mt-3">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-filter me-1"></i>{% trans "Apply" %}
+                                </button>
+                                <a href="{% url 'payments:transaction_list' %}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-undo me-1"></i>{% trans "Reset" %}
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
             
-            <!-- Статистика -->
-            <div class="card border-0 bg-dark text-light shadow-sm">
-                <div class="card-header bg-dark">
-                    <h5 class="mb-0">{% trans "Summary" %}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group list-group-flush">
-                        <div class="list-group-item bg-dark border-light border-opacity-10 d-flex justify-content-between align-items-center p-3">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-success me-2">
-                                    <i class="fas fa-arrow-down"></i>
-                                </span>
-                                <span>{% trans "Total Deposits" %}</span>
-                            </div>
-                            <span class="fw-bold">{% blocktrans with amount=stats.total_deposits %}₸{{ amount }}{% endblocktrans %}</span>
-                        </div>
-                        <div class="list-group-item bg-dark border-light border-opacity-10 d-flex justify-content-between align-items-center p-3">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-danger me-2">
-                                    <i class="fas fa-arrow-up"></i>
-                                </span>
-                                <span>{% trans "Total Withdrawals" %}</span>
-                            </div>
-                            <span class="fw-bold">{% blocktrans with amount=stats.total_withdrawals %}₸{{ amount }}{% endblocktrans %}</span>
-                        </div>
-                        <div class="list-group-item bg-dark border-light border-opacity-10 d-flex justify-content-between align-items-center p-3">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-primary me-2">
-                                    <i class="fas fa-exchange-alt"></i>
-                                </span>
-                                <span>{% trans "Total Payments" %}</span>
-                            </div>
-                            <span class="fw-bold">{% blocktrans with amount=stats.total_payments %}₸{{ amount }}{% endblocktrans %}</span>
-                        </div>
-                        <div class="list-group-item bg-dark border-light border-opacity-10 d-flex justify-content-between align-items-center p-3">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-warning me-2">
-                                    <i class="fas fa-undo"></i>
-                                </span>
-                                <span>{% trans "Total Refunds" %}</span>
-                            </div>
-                            <span class="fw-bold">{% blocktrans with amount=stats.total_refunds %}₸{{ amount }}{% endblocktrans %}</span>
-                        </div>
-                        <div class="list-group-item bg-dark border-light border-opacity-10 d-flex justify-content-between align-items-center p-3">
-                            <div class="d-flex align-items-center">
-                                <span class="badge bg-info me-2">
-                                    <i class="fas fa-percent"></i>
-                                </span>
-                                <span>{% trans "Service Fees" %}</span>
-                            </div>
-                            <span class="fw-bold">{% blocktrans with amount=stats.total_fees %}₸{{ amount }}{% endblocktrans %}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <div class="col-lg-9">
             <!-- Заголовок страницы -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <h1 class="h2 text-light">{% trans "Transaction History" %}</h1>
                 <div class="d-flex">
                     <div class="dropdown me-2">
@@ -113,9 +73,72 @@
                             <li><a class="dropdown-item" href="#"><i class="far fa-file-csv me-2"></i>{% trans "CSV" %}</a></li>
                         </ul>
                     </div>
-                    <a href="{% url 'payments:wallet' %}" class="btn btn-primary">
-                        <i class="fas fa-wallet me-1"></i> {% trans "Wallet" %}
+                    <a href="{% url 'payments:wallet' %}" class="btn btn-outline-light">
+                        <i class="fas fa-home me-1"></i> {% trans "Back to Wallet" %}
                     </a>
+                </div>
+            </div>
+            
+            <!-- Статистика -->
+            <div class="card border-0 bg-dark text-light shadow-sm mb-4">
+                <div class="card-body p-3">
+                    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-3">
+                        <div class="col">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 p-2 rounded-circle bg-success bg-opacity-10">
+                                    <i class="fas fa-arrow-down text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">{% trans "Deposits" %}</div>
+                                    <div class="fw-bold">₸{{ stats.total_deposits }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 p-2 rounded-circle bg-danger bg-opacity-10">
+                                    <i class="fas fa-arrow-up text-danger"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">{% trans "Withdrawals" %}</div>
+                                    <div class="fw-bold">₸{{ stats.total_withdrawals }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 p-2 rounded-circle bg-primary bg-opacity-10">
+                                    <i class="fas fa-exchange-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">{% trans "Payments" %}</div>
+                                    <div class="fw-bold">₸{{ stats.total_payments }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 p-2 rounded-circle bg-warning bg-opacity-10">
+                                    <i class="fas fa-undo text-warning"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">{% trans "Refunds" %}</div>
+                                    <div class="fw-bold">₸{{ stats.total_refunds }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="d-flex align-items-center">
+                                <div class="me-2 p-2 rounded-circle bg-info bg-opacity-10">
+                                    <i class="fas fa-percent text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">{% trans "Fees" %}</div>
+                                    <div class="fw-bold">₸{{ stats.total_fees }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -136,10 +159,17 @@
                             </thead>
                             <tbody>
                                 {% for transaction in transactions %}
-                                <tr class="transaction-row" data-transaction-id="{{ transaction.transaction_id }}">
+                                <tr class="transaction-row py-3" data-transaction-id="{{ transaction.transaction_id }}">
                                     <td>
-                                        <a href="{% url 'payments:transaction_detail' transaction.transaction_id %}" class="text-decoration-none text-primary fw-bold">
-                                            {{ transaction.transaction_id }}
+                                        <a href="{% url 'payments:transaction_detail' transaction.transaction_id %}" 
+                                           class="text-decoration-none text-light fw-bold transaction-id">
+                                            {% if 'demo' in transaction.transaction_id %}
+                                            <span class="text-muted small">
+                                                {{ transaction.transaction_id|truncatechars:12 }}
+                                            </span>
+                                            {% else %}
+                                            {{ transaction.transaction_id|truncatechars:12 }}
+                                            {% endif %}
                                         </a>
                                     </td>
                                     <td>{{ transaction.created_at|date:"d M Y, H:i" }}</td>
@@ -253,14 +283,52 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<style>
+    .flatpickr-calendar.dark {
+        background: #222;
+        border-color: #444;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    .flatpickr-calendar.dark .flatpickr-months .flatpickr-month,
+    .flatpickr-calendar.dark .flatpickr-months .flatpickr-next-month, 
+    .flatpickr-calendar.dark .flatpickr-months .flatpickr-prev-month {
+        color: #fff;
+        fill: #fff;
+    }
+    .flatpickr-calendar.dark .flatpickr-day {
+        color: #eee;
+    }
+    .flatpickr-calendar.dark .flatpickr-day.selected {
+        background: #dc3545;
+        border-color: #dc3545;
+    }
+    .flatpickr-calendar.dark .flatpickr-day:hover {
+        background: #333;
+    }
+</style>
+{% endblock %}
+
 {% block extra_js %}
+{% include "payments/transaction_datepicker.html" %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
 <script>
     $(document).ready(function() {
         // Инициализация датапикеров
-        $('.datepicker').datepicker({
-            format: 'yyyy-mm-dd',
-            autoclose: true,
-            todayHighlight: true
+        flatpickr('.datepicker', {
+            dateFormat: 'Y-m-d',
+            locale: 'ru',
+            theme: 'dark',
+            allowInput: true,
+            disableMobile: true,
+            monthSelectorType: 'static',
+            appendTo: document.body,
+            position: 'auto center',
+            static: false,
+            animate: true
         });
         
         // Предварительно заполненные даты

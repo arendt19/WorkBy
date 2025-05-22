@@ -1,0 +1,268 @@
+{% load i18n %}
+
+<!-- Специальный скрипт для инициализации календарей на странице транзакций -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ждем полной загрузки страницы и jQuery
+    function waitForjQuery() {
+        if (window.jQuery) {
+            // jQuery загружен, продолжаем
+            initializeDatepickers();
+        } else {
+            // Ждем еще 100ms
+            setTimeout(waitForjQuery, 100);
+        }
+    }
+
+    // Проверяем наличие Flatpickr
+    function initializeDatepickers() {
+        if (typeof flatpickr === 'undefined') {
+            // Если библиотека не загружена, загружаем её
+            var linkCSS = document.createElement('link');
+            linkCSS.rel = 'stylesheet';
+            linkCSS.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+            document.head.appendChild(linkCSS);
+            
+            var linkTheme = document.createElement('link');
+            linkTheme.rel = 'stylesheet';
+            linkTheme.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css';
+            document.head.appendChild(linkTheme);
+            
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+            script.onload = function() {
+                // Загружаем языковые локализации
+                loadLocales(function() {
+                    setupDatepickers();
+                });
+            };
+            document.head.appendChild(script);
+        } else {
+            // Проверяем, загружены ли локализации
+            if (!flatpickr.l10ns.ru || !flatpickr.l10ns.en) {
+                loadLocales(function() {
+                    setupDatepickers();
+                });
+            } else {
+                setupDatepickers();
+            }
+        }
+    }
+    
+    // Загрузка всех необходимых локализаций
+    function loadLocales(callback) {
+        var locales = ['ru', 'en'];
+        var loadedCount = 0;
+        
+        // Создаем казахскую локализацию, которой нет в стандартных локализациях Flatpickr
+        function createKazakhLocalization() {
+            if (typeof flatpickr !== 'undefined' && !flatpickr.l10ns.kk) {
+                flatpickr.l10ns.kk = {
+                    weekdays: {
+                        shorthand: ['Жк', 'Дс', 'Сс', 'Ср', 'Бс', 'Жм', 'Сб'],
+                        longhand: ['Жексенбі', 'Дүйсенбі', 'Сейсенбі', 'Сәрсенбі', 'Бейсенбі', 'Жұма', 'Сенбі']
+                    },
+                    months: {
+                        shorthand: ['Қаң', 'Ақп', 'Нау', 'Сәу', 'Мам', 'Мау', 'Шіл', 'Там', 'Қыр', 'Қаз', 'Қар', 'Жел'],
+                        longhand: ['Қаңтар', 'Ақпан', 'Наурыз', 'Сәуір', 'Мамыр', 'Маусым', 'Шілде', 'Тамыз', 'Қыркүйек', 'Қазан', 'Қараша', 'Желтоқсан']
+                    },
+                    firstDayOfWeek: 1,
+                    rangeSeparator: ' бастап ',
+                    weekAbbreviation: 'Апта',
+                    scrollTitle: 'Үлкейту үшін айналдырыңыз',
+                    toggleTitle: 'Ауыстыру үшін басыңыз',
+                    amPM: ['ТД', 'ТК'],
+                    yearAriaLabel: 'Жыл',
+                    monthAriaLabel: 'Ай',
+                    hourAriaLabel: 'Сағат',
+                    minuteAriaLabel: 'Минут'
+                };
+                flatpickr.l10ns.default.kk = flatpickr.l10ns.kk;
+            }
+        }
+        
+        function localeLoaded() {
+            loadedCount++;
+            if (loadedCount >= locales.length) {
+                createKazakhLocalization();
+                if (callback) callback();
+            }
+        }
+        
+        // Загружаем все локализации
+        locales.forEach(function(locale) {
+            // Пропускаем, если уже загружено
+            if (flatpickr.l10ns[locale]) {
+                localeLoaded();
+                return;
+            }
+            
+            var localeScript = document.createElement('script');
+            localeScript.src = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/' + locale + '.js';
+            localeScript.onload = localeLoaded;
+            document.head.appendChild(localeScript);
+        });
+    }
+    
+    // Определяем текущий язык из URL или cookie
+    function getCurrentLanguage() {
+        // Проверяем URL на наличие префикса языка
+        var path = window.location.pathname;
+        if (path.startsWith('/ru/')) return 'ru';
+        if (path.startsWith('/kk/')) return 'kk';
+        if (path.startsWith('/en/')) return 'en';
+        
+        // Если язык не определен из URL, возвращаем английский по умолчанию
+        return 'en';
+    }
+    
+    // Настраиваем календари для полей даты
+    function setupDatepickers() {
+        // Находим поля даты на странице транзакций
+        var fromDateInput = document.getElementById('id_date_from');
+        var toDateInput = document.getElementById('id_date_to');
+        
+        if (!fromDateInput && !toDateInput) {
+            console.warn('Поля даты не найдены на странице');
+            return;
+        }
+        
+        // Получаем текущий язык
+        var currentLang = getCurrentLanguage();
+        console.log('Текущий язык: ' + currentLang);
+        
+        // Настройки календаря
+        var config = {
+            dateFormat: 'Y-m-d',
+            locale: currentLang,
+            theme: 'dark',
+            allowInput: true,
+            disableMobile: true,
+            appendTo: document.body,
+            position: 'auto center',
+            static: false,
+            time_24hr: true,
+            monthSelectorType: 'static',
+            clickOpens: true,
+            animate: true,
+            altInput: true,
+            altFormat: 'd.m.Y',
+            onOpen: function(selectedDates, dateStr, instance) {
+                console.log('Календарь открыт:', instance.input.id || instance.input.name);
+            },
+            onChange: function(selectedDates, dateStr, instance) {
+                console.log('Дата изменена:', dateStr);
+            }
+        };
+        
+        // Создаем функцию для принудительного открытия календаря при клике
+        function forceOpenCalendar(input) {
+            if (!input) return;
+            
+            // Удаляем предыдущие обработчики, если они есть
+            input.removeEventListener('click', input._openHandler);
+            input.removeEventListener('focus', input._openHandler);
+            
+            // Создаем новый обработчик
+            input._openHandler = function(e) {
+                e.stopPropagation();
+                if (input._flatpickr) {
+                    setTimeout(function() {
+                        input._flatpickr.open();
+                    }, 0);
+                }
+            };
+            
+            // Добавляем обработчики
+            input.addEventListener('click', input._openHandler);
+            input.addEventListener('focus', input._openHandler);
+            
+            // Добавляем стили для курсора
+            input.style.cursor = 'pointer';
+        }
+        
+        // Инициализируем календари для полей даты
+        function initDatepicker(input, options) {
+            if (!input) return null;
+            
+            // Если календарь уже инициализирован, уничтожаем его
+            if (input._flatpickr) {
+                input._flatpickr.destroy();
+            }
+            
+            try {
+                // Применяем свойства для мобильных устройств
+                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('readonly', 'readonly');
+                input.classList.add('flatpickr-input');
+                
+                // Инициализируем календарь
+                var instance = flatpickr(input, options);
+                
+                // Настраиваем обработчики событий
+                forceOpenCalendar(input);
+                
+                return instance;
+            } catch (e) {
+                console.error('Ошибка при инициализации календаря:', e);
+                return null;
+            }
+        }
+        
+        // Инициализируем календари
+        var fromDatepicker = initDatepicker(fromDateInput, config);
+        var toDatepicker = initDatepicker(toDateInput, config);
+        
+        console.log('Календари для фильтра транзакций успешно инициализированы');
+        
+        // Добавляем специфические обработчики для связанных дат (от-до)
+        if (fromDatepicker && toDatepicker) {
+            // Обновляем минимальную дату для toDatepicker при изменении fromDatepicker
+            fromDatepicker.config.onChange.push(function(selectedDates, dateStr) {
+                if (selectedDates[0]) {
+                    toDatepicker.set('minDate', selectedDates[0]);
+                }
+            });
+            
+            // Обновляем максимальную дату для fromDatepicker при изменении toDatepicker
+            toDatepicker.config.onChange.push(function(selectedDates, dateStr) {
+                if (selectedDates[0]) {
+                    fromDatepicker.set('maxDate', selectedDates[0]);
+                }
+            });
+        }
+    }
+    
+    // Запускаем инициализацию с учетом jQuery
+    waitForjQuery();
+});
+</script>
+
+<!-- Стили для календаря -->
+<style>
+.flatpickr-calendar.dark {
+    background: #222;
+    border-color: #444;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 99999 !important;
+}
+.flatpickr-calendar.dark .flatpickr-months .flatpickr-month,
+.flatpickr-calendar.dark .flatpickr-months .flatpickr-next-month, 
+.flatpickr-calendar.dark .flatpickr-months .flatpickr-prev-month {
+    color: #fff;
+    fill: #fff;
+}
+.flatpickr-calendar.dark .flatpickr-day {
+    color: #eee;
+}
+.flatpickr-calendar.dark .flatpickr-day.selected {
+    background: #dc3545;
+    border-color: #dc3545;
+}
+.flatpickr-calendar.dark .flatpickr-day:hover {
+    background: #333;
+}
+input[type="date"], input[type="datetime-local"], input.datepicker {
+    cursor: pointer;
+}
+</style>

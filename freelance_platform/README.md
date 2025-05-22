@@ -94,11 +94,7 @@ daphne freelance_core.asgi:application
 
 ## Разработка
 
-### Запуск тестов
 
-```
-python manage.py test
-```
 
 ### Форматирование кода
 

@@ -14,29 +14,30 @@ class EpayAPI:
         """
         Инициализация с выбором типа транзакции
         """
+        # Получение данных API из настроек или переменных окружения
         if transaction_type == 'payment':
             # Данные для оплаты
-            self.client_id = 'test'
-            self.client_secret = 'yF587AV9Ms94qN2QShFzVR3vFnWkhjbAK3sG'
-            self.terminal_id = '67e34d63-102f-4bd1-898e-370781d0074d'
+            self.client_id = settings.EPAY_PAYMENT_CLIENT_ID
+            self.client_secret = settings.EPAY_PAYMENT_CLIENT_SECRET
+            self.terminal_id = settings.EPAY_PAYMENT_TERMINAL_ID
         elif transaction_type == 'p2p':
             # Данные для P2P переводов
-            self.client_id = 'test'
-            self.client_secret = 'yF587AV9Ms94qN2QShFzVR3vFnWkhjbAK3sG'
-            self.terminal_id = '40a348cb-68a3-45d5-9002-a4836d79c3b5'
+            self.client_id = settings.EPAY_P2P_CLIENT_ID
+            self.client_secret = settings.EPAY_P2P_CLIENT_SECRET
+            self.terminal_id = settings.EPAY_P2P_TERMINAL_ID
         elif transaction_type == 'oct':
             # Данные для выплат
-            self.client_id = 'test'
-            self.client_secret = 'yF587AV9Ms94qN2QShFzVR3vFnWkhjbAK3sG'
-            self.terminal_id = 'c36b282f-6819-4d4f-85df-a4bdc8a8f703'
+            self.client_id = settings.EPAY_OCT_CLIENT_ID
+            self.client_secret = settings.EPAY_OCT_CLIENT_SECRET
+            self.terminal_id = settings.EPAY_OCT_TERMINAL_ID
         elif transaction_type == 'link':
             # Данные для ссылки на оплату
-            self.client_id = 'halykfinanceUSD'
-            self.client_secret = 'U01gQZVL##lJ$NhJ'
-            self.shop_id = '04f25a4b-d2bd-4dd8-b3a7-9390be4774c4'
+            self.client_id = settings.EPAY_LINK_CLIENT_ID
+            self.client_secret = settings.EPAY_LINK_CLIENT_SECRET
+            self.shop_id = settings.EPAY_LINK_SHOP_ID
             
         # Базовый URL API
-        self.api_url = 'https://testpay.kkb.kz/epay2'
+        self.api_url = settings.EPAY_API_URL
         
     def generate_signature(self, data):
         """

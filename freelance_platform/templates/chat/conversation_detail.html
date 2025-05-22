@@ -6,6 +6,19 @@
 
 {% block extra_css %}
 <style>
+    /* Скрытие отладочного блока */
+    pre:not(.message-content pre) {
+        display: none !important;
+    }
+    
+    /* Скрыть все отладочные блоки */
+    .container-fluid > pre,
+    .container-fluid > div > pre,
+    body > pre,
+    body > div > pre {
+        display: none !important;
+    }
+    
     /* Стили для современного чата */
     .chat-container {
         display: flex;
@@ -21,25 +34,37 @@
     }
     
     .sidebar {
-        width: 280px;
+        width: 25%;
         background-color: #1a1a1a;
         border-right: 1px solid #333;
         display: flex;
         flex-direction: column;
         transition: transform 0.3s ease-in-out;
+        position: sticky;
+        top: 70px; /* Высота шапки */
+        height: calc(100vh - 100px);
+        width: 300px;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+        z-index: 100;
+        overflow: hidden;
+    }
+    
+    .contact-list {
+        overflow-y: auto;
+        height: calc(100% - 100px);
     }
     
     .chat-content {
         flex: 1;
         display: flex;
         flex-direction: column;
-        background-color: #121212;
-        position: relative;
-    }
-    
-    .contact-list {
-        overflow-y: auto;
-        flex: 1;
+        background-color: #1a1a1a;
+        border-radius: 0 8px 8px 0;
+        overflow: hidden;
+        max-width: 800px;
+        margin-left: 0;
+        height: calc(100vh - 150px);
+        box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
     }
     
     .contact-item {
@@ -53,10 +78,18 @@
         position: relative;
     }
     
-    .contact-item:hover, .contact-item.active {
+    .contact-item:hover {
+        background-color: #252525;
+        transform: translateX(3px);
+        border-left: 3px solid rgba(139, 0, 0, 0.5); /* Бордовый акцент с прозрачностью */
+    }
+    
+    .contact-item.active {
         background-color: #252525;
         transform: translateX(3px);
         border-left: 3px solid #8B0000; /* Бордовый акцент */
+        font-weight: bold;
+        box-shadow: inset 0 0 5px rgba(139, 0, 0, 0.2);
     }
     
     .contact-item.unread::after {
@@ -70,6 +103,20 @@
         border-radius: 50%;
         transform: translateY(-50%);
         animation: pulse 1.5s infinite;
+    }
+    
+    .badge-unread {
+        background-color: #8B0000;
+        color: white;
+        border-radius: 50%;
+        min-width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     }
     
     @keyframes pulse {
@@ -94,6 +141,9 @@
         padding: 15px;
         background-color: #1a1a1a;
         border-top: 1px solid #333;
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
     }
     
     .input-container {
@@ -198,6 +248,46 @@
         transition: transform 0.2s ease;
     }
     
+    .date-divider {
+        text-align: center;
+        margin: 20px 0;
+        position: relative;
+    }
+    
+    .date-divider::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 100%;
+        height: 1px;
+        background-color: #333;
+        z-index: 1;
+    }
+    
+    .date-divider span {
+        background-color: #1a1a1a;
+        padding: 0 15px;
+        position: relative;
+        z-index: 2;
+        color: #aaa;
+        font-size: 0.8rem;
+    }
+    
+    .message-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #8B0000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 10px;
+        margin-right: 8px;
+        flex-shrink: 0;
+    }
+    
     .message:hover {
         transform: translateY(-2px);
     }
@@ -266,25 +356,6 @@
         justify-content: flex-end;
     }
     
-    .message-read .message-status {
-        color: #8B0000; /* Бордовый акцент */
-    }
-    
-    .sidebar-header, .chat-header {
-        padding: 15px;
-        background-color: #1a1a1a;
-        border-bottom: 1px solid #333;
-    }
-    
-    .chat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .user-avatar {
-        width: 40px;
-        height: 40px;
         background-color: #8B0000; /* Бордовый акцент */
         border-radius: 50%;
         display: flex;
@@ -442,12 +513,7 @@
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
     
-    /* Скрыть отладочную информацию */
-    pre.bg-dark.p-3.text-light,
-    div.pre-bg-dark.p-3.text-light,
-    .debug-conversation-info {
-        display: none !important;
-    }
+    /* Отладочные стили удалены */
     
     /* Стили для мобильных устройств */
     @media (max-width: 768px) {
@@ -545,15 +611,24 @@
 
 {% block content %}
 <div class="container-fluid py-3">
-    <!-- Чат контейнер -->
-<div class="chat-container">
-        <!-- Левая колонка с контактами -->
-    <div class="sidebar" id="sidebar">
-            <div class="sidebar-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">{% trans "Conversations" %}</h5>
-                <a href="{% url 'chat:index' %}" class="btn btn-sm btn-outline-light">
+    <div class="chat-container" style="max-width: 1100px; margin: 0 auto; display: flex; gap: 8px;">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header d-flex justify-content-between align-items-center py-2 px-3" style="background-color: #1a1a1a; border-bottom: 1px solid #333;">
+                <h5 class="mb-0 section-title">{% trans "Conversations" %}</h5>
+                <button id="newChatBtn" class="btn btn-sm btn-outline-light">
                     <i class="fas fa-plus"></i> {% trans "New Chat" %}
-                </a>
+                </button>
+            </div>
+            
+            <!-- Форма создания нового чата (скрыта по умолчанию) -->
+            <div id="newChatForm" class="p-2 border-bottom border-dark" style="display: none;">
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control bg-dark border-dark text-light" 
+                           placeholder="{% trans 'Username or email...' %}" id="newChatInput">
+                    <button class="btn btn-outline-secondary" type="button" id="startChatButton">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
             </div>
             
             <!-- Поле поиска по контактам -->
@@ -576,10 +651,14 @@
                         </div>
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between">
-                                <strong>{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}</strong>
+                                {% if conv.other_participant %}
+                                    <strong>{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}</strong>
+                                {% else %}
+                                    <strong>{% trans "Удаленный пользователь" %}</strong>
+                                {% endif %}
                                 {% if conv.unread_count %}
                                     <span class="badge bg-danger rounded-pill">{{ conv.unread_count }}</span>
-                        {% endif %}
+                                {% endif %}
                     </div>
                             <div class="small text-muted text-truncate" style="max-width: 180px;">
                                 {% if conv.last_message %}
@@ -610,7 +689,7 @@
                     <div class="p-3 text-center text-muted">
                         {% trans "No conversations yet" %}
                         <div class="mt-3">
-                            <a href="{% url 'chat:index' %}" class="btn btn-sm btn-outline-danger">
+                            <a href="{% url 'chat:inbox' %}" class="btn btn-sm btn-outline-danger">
                                 <i class="fas fa-plus me-1"></i> {% trans "Start a conversation" %}
                             </a>
                 </div>
@@ -622,30 +701,30 @@
 
         <!-- Правая колонка с сообщениями -->
     <div class="chat-content">
-            <!-- Заголовок чата -->
-        <div class="chat-header">
-            <div class="d-flex align-items-center">
+            <!-- Заголовок чата (фиксированный) -->
+        <div class="chat-header" style="position: sticky; top: 0; z-index: 10; background-color: #252525; border-bottom: 1px solid #444; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <div class="d-flex align-items-center">
                     <button class="mobile-toggle me-2" id="toggleSidebar">
-                    <i class="fas fa-bars"></i>
-                </button>
-                    <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="text-decoration-none text-white">
-                        <div class="user-avatar" title="{% trans 'Click to view profile' %}">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="user-avatar" title="{% trans 'Click to view profile' %}">
                         {{ other_participant.get_full_name|slice:":1"|upper }}
                     </div>
-                    </a>
-                    <div>
-                        <strong>{{ other_participant.get_full_name|default:other_participant.username }}</strong>
+                    <div class="ms-2">
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">{{ other_participant.get_full_name|default:other_participant.username }}</strong>
+                            <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light btn-sm action-btn">
+                                <i class="fas fa-user"></i>
+                            </a>
+                        </div>
                         <div class="small text-success">
                             <i class="fas fa-circle me-1" style="font-size: 0.6rem;"></i> {% trans "Online" %}
                         </div>
                     </div>
                 </div>
-                <div>
-                    <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light action-btn">
-                        <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
-                    </a>
-                </div>
             </div>
+        </div>
             
             <!-- Поле поиска по сообщениям -->
             <div class="search-bar p-2 border-bottom border-dark">
@@ -654,7 +733,8 @@
                         <i class="fas fa-search"></i>
                     </span>
                     <input type="text" class="form-control bg-dark border-dark text-light" 
-                           placeholder="{% trans 'Search in conversation...' %}" id="messageSearch">
+                        placeholder="{% trans 'Search in this conversation...' %}" id="messageSearch"
+                        aria-label="{% trans 'Search in messages' %}">
                 </div>
             </div>
             
@@ -666,20 +746,32 @@
                         <span class="visually-hidden">{% trans "Loading..." %}</span>
                     </div>
                     <p class="mt-2 text-muted">{% trans "Loading messages..." %}</p>
-            </div>
+                </div>
+                
+                <!-- Пустое состояние, когда нет сообщений -->
+                <div id="emptyState" class="text-center p-5" style="display: none;">
+                    <div class="empty-state-icon mb-3">
+                        <i class="fas fa-comments fa-3x text-muted"></i>
+                    </div>
+                    <h5>{% trans "No messages yet" %}</h5>
+                    <p class="text-muted">{% trans "Start a conversation with" %} {{ other_participant.get_full_name|default:other_participant.username }}</p>
+                    <button type="button" class="btn btn-outline-danger mt-2" onclick="document.getElementById('messageInput').focus()">
+                        <i class="fas fa-paper-plane me-2"></i> {% trans "Send a message" %}
+                    </button>
+                </div>
         </div>
 
-            <!-- Область ввода сообщений -->
-        <div class="message-input">
+            <!-- Область ввода сообщений (фиксированная внизу) -->
+        <div class="message-input" style="position: sticky; bottom: 0; z-index: 10; background-color: #252525; border-top: 1px solid #444; margin-top: 8px; padding: 15px 15px 20px; box-shadow: 0 -2px 10px rgba(0,0,0,0.2);">
             <form id="messageForm" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="input-container">
-                        <button type="button" id="attachButton" class="attachment-btn me-2" title="{% trans 'Attach file' %}">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                        <input type="text" id="messageInput" placeholder="{% trans 'Type a message...' %}" autocomplete="off">
-                    <input type="file" id="fileInput" style="display: none;">
-                        <button type="submit" id="sendButton" class="send-btn ms-2" title="{% trans 'Send message' %}">
+                    <button type="button" id="attachButton" class="attachment-btn me-2" title="{% trans 'Attach file' %}" aria-label="{% trans 'Attach file' %}">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="text" id="messageInput" placeholder="{% trans 'Type a message...' %}" autocomplete="off" aria-label="{% trans 'Message text' %}" style="border: 1px solid #444; transition: all 0.2s ease;">
+                    <input type="file" id="fileInput" style="display: none;" aria-label="{% trans 'Upload file' %}">
+                    <button type="submit" id="sendButton" class="send-btn ms-2" title="{% trans 'Send message' %}" aria-label="{% trans 'Send message' %}" style="transform: scale(1.15); transition: all 0.2s ease;">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </div>
@@ -731,50 +823,42 @@
     const currentUserId = {{ request.user.pk }};
     const otherUserId = {{ other_participant.pk }};
     
-    // Скрываем отладочную информацию на странице
+    // Обработка кнопки "New Chat"
     document.addEventListener('DOMContentLoaded', function() {
-        // Ищем и удаляем блок с отладочной информацией (Total conversations)
-        const debugElements = document.querySelectorAll('pre');
-        debugElements.forEach(el => {
-            if (el.textContent.includes('Total conversations:')) {
-                el.style.display = 'none';
+        const newChatBtn = document.getElementById('newChatBtn');
+        const newChatForm = document.getElementById('newChatForm');
+        const newChatInput = document.getElementById('newChatInput');
+        const startChatButton = document.getElementById('startChatButton');
+        
+        if (newChatBtn && newChatForm) {
+            // Показываем/скрываем форму при клике на кнопку
+            newChatBtn.addEventListener('click', function() {
+                if (newChatForm.style.display === 'none') {
+                    newChatForm.style.display = 'block';
+                    newChatInput.focus();
+                } else {
+                    newChatForm.style.display = 'none';
+                }
+            });
+            
+            // Обработка отправки формы
+            function startNewChat() {
+                const username = newChatInput.value.trim();
+                if (username) {
+                    window.location.href = `/{{ LANGUAGE_CODE }}/chat/start/${username}/`;
+                }
             }
-        });
-        
-        // Альтернативный способ - скрыть все pre элементы, которые не имеют определенного класса
-        document.querySelectorAll('pre:not(.allowed-pre)').forEach(el => {
-            el.style.display = 'none';
-        });
-        
-        // Скрываем все элементы, которые могут быть отладочной информацией
-        document.querySelectorAll('.bg-dark.p-3.text-light').forEach(el => {
-            el.style.display = 'none';
-        });
-        
-        // Удаляем текстовые узлы с отладочной информацией
-        const body = document.body;
-        for (let i = 0; i < body.childNodes.length; i++) {
-            const node = body.childNodes[i];
-            if (node.nodeType === Node.TEXT_NODE && 
-                (node.textContent.includes('Total conversations') || 
-                 node.textContent.includes('Conversation 1:') || 
-                 node.textContent.includes('ID: 2'))) {
-                node.textContent = '';
-            }
+            
+            // Обработка кнопки и нажатия Enter
+            startChatButton.addEventListener('click', startNewChat);
+            
+            newChatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    startNewChat();
+                }
+            });
         }
-        
-        // Дополнительно: скрываем любые элементы, содержащие отладочную информацию
-        document.querySelectorAll('*').forEach(el => {
-            if (el.tagName !== 'SCRIPT' && el.innerText && 
-                (el.innerText.includes('Total conversations') || 
-                 el.innerText.includes('Conversation 1:') || 
-                 el.innerText.includes('ID: 2') ||
-                 el.innerText.includes('Participants: 2') ||
-                 el.innerText.includes('Other participant: arendt') ||
-                 el.innerText.includes('Unread count: 0'))) {
-                el.style.display = 'none';
-            }
-        });
     });
     
     // Поиск в сообщениях
@@ -892,22 +976,29 @@
                 return response.json();
             })
             .then(data => {
+                // Скрываем загрузку
+                if (loadingMessages) {
+                    loadingMessages.style.display = 'none';
+                }
+                
+                // Проверяем, что данные существуют и имеют поле messages
+                if (!data || !data.hasOwnProperty('messages')) {
+                    // Обработка ошибки: данные не содержат массив сообщений
+                    const emptyState = document.getElementById('emptyState');
+                    if (emptyState) {
+                        emptyState.style.display = 'block';
+                    }
+                    return;
+                }
+                
                 // Проверяем наличие сообщений
                 if (!data.messages || data.messages.length === 0) {
                     // Если это первая загрузка и нет сообщений, показываем улучшенное пустое состояние
                     if (messageContainer.children.length === 0 || messageContainer.children.length === 1 && loadingMessages.parentNode === messageContainer) {
-                        messageContainer.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-state-icon">
-                                <i class="fas fa-comments"></i>
-                                </div>
-                                <h4>{% trans "Start a conversation" %}</h4>
-                                <p>{% trans "Send your first message to" %} ${otherParticipantName} {% trans "to begin chatting" %}</p>
-                                <button type="button" class="btn start-chat-btn" onclick="document.getElementById('messageInput').focus()">
-                                    <i class="fas fa-paper-plane me-2"></i> {% trans "Start chatting" %}
-                                </button>
-                            </div>
-                        `;
+                        const emptyState = document.getElementById('emptyState');
+                        if (emptyState) {
+                            emptyState.style.display = 'block';
+                        }
                     }
                     return;
                 }
