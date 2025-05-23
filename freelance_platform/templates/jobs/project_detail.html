@@ -5,29 +5,36 @@
 {% block title %}{{ project.title }}{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
+<div class="container">
+    <!-- Улучшенные хлебные крошки с отступом сверху -->
+    <div class="row mt-4 mb-3">
         <div class="col-lg-12">
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
+                <ol class="breadcrumb bg-dark bg-opacity-50 py-2 px-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}" class="text-light">{% trans "Home" %}</a></li>
                     {% if user == project.client %}
-                        <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}">{% trans "My Projects" %}</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}" class="text-light">{% trans "My Projects" %}</a></li>
                     {% else %}
-                        <li class="breadcrumb-item"><a href="{% url 'jobs:project_list' %}">{% trans "Projects" %}</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'jobs:project_list' %}" class="text-light">{% trans "Projects" %}</a></li>
                     {% endif %}
-                    <li class="breadcrumb-item active" aria-current="page">{{ project.title|title }}</li>
+                    <li class="breadcrumb-item active text-light" aria-current="page">{{ project.title|title }}</li>
                 </ol>
             </nav>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row" style="max-width: 1200px; margin: 0 auto;">
         <!-- Основная информация о проекте -->
         <div class="col-lg-8 mb-4">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">{{ project.title }}</h4>
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+                    <div class="d-flex align-items-center">
+                        <a href="{% if user == project.client %}{% url 'jobs:my_projects' %}{% else %}{% url 'jobs:project_list' %}{% endif %}" 
+                           class="btn btn-sm btn-outline-light me-3">
+                            <i class="fas fa-arrow-left"></i> <span class="d-none d-sm-inline ms-1">{% trans "Back to Projects" %}</span>
+                        </a>
+                        <h4 class="mb-0">{{ project.title }}</h4>
+                    </div>
                     <span class="badge bg-dark text-light">{{ project.get_status_display }}</span>
                 </div>
                 <div class="card-body">
@@ -102,64 +109,73 @@
                         </div>
                     {% endif %}
                     
-                    <!-- Actions buttons -->
-                    <div class="card-header bg-dark d-flex justify-content-between align-items-center py-2 mt-4 mb-0 border-top">
+                    <!-- Actions buttons - улучшенная версия с группировкой -->
+                    <div class="card-header bg-dark d-flex justify-content-between align-items-center py-3 mt-4 mb-0 border-top">
+                        <!-- Кнопки для владельца проекта -->
                         <div class="d-flex gap-2">
                             {% if user.is_authenticated and user == project.client %}
-                                <a href="{% url 'jobs:project_edit' pk=project.pk %}" class="btn btn-outline-secondary btn-sm">
-                                    <i class="fas fa-edit me-1"></i> {% trans "Edit" %}
-                                </a>
-                                
-                                <a href="{% url 'jobs:project_delete' pk=project.pk %}" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash-alt me-1"></i> {% trans "Delete" %}
-                                </a>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'jobs:project_edit' pk=project.pk %}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fas fa-edit me-1"></i> {% trans "Edit" %}
+                                    </a>
+                                    
+                                    <a href="{% url 'jobs:project_delete' pk=project.pk %}" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-trash-alt me-1"></i> {% trans "Delete" %}
+                                    </a>
+                                </div>
                             {% endif %}
                         </div>
                         
+                        <!-- Закладка - теперь внутри карточки -->
                         <div>
                             {% if user.is_authenticated %}
-                                <!-- Кнопка сохранения в избранное -->
-                                <button type="button" class="btn btn-outline-light btn-sm bookmark-button" data-project-id="{{ project.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Save to favorites' %}">
+                                <button type="button" class="btn btn-outline-light btn-sm bookmark-button me-2" data-project-id="{{ project.id }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{% trans 'Save to favorites' %}">
                                     <i class="far fa-bookmark"></i>
                                 </button>
                             {% endif %}
                         </div>
                     </div>
                     
-                    <!-- Actions footer -->
-                    <div class="card-footer bg-dark d-flex gap-2">
-                        {% if user.is_authenticated %}
-                            {% if user.user_type == 'freelancer' %}
-                                {% if user_proposal %}
-                                    <a href="{% url 'jobs:proposal_detail' pk=user_proposal.pk %}" class="btn btn-primary">
-                                        <i class="fas fa-file-contract me-1"></i> {% trans "View My Proposal" %}
-                                    </a>
-                                {% else %}
-                                    {% if project.status == 'open' %}
-                                        <a href="{% url 'jobs:proposal_create' pk=project.pk %}" class="btn btn-primary">
-                                            <i class="fas fa-paper-plane me-1"></i> {% trans "Submit a Proposal" %}
+                    <!-- Улучшенный блок действий в футере -->
+                    <div class="card-footer bg-dark p-3">
+                        <div class="d-flex flex-wrap gap-2 justify-content-start">
+                            {% if user.is_authenticated %}
+                                {% if user.user_type == 'freelancer' %}
+                                    <div class="btn-group me-2" role="group">
+                                        {% if user_proposal %}
+                                            <a href="{% url 'jobs:proposal_detail' pk=user_proposal.pk %}" class="btn btn-primary">
+                                                <i class="fas fa-file-contract me-1"></i> {% trans "View My Proposal" %}
+                                            </a>
+                                        {% else %}
+                                            {% if project.status == 'open' %}
+                                                <a href="{% url 'jobs:proposal_create' pk=project.pk %}" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane me-1"></i> {% trans "Submit a Proposal" %}
+                                                </a>
+                                            {% endif %}
+                                        {% endif %}
+                                        
+                                        <!-- Кнопка для связи с клиентом теперь в той же группе -->
+                                        <a href="{% url 'chat:start_conversation' user_id=project.client.id %}" class="btn btn-outline-light">
+                                            <i class="fas fa-comment me-1"></i> {% trans "Contact Client" %}
                                         </a>
-                                    {% endif %}
+                                    </div>
                                 {% endif %}
                                 
-                                <!-- Добавляем кнопку для связи с клиентом -->
-                                <a href="{% url 'chat:start_conversation' user_id=project.client.id %}" class="btn btn-outline-light">
-                                    <i class="fas fa-comment me-1"></i> {% trans "Contact Client" %}
+                                {% if user == project.client and project.status == 'open' %}
+                                    <!-- Кнопка для просмотра всех предложений -->
+                                    <a href="{% url 'jobs:project_proposals' pk=project.pk %}" class="btn btn-primary">
+                                        <i class="fas fa-list me-1"></i> {% trans "View Proposals" %} 
+                                        {% if project.proposals.count > 0 %}
+                                            <span class="badge bg-light text-dark ms-1">{{ project.proposals.count }}</span>
+                                        {% endif %}
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt me-1"></i> {% trans "Login to Submit a Proposal" %}
                                 </a>
                             {% endif %}
-                            
-                            {% if user == project.client and project.status == 'open' and project.proposals.count > 0 %}
-                                <!-- Кнопка для просмотра всех предложений -->
-                                <a href="{% url 'jobs:project_proposals' pk=project.pk %}" class="btn btn-primary">
-                                    <i class="fas fa-list me-1"></i> {% trans "View Proposals" %} 
-                                    <span class="badge bg-light text-dark ms-1">{{ project.proposals.count }}</span>
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary">
-                                <i class="fas fa-sign-in-alt me-1"></i> {% trans "Login to Submit a Proposal" %}
-                            </a>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -169,22 +185,23 @@
         <div class="col-md-4">
             <!-- Информация о заказчике -->
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">{% trans "About the Client" %}</h5>
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fs-5">{% trans "About the Client" %}</h5>
                 </div>
-                <div class="card-body bg-dark text-light">
+                <div class="card-body bg-dark text-light p-3">
                     <div class="d-flex align-items-center mb-3">
                         {% if project.client.avatar %}
                             <img src="{{ project.client.avatar.url }}" alt="{{ project.client.username }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover;">
                         {% else %}
-                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <!-- Заменили плейсхолдер на красный круг с инициалами -->
+                            <div class="rounded-circle bg-danger d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
                                 <span class="text-white fw-bold">{{ project.client.get_initials }}</span>
                             </div>
                         {% endif %}
                         
                         <div>
                             <h6 class="mb-0">
-                                <a href="{% url 'accounts:client_detail' project.client.username %}" class="client-profile-link">
+                                <a href="{% url 'accounts:client_detail' project.client.username %}" class="client-profile-link fw-bold">
                                     {{ project.client.get_full_name|default:project.client.username }}
                                 </a>
                             </h6>
@@ -239,17 +256,17 @@
                 </div>
             </div>
 
-            <!-- Похожие проекты -->
+            <!-- Похожие проекты - улучшенная версия -->
             <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">{% trans "Similar Projects" %}</h5>
+                <div class="card-header bg-dark text-white py-3">
+                    <h5 class="mb-0 fs-5">{% trans "Similar Projects" %}</h5>
                 </div>
                 <div class="card-body p-0 bg-dark">
                     <div class="list-group list-group-flush">
                         {% for similar_project in similar_projects|slice:":3"|default:'' %}
-                            <a href="{% url 'jobs:project_detail' similar_project.pk %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary similar-project-item">
+                            <a href="{% url 'jobs:project_detail' similar_project.pk %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary similar-project-item p-3 hover-shadow">
                                 <div class="d-flex justify-content-between">
-                                    <h6 class="mb-1">{{ similar_project.title|title|truncatechars:30 }}</h6>
+                                    <h6 class="mb-1 fw-bold">{{ similar_project.title|title|truncatechars:30 }}</h6>
                                     <small class="text-muted">{{ similar_project.created_at|date:"d.m.Y" }}</small>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-1">
@@ -261,13 +278,40 @@
                                 <p class="small text-muted text-truncate mt-1 mb-0">{{ similar_project.description|truncatechars:60 }}</p>
                             </a>
                         {% empty %}
-                            <div class="list-group-item py-4 text-center bg-dark text-muted border-secondary">
-                                <p class="mb-0">{% trans "No similar projects found" %}</p>
+                            <!-- Улучшенное пустое состояние -->
+                            <div class="text-center p-4 bg-dark text-muted border-secondary" style="max-width: 300px; margin: 0 auto;">
+                                <div class="py-3">
+                                    <i class="fas fa-search fa-2x mb-3 opacity-50"></i>
+                                    <p class="mb-0">{% trans "No similar projects" %}</p>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
                 </div>
             </div>
+            
+            <!-- Добавляем CSS для эффектов наведения -->
+            <style>
+                .hover-shadow:hover {
+                    box-shadow: 0 0.125rem 0.25rem rgba(220, 53, 69, 0.2) !important;
+                    transition: all 0.2s ease-in-out;
+                }
+                .client-profile-link:hover {
+                    color: #dc3545 !important;
+                    text-decoration: none;
+                }
+                .bookmark-button {
+                    transform: translateX(0);
+                }
+                /* Сохраняем темно-бордовую цветовую схему */
+                .btn-primary, .bg-primary {
+                    background-color: #dc3545 !important;
+                    border-color: #dc3545 !important;
+                }
+                .text-primary {
+                    color: #dc3545 !important;
+                }
+            </style>
         </div>
     </div>
 </div>

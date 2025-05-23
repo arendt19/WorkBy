@@ -215,86 +215,7 @@ def api_unread_count_view(request):
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-@login_required
-def api_send_message_view(request, pk):
-    """
-    API для отправки сообщения через AJAX
-    """
-    if request.method != 'POST':
-        return JsonResponse({'error': 'Invalid request method'}, status=400)
-    
-    # Проверяем права доступа к беседе
-    try:
-        conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
-    except Http404:
-        return JsonResponse({'error': 'Conversation not found or access denied'}, status=404)
-    
-    # Получаем данные сообщения
-    content = request.POST.get('content', '').strip()
-    attachment = request.FILES.get('attachment', None)
-    
-    # Проверяем, что есть хотя бы текст или вложение
-    if not content and not attachment:
-        return JsonResponse({'error': 'Message cannot be empty'}, status=400)
-    
-    # Проверяем размер вложения (максимум 10 МБ)
-    if attachment and attachment.size > 10 * 1024 * 1024:  # 10 МБ
-        return JsonResponse({'error': 'Attachment too large. Maximum size is 10 MB'}, status=400)
-    
-    # Проверяем допустимые типы файлов для вложений
-    allowed_types = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp',  # Изображения
-        'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',  # Документы
-        'text/plain', 'text/csv', 'application/zip',  # Другие типы
-        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'  # Таблицы
-    ]
-    
-    if attachment and hasattr(attachment, 'content_type') and attachment.content_type not in allowed_types:
-        return JsonResponse({'error': 'Invalid file type. Allowed types: images, documents, zip, csv, and excel files'}, status=400)
-    
-    try:
-        # Создаем сообщение в базе данных
-        message = Message.objects.create(
-            conversation=conversation,
-            sender=request.user,
-            content=content,
-            attachment=attachment
-        )
-        
-        # Обновляем время последнего обновления разговора
-        conversation.save()  # Это автоматически обновит updated_at
-        
-        # Создаем уведомление для получателя
-        other_participant = conversation.get_other_participant(request.user)
-        if other_participant:
-            Notification.create_message_notification(message)
-        
-        # Подготавливаем данные для ответа
-        response_data = {
-            'id': message.id,
-            'content': message.content,
-            'created_at': message.created_at.strftime('%H:%M'),
-            'is_read': message.is_read,
-            'sender_name': request.user.get_full_name() or request.user.username
-        }
-        
-        # Добавляем информацию о вложении, если оно есть
-        if message.attachment:
-            response_data.update({
-                'attachment': True,
-                'attachment_url': message.attachment.url,
-                'attachment_name': message.attachment.name.split('/')[-1],
-                'is_image': message.is_image
-            })
-        
-        return JsonResponse(response_data)
-    except Exception as e:
-        # Логируем ошибку
-        import logging
-        logger = logging.getLogger('chat')
-        logger.error(f"Ошибка при отправке сообщения: {str(e)}", exc_info=True)
-        
-        return JsonResponse({'error': f'Error sending message: {str(e)}'}, status=500)
+# Удалена дублирующаяся функция api_send_message_view
 
 @login_required
 def api_check_messages_view(request, pk):
@@ -354,25 +275,7 @@ def api_check_messages_view(request, pk):
             
             formatted_messages.append(message_data)
         
-        # Если нет реальных сообщений и не запрошены инкрементальные обновления,
-        # добавляем шаблонные сообщения
-        if not formatted_messages and not since_id:
-            formatted_messages = [
-                {
-                    'id': 999001,
-                    'content': 'Это автоматическое тестовое сообщение, чтобы проверить отображение чата',
-                    'time': timezone.now().strftime('%H:%M'),
-                    'is_mine': False,
-                    'sender_name': 'Система',
-                },
-                {
-                    'id': 999002,
-                    'content': 'Когда вы отправите сообщение, оно появится здесь',
-                    'time': timezone.now().strftime('%H:%M'),
-                    'is_mine': True,
-                    'sender_name': request.user.get_full_name() or request.user.username,
-                }
-            ]
+        # Тестовые сообщения удалены
         
         # Отмечаем сообщения как прочитанные (только если не запрошены инкрементальные обновления)
         if not since_id:
@@ -447,10 +350,111 @@ def api_mark_messages_read_view(request, pk):
     
     return JsonResponse({'success': True})
 
+# Тестовая функция с декоратором @login_required была удалена
+
 @login_required
-def api_add_test_message(request, pk):
+def api_send_message_view(request, pk):
     """
-    Временная заглушка для устранения ошибки.
-    Эта функция будет удалена после перезапуска сервера.
+    API для отправки сообщения в разговор
+    
+    Принимает POST-запрос с параметрами:
+    - content: текст сообщения
+    - attachment: файл вложения (опционально)
+    
+    Возвращает JSON с результатом операции
     """
-    return JsonResponse({'status': 'disabled', 'message': 'This functionality has been disabled'}, status=404)
+    import json
+    import traceback
+    from django.views.decorators.csrf import ensure_csrf_cookie
+    
+    # Проверяем, что это POST-запрос
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Только POST-запросы разрешены'}, status=405)
+    
+    # Добавляем логирование
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Получен запрос на отправку сообщения. Пользователь: {request.user.username}, ID: {pk}")
+    logger.info(f"POST данные: {request.POST}")
+    logger.info(f"FILES: {request.FILES}")
+    
+    try:
+        # Проверяем, является ли pk ID разговора или ID пользователя
+        try:
+            # Сначала пробуем найти разговор по ID
+            conversation = Conversation.objects.get(pk=pk, participants=request.user)
+            logger.info(f"Разговор найден по ID {pk}. Участники: {[p.username for p in conversation.participants.all()]}")
+        except Conversation.DoesNotExist:
+            # Если разговор не найден, пробуем найти пользователя по ID
+            try:
+                other_user = User.objects.get(pk=pk)
+                logger.info(f"Пользователь найден по ID {pk}. Создаем или получаем разговор.")
+                # Создаем или получаем существующий разговор
+                conversation = Conversation.get_or_create_conversation(request.user, other_user)
+                logger.info(f"Разговор создан или получен. ID: {conversation.id}")
+            except User.DoesNotExist:
+                logger.error(f"Не найден ни разговор, ни пользователь с ID {pk}")
+                return JsonResponse({'success': False, 'error': 'Пользователь или разговор не найден'}, status=404)
+        
+        logger.info(f"Разговор готов для отправки сообщения. ID: {conversation.id}")
+         
+        # Получаем данные из запроса
+        content = request.POST.get('content', '').strip()
+        attachment = request.FILES.get('attachment', None)
+        logger.info(f"Полученные данные: content='{content}', attachment={attachment is not None}")
+        
+        # Проверяем, что есть хотя бы текст или вложение
+        if not content and not attachment:
+            logger.warning("Попытка отправить пустое сообщение")
+            return JsonResponse({'success': False, 'error': 'Сообщение не может быть пустым'}, status=400)
+        
+        # Создаем новое сообщение
+        message = Message.objects.create(
+            conversation=conversation,
+            sender=request.user,
+            content=content,
+            attachment=attachment
+        )
+        logger.info(f"Сообщение создано. ID: {message.id}")
+        
+        # Формируем данные ответа
+        message_data = {
+            'id': message.id,
+            'content': message.content,
+            'time': message.created_at.strftime('%H:%M'),
+            'is_mine': True,
+            'sender_name': request.user.get_full_name() or request.user.username,
+        }
+        
+        # Добавляем данные о вложении, если оно есть
+        if message.attachment:
+            message_data.update({
+                'attachment': True,
+                'attachment_url': message.attachment.url,
+                'attachment_name': message.attachment.name.split('/')[-1],
+                'is_image': message.is_image
+            })
+        
+        # Создаем уведомления для других участников разговора
+        for participant in conversation.participants.all():
+            if participant != request.user:
+                notification = Notification.objects.create(
+                    user=participant,
+                    notification_type='message',
+                    related_object_id=conversation.id,
+                    content=f'{request.user.get_full_name() or request.user.username} отправил вам сообщение'
+                )
+                logger.info(f"Создано уведомление для {participant.username}. ID: {notification.id}")
+        
+        response_data = {
+            'success': True, 
+            'message_data': message_data,
+            'message': 'Сообщение успешно отправлено'
+        }
+        logger.info(f"Отправляем ответ: {json.dumps(response_data)}")
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        logger.error(f"Ошибка при отправке сообщения: {str(e)}")
+        logger.error(traceback.format_exc())
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

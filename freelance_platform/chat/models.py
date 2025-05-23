@@ -102,46 +102,7 @@ class Conversation(models.Model):
         conversation.participants.add(user1, user2)
         return conversation
 
-    @classmethod
-    def add_test_message(cls, conversation_id):
-        """
-        Добавляет тестовое сообщение в указанный разговор
-        Возвращает информацию о созданном сообщении
-        """
-        try:
-            conversation = cls.objects.get(id=conversation_id)
-            participants = list(conversation.participants.all())
-            
-            if len(participants) < 2:
-                return {'success': False, 'error': 'Недостаточно участников для создания тестового сообщения'}
-            
-            # Выбираем случайного отправителя из участников
-            sender = random.choice(participants)
-            
-            # Генерируем случайный текст сообщения
-            test_content = f"Это автоматическое тестовое сообщение. Время создания: {timezone.now().strftime('%H:%M:%S')}"
-            
-            # Создаем новое сообщение
-            from .models import Message
-            message = Message.objects.create(
-                conversation=conversation,
-                sender=sender,
-                content=test_content
-            )
-            
-            return {
-                'success': True, 
-                'message_id': message.id,
-                'sender_id': sender.id,
-                'sender_name': sender.get_full_name(),
-                'content': test_content,
-                'created_at': message.created_at.isoformat()
-            }
-        except Exception as e:
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f"Ошибка при создании тестового сообщения: {str(e)}")
-            return {'success': False, 'error': str(e)}
+    # Тестовый метод add_test_message был удален
 
 class Message(models.Model):
     """

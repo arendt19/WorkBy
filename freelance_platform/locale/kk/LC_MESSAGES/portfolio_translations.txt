@@ -1,0 +1,102 @@
+# Переводы для страницы портфолио на казахском языке
+msgid "Create Portfolio Project"
+msgstr "Портфолио жобасын құру"
+
+msgid "Edit Portfolio Project"
+msgstr "Портфолио жобасын өңдеу"
+
+msgid "Create Project"
+msgstr "Жоба құру"
+
+msgid "Edit Project"
+msgstr "Жобаны өңдеу"
+
+msgid "Create New Portfolio Project"
+msgstr "Жаңа портфолио жобасын құру"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "Portfolio"
+msgstr "Портфолио"
+
+msgid "Project Images"
+msgstr "Жоба суреттері"
+
+msgid "Add images to showcase your project. First image will be used as the thumbnail."
+msgstr "Жобаңызды көрсету үшін суреттер қосыңыз. Бірінші сурет миниатюра ретінде пайдаланылады."
+
+msgid "Drag and drop images or click to select files. Maximum size: 5MB."
+msgstr "Суреттерді сүйреп апарыңыз немесе файлдарды таңдау үшін басыңыз. Максималды өлшемі: 5МБ."
+
+msgid "Add Another Image"
+msgstr "Тағы сурет қосу"
+
+msgid "Delete this image"
+msgstr "Бұл суретті жою"
+
+msgid "Cancel"
+msgstr "Болдырмау"
+
+msgid "Save Changes"
+msgstr "Өзгерістерді сақтау"
+
+msgid "Tips:"
+msgstr "Кеңестер:"
+
+msgid "Upload high-quality images to showcase your work"
+msgstr "Жұмысыңызды көрсету үшін жоғары сапалы суреттерді жүктеңіз"
+
+msgid "First image will be displayed as the main thumbnail"
+msgstr "Бірінші сурет негізгі миниатюра ретінде көрсетіледі"
+
+msgid "Add captions to describe each image"
+msgstr "Әр суретті сипаттау үшін тақырыпшалар қосыңыз"
+
+msgid "Short description of the image"
+msgstr "Суреттің қысқаша сипаттамасы"
+
+msgid "Portfolio Project"
+msgstr "Портфолио жобасы"
+
+msgid "Portfolio Projects"
+msgstr "Портфолио жобалары"
+
+msgid "Portfolio Image"
+msgstr "Портфолио суреті"
+
+msgid "Portfolio Images"
+msgstr "Портфолио суреттері"
+
+msgid "Title"
+msgstr "Атауы"
+
+msgid "Description"
+msgstr "Сипаттама"
+
+msgid "Completion Date"
+msgstr "Аяқталу күні"
+
+msgid "Client Name"
+msgstr "Клиент аты"
+
+msgid "Project URL"
+msgstr "Жоба URL-і"
+
+msgid "Image"
+msgstr "Сурет"
+
+msgid "Caption"
+msgstr "Тақырыпша"
+
+msgid "Order"
+msgstr "Тәртіп"
+
+msgid "Portfolio project created successfully"
+msgstr "Портфолио жобасы сәтті құрылды"
+
+msgid "Portfolio project updated successfully"
+msgstr "Портфолио жобасы сәтті жаңартылды"
+
+msgid "Only freelancers can manage portfolio"
+msgstr "Портфолионы тек фрилансерлер ғана басқара алады"

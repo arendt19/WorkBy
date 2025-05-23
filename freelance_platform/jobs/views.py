@@ -11,6 +11,7 @@ from django.db import transaction
 from decimal import Decimal
 from django.db import models
 from django.utils.functional import wraps
+from django.utils.safestring import mark_safe
 from accounts.models import Review
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
@@ -23,7 +24,8 @@ from accounts.models import User, Review
 from .notifications import (
     send_proposal_submitted_notification,
     send_proposal_accepted_notification,
-    send_proposal_rejected_notification
+    send_proposal_rejected_notification,
+    send_contract_created_notification
 )
 
 def check_pending_reviews(view_func):
@@ -399,17 +401,22 @@ def proposal_create_view(request, pk):
             proposal.project = project
             proposal.save()
             
-            messages.success(request, _('Your proposal has been submitted successfully'))
+            # Отправляем уведомление клиенту
+            send_proposal_submitted_notification(proposal)
             
             # Возвращаем JSON-ответ для AJAX-запросов
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
                     'message': _('Your proposal has been submitted successfully'),
-                    'redirect_url': reverse('jobs:proposal_detail', kwargs={'pk': proposal.pk})
+                    'redirect_url': reverse('jobs:project_detail', kwargs={'pk': project.pk}) + '?proposal_submitted=1'
                 })
             
-            return redirect('jobs:proposal_detail', pk=proposal.pk)
+            # Добавляем сообщение об успешной отправке
+            messages.success(request, _('Your proposal has been submitted successfully'))
+            
+            # Реализация паттерна PRG: перенаправляем на страницу деталей проекта
+            return redirect('jobs:project_detail', pk=project.pk)
         elif request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             # Возвращаем ошибки для AJAX-запросов
             return JsonResponse({
@@ -648,8 +655,44 @@ def proposal_accept_view(request, pk):
                 deadline=timezone.now() + timezone.timedelta(days=proposal.delivery_time)
             )
             
+            # Автоматически создаем первую веху для контракта
+            from .models import Milestone
+            milestone_title = _('Initial milestone')
+            milestone_description = _('First milestone for the project "{0}". Please discuss with the client to define deliverables and requirements.').format(proposal.project.title)
+            
+            # Устанавливаем дату для первой вехи - половина срока контракта
+            milestone_due_date = timezone.now() + timezone.timedelta(days=proposal.delivery_time // 2)
+            
+            # Первая веха - половина суммы контракта
+            milestone_amount = proposal.bid_amount / 2
+            
+            Milestone.objects.create(
+                contract=contract,
+                title=milestone_title,
+                description=milestone_description,
+                amount=milestone_amount,
+                due_date=milestone_due_date,
+                status='pending',
+                payment_status='not_paid'
+            )
+            
             # Отправляем уведомление фрилансеру о принятии предложения
             send_proposal_accepted_notification(proposal)
+            
+            # Отправляем уведомления о создании контракта
+            send_contract_created_notification(contract)
+            
+            # Формируем сообщение с кнопкой перехода к контракту
+            project_title = proposal.project.title
+            contract_url = reverse('jobs:contract_detail', kwargs={'pk': contract.pk})
+            success_message = f'''
+            <div class="d-flex align-items-center justify-content-between flex-wrap">
+                <span>{_('Proposal accepted! Contract for project "' + project_title + '" has been created.')}</span>
+                <a href="{contract_url}" class="btn btn-primary btn-sm ms-3 mt-2 mt-md-0">
+                    <i class="fas fa-file-contract me-1"></i> {_('View Contract')}
+                </a>
+            </div>
+            '''
             
             # Для AJAX запросов
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -659,7 +702,7 @@ def proposal_accept_view(request, pk):
                     'redirect_url': reverse('jobs:contract_detail', kwargs={'pk': contract.pk})
                 })
             
-            messages.success(request, _('Proposal accepted successfully and contract created'))
+            messages.success(request, mark_safe(success_message))
             return redirect('jobs:contract_detail', pk=contract.pk)
     
     # Для AJAX запросов в случае, если это не POST
@@ -769,7 +812,7 @@ def contract_detail_view(request, pk):
 @login_required
 def contract_list_view(request):
     """
-    Список контрактов пользователя
+    Список контрактов пользователя с расширенными фильтрами и сортировкой
     """
     if request.user.user_type == 'client':
         contracts = Contract.objects.filter(client=request.user)
@@ -780,32 +823,102 @@ def contract_list_view(request):
     all_count = contracts.count()
     active_count = contracts.filter(status='active').count()
     completed_count = contracts.filter(status='completed').count()
+    paused_count = contracts.filter(status='paused').count()
+    cancelled_count = contracts.filter(status='cancelled').count()
+    disputed_count = contracts.filter(status='disputed').count()
     
-    # Фильтрация по вкладке
+    # Фильтрация по вкладке (статусу)
     active_tab = request.GET.get('tab', 'all')
     
     if active_tab == 'active':
         contracts = contracts.filter(status='active')
     elif active_tab == 'completed':
         contracts = contracts.filter(status='completed')
+    elif active_tab == 'paused':
+        contracts = contracts.filter(status='paused')
+    elif active_tab == 'cancelled':
+        contracts = contracts.filter(status='cancelled')
+    elif active_tab == 'disputed':
+        contracts = contracts.filter(status='disputed')
+    
+    # Поиск по названию или ID
+    search_query = request.GET.get('search', '')
+    if search_query:
+        contracts = contracts.filter(
+            Q(title__icontains=search_query) | 
+            Q(contract_id__icontains=search_query) |
+            Q(project__title__icontains=search_query)
+        )
+    
+    # Фильтрация по дате создания
+    date_from = request.GET.get('date_from')
+    if date_from:
+        try:
+            date_from = timezone.datetime.strptime(date_from, "%Y-%m-%d").date()
+            contracts = contracts.filter(created_at__date__gte=date_from)
+        except ValueError:
+            pass
+    
+    date_to = request.GET.get('date_to')
+    if date_to:
+        try:
+            date_to = timezone.datetime.strptime(date_to, "%Y-%m-%d").date()
+            contracts = contracts.filter(created_at__date__lte=date_to)
+        except ValueError:
+            pass
+    
+    # Фильтрация по сумме контракта
+    min_amount = request.GET.get('min_amount')
+    if min_amount and min_amount.isdigit():
+        contracts = contracts.filter(amount__gte=Decimal(min_amount))
+    
+    max_amount = request.GET.get('max_amount')
+    if max_amount and max_amount.isdigit():
+        contracts = contracts.filter(amount__lte=Decimal(max_amount))
+    
+    # Сортировка результатов
+    sort_by = request.GET.get('sort', '-created_at')
+    valid_sort_fields = ['created_at', '-created_at', 'deadline', '-deadline', 'amount', '-amount']
+    
+    if sort_by in valid_sort_fields:
+        contracts = contracts.order_by(sort_by)
+    else:
+        contracts = contracts.order_by('-created_at')  # По умолчанию сортируем по дате создания (новые вначале)
     
     # Пагинация
-    paginator = Paginator(contracts, 10)  # 10 контрактов на страницу
+    contracts_per_page = int(request.GET.get('per_page', 10))  # Позволяем выбирать количество записей на странице
+    paginator = Paginator(contracts, contracts_per_page)
     page = request.GET.get('page')
     
     try:
-        contracts = paginator.page(page)
+        contracts_page = paginator.page(page)
     except PageNotAnInteger:
-        contracts = paginator.page(1)
+        contracts_page = paginator.page(1)
     except EmptyPage:
-        contracts = paginator.page(paginator.num_pages)
+        contracts_page = paginator.page(paginator.num_pages)
+    
+    # Сохраняем параметры фильтрации для URL пагинации
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
     
     context = {
-        'contracts': contracts,
+        'contracts': contracts_page,
         'active_tab': active_tab,
         'all_count': all_count,
         'active_count': active_count,
         'completed_count': completed_count,
+        'paused_count': paused_count,
+        'cancelled_count': cancelled_count,
+        'disputed_count': disputed_count,
+        'search_query': search_query,
+        'date_from': request.GET.get('date_from', ''),
+        'date_to': request.GET.get('date_to', ''),
+        'min_amount': min_amount,
+        'max_amount': max_amount,
+        'sort_by': sort_by,
+        'per_page': contracts_per_page,
+        'query_params': query_params.urlencode(),
     }
     
     return render(request, 'jobs/contract_list.html', context)

@@ -136,6 +136,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.i18n',  # Для многоязычности
                 'payments.context_processors.wallet_balance',  # Добавляем баланс
+                'jobs.context_processors.contracts_processor',  # Проверка наличия контрактов
             ],
         },
     },

@@ -47,96 +47,6 @@
         color: #f8ce0b;
     }
     
-        /* Стили для вех и их статусов */
-    .milestone-item {
-        position: relative;
-        transition: all 0.3s ease;
-        --milestone-color: #6c757d;
-        margin-bottom: 1.5rem;
-        padding: 1rem;
-        border-radius: 0.25rem;
-        background-color: rgba(255, 255, 255, 0.05);
-    }
-    
-    .milestone-item:hover {
-        background-color: rgba(255, 255, 255, 0.08);
-        transform: translateX(5px);
-    }
-    
-    .milestone-item.status-pending {
-        --milestone-color: #ffc107;
-    }
-    
-    .milestone-item.status-in_progress {
-        --milestone-color: #0d6efd;
-    }
-    
-    .milestone-item.status-under_review {
-        --milestone-color: #6f42c1;
-    }
-    
-    .milestone-item.status-completed {
-        --milestone-color: #198754;
-    }
-    
-    .milestone-item.status-rejected {
-        --milestone-color: #dc3545;
-    }
-    
-    /* Пульсация для значков статуса */
-    .pulse-under_review {
-        animation: pulse-purple 2s infinite;
-    }
-    
-    .pulse-pending {
-        animation: pulse-yellow 2s infinite;
-    }
-    
-    .pulse-in_progress {
-        animation: pulse-blue 2s infinite;
-    }
-    
-    @keyframes pulse-purple {
-        0% {
-            box-shadow: 0 0 0 0 rgba(111, 66, 193, 0.7);
-        }
-        70% {
-            box-shadow: 0 0 0 6px rgba(111, 66, 193, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(111, 66, 193, 0);
-        }
-    }
-    
-    @keyframes pulse-yellow {
-        0% {
-            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
-        }
-        70% {
-            box-shadow: 0 0 0 6px rgba(255, 193, 7, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
-        }
-    }
-    
-    @keyframes pulse-blue {
-        0% {
-            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0.7);
-        }
-        70% {
-            box-shadow: 0 0 0 6px rgba(13, 110, 253, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(13, 110, 253, 0);
-        }
-    }
-    
-    /* Анимация пульсации */
-    .animate-pulse {
-        animation: pulse 2s infinite;
-    }
-    
     .contract-card {
         transition: all 0.3s ease;
         overflow: hidden;
@@ -396,18 +306,9 @@
 {% endblock extra_css %}
 
 {% block content %}
-<div class="container py-2">
-    <!-- Хлебные крошки -->
-    <nav aria-label="breadcrumb" class="mb-2">
-        <ol class="breadcrumb bg-dark bg-opacity-50 p-2 rounded mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}" class="text-light">{% trans "Home" %}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'jobs:contract_list' %}" class="text-light">{% trans "My Contracts" %}</a></li>
-            <li class="breadcrumb-item active text-light" aria-current="page">{% trans "Contract" %} #{{ contract.contract_id }}</li>
-        </ol>
-    </nav>
-    
+<div class="container py-4">
     <!-- Основной контент -->
-    <div class="row gx-4">
+    <div class="row">
         <div class="col-md-8">
             <div class="card bg-dark text-light mb-4">
                 <div class="card-body">
@@ -427,11 +328,11 @@
             
             <!-- Секция с вехами контракта -->
             <div class="card bg-dark text-light">
-                <div class="card-header d-flex justify-content-between align-items-center bg-dark py-3">
-                    <h5 class="mb-0 fw-bold">{% trans "Milestones" %}</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans "Milestones" %}</h5>
                     {% if contract.client == request.user and contract.status == 'active' %}
-                    <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-sm btn-danger">
-                        <i class="fas fa-plus-circle me-1"></i> {% trans "New Milestone" %}
+                    <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus-circle me-1"></i> {% trans "Add Milestone" %}
                     </a>
                     {% endif %}
                 </div>
@@ -439,24 +340,19 @@
                     <!-- Прогресс выполнения контракта -->
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 fw-bold">{% trans "Contract Progress" %}</h6>
-                            <span class="badge bg-danger small">
+                            <h6 class="mb-0">{% trans "Contract Progress" %}</h6>
+                            <span class="text-muted small">
                                 {% with completed=contract.milestones.filter.count|default:0 total=contract.milestones.all.count|default:1 %}
                                 {{ completed }}/{{ total }} {% trans "milestones completed" %}
                                 {% endwith %}
                             </span>
                         </div>
-                        <div class="progress bg-dark border" style="height: 6px;">
+                        <div class="progress">
                             {% with completed=contract.milestones.filter.count|default:0 total=contract.milestones.all.count|default:1 %}
-                            <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" 
+                            <div class="progress-bar bg-success" role="progressbar" 
                                 style="width: {% widthratio completed total 100 %}%" 
-                                aria-valuenow="{{ completed }}" aria-valuemin="0" aria-valuemax="{{ total }}">                                
-                            </div>                            
-                            {% endwith %}
-                        </div>
-                        <div class="text-center mt-1 small">
-                            {% with completed=contract.milestones.filter.count|default:0 total=contract.milestones.all.count|default:1 %}
-                            <span class="text-muted">{% widthratio completed total 100 %}% {% trans "complete" %}</span>
+                                aria-valuenow="{{ completed }}" aria-valuemin="0" aria-valuemax="{{ total }}">
+                            </div>
                             {% endwith %}
                         </div>
                     </div>
@@ -464,15 +360,10 @@
                     {% if contract.milestones.exists %}
                         <!-- Список вех проекта -->
                         {% for milestone in contract.milestones.all %}
-                        <div class="milestone-item status-{{ milestone.status }} border-start border-3 ps-3 mb-4" style="border-color: var(--milestone-color) !important;">
+                        <div class="milestone-item status-{{ milestone.status }}">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0 fw-bold">
-                                    {% if milestone.milestone_type %}
-                                    <span class="badge bg-secondary me-2">{{ milestone.get_milestone_type_display }}</span>
-                                    {% endif %}
-                                    {{ milestone.title }}
-                                </h6>
-                                <span class="badge bg-{{ milestone.status }} pulse-{{ milestone.status }}">{{ milestone.get_status_display }}</span>
+                                <h6 class="mb-0">{{ milestone.title }}</h6>
+                                <span class="badge bg-{{ milestone.get_status_display }}">{{ milestone.get_status_display }}</span>
                             </div>
                             
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -480,20 +371,14 @@
                                 <span class="fw-bold">{{ milestone.amount }} ₸</span>
                             </div>
                             
-                            <div class="border-top border-secondary pt-2 mt-2">
-                                <p class="mb-3">{{ milestone.description|truncatewords:30 }}</p>
-                            </div>
+                            <p class="mb-3">{{ milestone.description|truncatewords:30 }}</p>
                             
                             <div class="d-flex justify-content-end">
                                 <!-- Действия для фрилансера -->
-                                {% if contract.freelancer == request.user and milestone.status == 'in_progress' %}
-                                <a href="{% url 'jobs:milestone_submit' milestone.pk %}" class="btn btn-danger btn-sm me-2">
+                                {% if contract.freelancer == request.user and milestone.status == 'pending' or milestone.status == 'in_progress' %}
+                                <a href="{% url 'jobs:milestone_submit' milestone.pk %}" class="btn btn-primary btn-sm me-2">
                                     <i class="fas fa-paper-plane me-1"></i> {% trans "Submit for Review" %}
                                 </a>
-                                {% elif contract.freelancer == request.user and milestone.status == 'pending' %}
-                                <button class="btn btn-outline-secondary btn-sm me-2" disabled>
-                                    <i class="fas fa-paper-plane me-1"></i> {% trans "Not Started Yet" %}
-                                </button>
                                 {% endif %}
                                 
                                 <!-- Действия для клиента -->
@@ -515,7 +400,7 @@
                     {% else %}
                         <!-- Если вех еще нет -->
                         <div class="text-center py-4">
-                            <i class="fas fa-tasks fa-3x mb-3 text-muted animate-pulse"></i>
+                            <i class="fas fa-tasks fa-3x mb-3 text-muted"></i>
                             <p>{% trans "No milestones have been created for this contract yet." %}</p>
                             {% if contract.client == request.user and contract.status == 'active' %}
                             <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-primary">
@@ -528,27 +413,23 @@
             </div>
         </div>
         <div class="col-md-4">
-            <!-- Блок действий контракта -->
-            <div class="card bg-dark text-light mb-4">
-                <div class="card-body p-0">
-                    <!-- Заголовок блока действий -->
-                    <div class="card-header bg-dark border-0">
-                        <h5 class="card-title mb-0">{% trans "Contract Actions" %}</h5>
-                    </div>
-                    
-                    <!-- Кнопки действий -->
-                    <div class="p-3">
-                        <!-- Кнопка сообщения (всегда видна) -->
-                        <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-danger w-100 mb-3">
-                            <i class="fas fa-comments me-2"></i> {% trans "Message" %}
-                        </a>
+            <div class="card bg-dark text-light">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "Contract Actions" %}</h5>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-dark text-light border-secondary">
+                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-comments me-1"></i> {% trans "Message" %}
+                            </a>
+                        </li>
                         
-                        <!-- Кнопка завершения контракта (только для активных контрактов и клиентов) -->
                         {% if contract.client == request.user and contract.status == 'active' %}
-                        <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-outline-danger w-100">
-                            <i class="fas fa-check-circle me-2"></i> {% trans "Complete Contract & Pay" %}
-                        </a>
-                        <div class="mt-2 small text-muted text-center">{% trans "Mark contract as completed and pay full amount to freelancer." %}</div>
+                        <li class="list-group-item bg-dark text-light border-secondary">
+                            <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-success btn-sm w-100 mb-2">
+                                <i class="fas fa-check-circle me-1"></i> {% trans "Complete Contract & Pay" %}
+                            </a>
+                            <div class="small text-muted">{% trans "Mark contract as completed and pay full amount to freelancer." %}</div>
+                        </li>
                         {% endif %}
                         
                         <!-- Кнопка для оставления отзыва -->
@@ -586,16 +467,10 @@
             </div>
             
             <!-- Блок информации о прогрессе -->
-            <div class="card bg-dark text-light">
-                <div class="card-header bg-dark border-bottom border-secondary py-3" data-bs-toggle="collapse" href="#howItWorksCollapse" role="button" aria-expanded="false">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 fw-bold"><i class="fas fa-info-circle me-2"></i>{% trans "How It Works" %}</h5>
-                        <i class="fas fa-chevron-down ms-3"></i>
-                    </div>
-                </div>
-                <div class="collapse" id="howItWorksCollapse">
-                    <div class="card-body">
-                        <div class="timeline">
+            <div class="card bg-dark text-light mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">{% trans "How It Works" %}</h5>
+                    <div class="timeline">
                         <div class="timeline-point d-flex mb-3">
                             <div class="timeline-icon bg-primary">
                                 <i class="fas fa-list-check"></i>
@@ -634,7 +509,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>

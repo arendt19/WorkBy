@@ -356,6 +356,7 @@
         justify-content: flex-end;
     }
     
+    .user-avatar {
         background-color: #8B0000; /* Бордовый акцент */
         border-radius: 50%;
         display: flex;
@@ -820,8 +821,8 @@
     let updatingMessages = false;
     
     // ID текущего пользователя и собеседника
-    const currentUserId = {{ request.user.pk }};
-    const otherUserId = {{ other_participant.pk }};
+    const currentUserId = "{{ request.user.pk }}";
+    const otherUserId = "{{ other_participant.pk }}";
     
     // Обработка кнопки "New Chat"
     document.addEventListener('DOMContentLoaded', function() {
@@ -958,7 +959,7 @@
         }
         
         // URL для загрузки сообщений
-        const conversationId = {{ conversation.pk }};
+        const conversationId = "{{ conversation.pk }}";
         const apiUrl = `/{{ LANGUAGE_CODE }}/chat/api/check_messages/${conversationId}/`;
         
         // Добавляем lastMessageId для избежания повторной загрузки всех сообщений
@@ -1085,14 +1086,10 @@
             });
     }
     
-    // Функция для воспроизведения звука уведомления
+    // Функция для воспроизведения звука уведомления - отключена
     function playNotificationSound() {
-        // Создаем элемент аудио и воспроизводим звук
-        const audio = new Audio('/static/sounds/notification.mp3');
-        audio.volume = 0.5; // Громкость 50%
-        audio.play().catch(e => {
-            // Тихо проглатываем ошибку, если автовоспроизведение запрещено
-        });
+        // Функция отключена
+        console.log('Notification sound disabled');
     }
     
     // Отправка сообщения
@@ -1115,7 +1112,7 @@
         }
         
         // URL для отправки сообщения
-        const sendUrl = `/{{ LANGUAGE_CODE }}/chat/api/send/${otherUserId}/`;
+        const sendUrl = `/{{ LANGUAGE_CODE }}/chat/api/send_message/${otherUserId}/`;
         
         // Очищаем поле ввода и сбрасываем файл
         messageInput.value = '';
@@ -1189,7 +1186,7 @@
         // Отмечаем сообщения как прочитанные
         function markMessagesAsRead() {
         // URL для отметки сообщений
-        const markUrl = `/{{ LANGUAGE_CODE }}/chat/api/mark_read/{{ conversation.pk }}/`;
+        const markUrl = `/{{ LANGUAGE_CODE }}/chat/api/mark_messages_read/{{ conversation.pk }}/`;
         
         fetch(markUrl, {
             method: 'POST',

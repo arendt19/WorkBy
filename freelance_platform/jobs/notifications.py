@@ -87,4 +87,56 @@ def send_proposal_rejected_notification(proposal, rejection_reason=None):
         [proposal.freelancer.email],
         html_message=html_message,
         fail_silently=True,
+    )
+
+def send_contract_created_notification(contract):
+    """
+    Отправляет уведомление фрилансеру и клиенту о создании нового контракта
+    """
+    if not settings.EMAIL_ENABLED:
+        return
+    
+    # Общий контекст для обоих писем
+    base_context = {
+        'contract_id': contract.contract_id,
+        'project_title': contract.project.title,
+        'contract_amount': contract.amount,
+        'contract_deadline': contract.deadline,
+        'contract_url': f"{settings.SITE_URL}/jobs/contracts/{contract.pk}/",
+        'client_name': contract.client.get_full_name() or contract.client.username,
+        'freelancer_name': contract.freelancer.get_full_name() or contract.freelancer.username,
+    }
+    
+    # Уведомление для фрилансера
+    freelancer_context = base_context.copy()
+    freelancer_subject = _('New contract #{} has been created for project "{}"').format(
+        contract.contract_id, contract.project.title
+    )
+    freelancer_html = render_to_string('emails/contract_created_freelancer.html', freelancer_context)
+    freelancer_text = render_to_string('emails/contract_created_freelancer.txt', freelancer_context)
+    
+    send_mail(
+        freelancer_subject,
+        freelancer_text,
+        settings.DEFAULT_FROM_EMAIL,
+        [contract.freelancer.email],
+        html_message=freelancer_html,
+        fail_silently=True,
+    )
+    
+    # Уведомление для клиента
+    client_context = base_context.copy()
+    client_subject = _('Contract #{} has been created for your project "{}"').format(
+        contract.contract_id, contract.project.title
+    )
+    client_html = render_to_string('emails/contract_created_client.html', client_context)
+    client_text = render_to_string('emails/contract_created_client.txt', client_context)
+    
+    send_mail(
+        client_subject,
+        client_text,
+        settings.DEFAULT_FROM_EMAIL,
+        [contract.client.email],
+        html_message=client_html,
+        fail_silently=True,
     ) 

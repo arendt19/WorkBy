@@ -8,40 +8,52 @@
 <div class="container py-4">
     <div class="card border-0 bg-dark text-light shadow-sm">
         <div class="card-header bg-dark">
-            <h1 class="h3 mb-0">{% trans "Accept Proposal" %}</h1>
-                </div>
-                <div class="card-body">
-                    <div class="alert alert-info">
-                <h5 class="alert-heading">{% trans "Confirm Acceptance" %}</h5>
-                <p>{% trans "You are about to accept the proposal from" %} <strong>{{ proposal.freelancer.get_full_name }}</strong> {% trans "for the project" %} <strong>{{ proposal.project.title }}</strong>.</p>
-                <p>{% trans "Once you accept, other proposals will be automatically rejected, and a contract will be created." %}</p>
-                    </div>
+            <h1 class="h3 mb-0 py-3">{% trans "Accept Proposal" %}</h1>
+        </div>
+        <div class="card-body pt-4 px-4 pb-3">
+            <div class="confirmation-box mb-4">
+                <h5 class="mb-3">{% trans "Confirm Acceptance" %}</h5>
+                <p class="mb-3">{% trans "You are about to accept the proposal from" %} <strong>{{ proposal.freelancer.get_full_name }}</strong> {% trans "for the project" %} <em>"{{ proposal.project.title }}"</em>.</p>
+                <p>{% trans "Once accepted, all other proposals will be automatically rejected and a contract will be generated." %}</p>
+            </div>
                     
-            <div class="card bg-dark bg-opacity-50 mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Proposal Details" %}</h5>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>{% trans "Freelancer" %}:</strong> {{ proposal.freelancer.get_full_name }}</p>
-                            <p><strong>{% trans "Bid Amount" %}:</strong> ₸{{ proposal.bid_amount }}</p>
+            <div class="proposal-details card bg-dark bg-opacity-50 mb-4">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">{% trans "Proposal Details" %}</h5>
+                    <div class="details-grid">
+                        <div class="detail-group">
+                            <div class="detail-item">
+                                <span class="detail-label">{% trans "Freelancer" %}:</span>
+                                <span class="detail-value">{{ proposal.freelancer.get_full_name }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">{% trans "Bid Amount" %}:</span>
+                                <span class="detail-value highlight">₸{{ proposal.bid_amount }}</span>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <p><strong>{% trans "Delivery Time" %}:</strong> {{ proposal.delivery_time }} {% trans "days" %}</p>
-                            <p><strong>{% trans "Submitted On" %}:</strong> {{ proposal.created_at|date:"d M Y" }}</p>
+                        <div class="detail-group">
+                            <div class="detail-item">
+                                <span class="detail-label">{% trans "Delivery Time" %}:</span>
+                                <span class="detail-value">{{ proposal.delivery_time }} {% trans "days" %}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">{% trans "Submitted On" %}:</span>
+                                <span class="detail-value text-secondary">{{ proposal.created_at|date:"d M Y" }}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                    </div>
+            </div>
                     
             <form id="acceptProposalForm" action="{% url 'jobs:proposal_accept' proposal.pk %}" method="post">
-                        {% csrf_token %}
-                <div class="d-flex justify-content-end">
-                    <a href="{% url 'jobs:proposal_detail' proposal.pk %}" class="btn btn-outline-light me-2">
+                {% csrf_token %}
+                <div class="actions mt-4 pt-3 border-top">
+                    <button type="submit" id="acceptButton" class="btn btn-success btn-lg">
+                        <i class="fas fa-check me-2"></i> {% trans "Accept Proposal" %}
+                    </button>
+                    <a href="{% url 'jobs:proposal_detail' proposal.pk %}" class="btn btn-outline-secondary btn-lg ms-3">
                         {% trans "Cancel" %}
                     </a>
-                    <button type="submit" id="acceptButton" class="btn btn-success">
-                        <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
-                            </button>
                 </div>
             </form>
         </div>
@@ -50,6 +62,87 @@
 {% endblock %}
 
 {% block extra_js %}
+<style>
+    /* Улучшенные стили для страницы подтверждения принятия предложения */
+    .confirmation-box {
+        background-color: #23303a;
+        border: 1px solid #4c9ee0;
+        border-radius: 4px;
+        padding: 20px 24px;
+        line-height: 1.5;
+    }
+    
+    .confirmation-box h5 {
+        color: #4c9ee0;
+        font-weight: 600;
+    }
+    
+    /* Стили для сетки деталей */
+    .details-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 24px;
+    }
+    
+    .detail-group {
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .detail-item {
+        margin-bottom: 12px;
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        grid-gap: 8px 16px;
+        align-items: baseline;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #bbb;
+    }
+    
+    .detail-value {
+        color: #ffffff;
+    }
+    
+    .detail-value.highlight {
+        color: #4c9ee0;
+        font-weight: 500;
+    }
+    
+    .detail-value.text-secondary {
+        color: #a0a0a0;
+    }
+    
+    /* Стили для кнопок действий */
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 16px 0 0;
+    }
+    
+    /* Адаптивные стили для мобильных устройств */
+    @media (max-width: 600px) {
+        .actions {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+        
+        .actions .btn {
+            width: 100%;
+            margin-left: 0 !important;
+        }
+        
+        .detail-item {
+            grid-template-columns: 1fr;
+            grid-gap: 2px;
+        }
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('acceptProposalForm');

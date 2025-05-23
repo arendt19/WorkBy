@@ -1,0 +1,102 @@
+# Переводы для страницы портфолио
+msgid "Create Portfolio Project"
+msgstr "Создать проект портфолио"
+
+msgid "Edit Portfolio Project"
+msgstr "Редактировать проект портфолио"
+
+msgid "Create Project"
+msgstr "Создать проект"
+
+msgid "Edit Project"
+msgstr "Редактировать проект"
+
+msgid "Create New Portfolio Project"
+msgstr "Создать новый проект портфолио"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "Portfolio"
+msgstr "Портфолио"
+
+msgid "Project Images"
+msgstr "Изображения проекта"
+
+msgid "Add images to showcase your project. First image will be used as the thumbnail."
+msgstr "Добавьте изображения, чтобы продемонстрировать ваш проект. Первое изображение будет использовано как миниатюра."
+
+msgid "Drag and drop images or click to select files. Maximum size: 5MB."
+msgstr "Перетащите изображения или нажмите, чтобы выбрать файлы. Максимальный размер: 5МБ."
+
+msgid "Add Another Image"
+msgstr "Добавить еще изображение"
+
+msgid "Delete this image"
+msgstr "Удалить это изображение"
+
+msgid "Cancel"
+msgstr "Отмена"
+
+msgid "Save Changes"
+msgstr "Сохранить изменения"
+
+msgid "Tips:"
+msgstr "Советы:"
+
+msgid "Upload high-quality images to showcase your work"
+msgstr "Загружайте качественные изображения, чтобы продемонстрировать вашу работу"
+
+msgid "First image will be displayed as the main thumbnail"
+msgstr "Первое изображение будет отображаться как основная миниатюра"
+
+msgid "Add captions to describe each image"
+msgstr "Добавляйте подписи для описания каждого изображения"
+
+msgid "Short description of the image"
+msgstr "Краткое описание изображения"
+
+msgid "Portfolio Project"
+msgstr "Проект портфолио"
+
+msgid "Portfolio Projects"
+msgstr "Проекты портфолио"
+
+msgid "Portfolio Image"
+msgstr "Изображение портфолио"
+
+msgid "Portfolio Images"
+msgstr "Изображения портфолио"
+
+msgid "Title"
+msgstr "Название"
+
+msgid "Description"
+msgstr "Описание"
+
+msgid "Completion Date"
+msgstr "Дата завершения"
+
+msgid "Client Name"
+msgstr "Имя клиента"
+
+msgid "Project URL"
+msgstr "URL проекта"
+
+msgid "Image"
+msgstr "Изображение"
+
+msgid "Caption"
+msgstr "Подпись"
+
+msgid "Order"
+msgstr "Порядок"
+
+msgid "Portfolio project created successfully"
+msgstr "Проект портфолио успешно создан"
+
+msgid "Portfolio project updated successfully"
+msgstr "Проект портфолио успешно обновлен"
+
+msgid "Only freelancers can manage portfolio"
+msgstr "Только фрилансеры могут управлять портфолио"

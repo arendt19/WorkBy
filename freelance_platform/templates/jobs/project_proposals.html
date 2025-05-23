@@ -4,7 +4,6 @@
 
 {% block title %}{% trans "Proposals" %} | {{ project.title }} | WorkBy{% endblock %}
 
-<<<<<<< HEAD
 {% block extra_js %}
 <script>
     $(document).ready(function() {
@@ -51,42 +50,47 @@
     });
 </script>
 {% endblock %}
-
-=======
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
 {% block content %}
-<div class="container py-4">
-    <div class="row">
+<div class="container">
+    <!-- Улучшенные хлебные крошки с отступами -->
+    <div class="row mt-4 mb-4">
         <div class="col-lg-12">
-            <!-- Breadcrumbs -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}">{% trans "Home" %}</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}">{% trans "My Projects" %}</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'jobs:project_detail' project.pk %}">{{ project.title }}</a></li>
-                    <li class="breadcrumb-item active">{% trans "Proposals" %}</li>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-dark bg-opacity-50 py-2 px-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}" class="text-light">{% trans "Home" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}" class="text-light">{% trans "My Projects" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:project_detail' project.pk %}" class="text-light">{{ project.title }}</a></li>
+                    <li class="breadcrumb-item active text-light" aria-current="page">{% trans "Proposals" %}</li>
                 </ol>
             </nav>
-            
-            <!-- Заголовок -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">{% trans "Proposals for" %}: {{ project.title }}</h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Заголовок с отдельным фоном и кнопкой назад -->
+            <div class="d-flex justify-content-between align-items-center p-4 bg-dark rounded shadow-sm mb-4">
+                <h1 class="h3 mb-0 fw-bold">{% trans "Proposals for" %}: {{ project.title }}</h1>
                 <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left me-2"></i>{% trans "Back to Project" %}
                 </a>
             </div>
             
-            <!-- Блок с информацией о проекте -->
+            <!-- Информационная панель с гридом и визуальными разделителями -->
             <div class="card border-0 bg-dark text-light shadow-sm mb-4">
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <h6 class="text-muted mb-1">{% trans "Budget" %}</h6>
-                            <p class="h5 text-primary mb-3">{{ project.budget_min }} - {{ project.budget_max }} ₸</p>
+                    <div class="project-info-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                        <div class="info-item p-3 border-end border-secondary">
+                            <h6 class="text-muted mb-2">{% trans "Budget" %}</h6>
+                            <p class="h5 text-primary mb-0 d-flex align-items-center">
+                                <i class="fas fa-money-bill-wave me-2 text-muted"></i>
+                                {{ project.budget_min }} - {{ project.budget_max }} ₸
+                            </p>
                         </div>
-                        <div class="col-md-4">
-                            <h6 class="text-muted mb-1">{% trans "Deadline" %}</h6>
-                            <p class="h5 mb-3">
+                        <div class="info-item p-3 border-end border-secondary">
+                            <h6 class="text-muted mb-2">{% trans "Deadline" %}</h6>
+                            <p class="h5 mb-0 d-flex align-items-center">
+                                <i class="far fa-calendar-alt me-2 text-muted"></i>
                                 {% if project.deadline %}
                                     {{ project.deadline|date:"d M Y" }}
                                 {% else %}
@@ -94,12 +98,19 @@
                                 {% endif %}
                             </p>
                         </div>
-                        <div class="col-md-4">
-                            <h6 class="text-muted mb-1">{% trans "Status" %}</h6>
-                            <p class="mb-0">
-                                <span class="badge status-badge status-{{ project.status }}">
-                                    {{ project.get_status_display }}
-                                </span>
+                        <div class="info-item p-3">
+                            <h6 class="text-muted mb-2">{% trans "Status" %}</h6>
+                            <p class="mb-0 d-flex align-items-center">
+                                {% if project.status == 'open' %}
+                                    <span class="status-indicator me-2" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #4caf50;"></span>
+                                    <span class="badge status-badge status-{{ project.status }}" style="color: #4caf50;">
+                                        {{ project.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge status-badge status-{{ project.status }}">
+                                        {{ project.get_status_display }}
+                                    </span>
+                                {% endif %}
                             </p>
                         </div>
                     </div>
@@ -112,35 +123,19 @@
         <div class="col-lg-12">
             <!-- Блок с фильтрами -->
             <div class="card border-0 bg-dark text-light shadow-sm mb-4">
-                <div class="card-header bg-dark">
+                <div class="card-header bg-dark py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">{% trans "Proposals" %} ({{ proposals_count }})</h5>
+                        <h5 class="mb-0 fs-5">{% trans "Proposals" %} ({{ proposals_count }})</h5>
                         
-                        <!-- Сортировка предложений -->
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-sort me-1"></i>
-                                {% if sort == 'recent' %}
-                                    {% trans "Recent First" %}
-                                {% elif sort == 'oldest' %}
-                                    {% trans "Oldest First" %}
-                                {% elif sort == 'bid-low' %}
-                                    {% trans "Lowest Bid" %}
-                                {% elif sort == 'bid-high' %}
-                                    {% trans "Highest Bid" %}
-                                {% elif sort == 'delivery-short' %}
-                                    {% trans "Shortest Delivery" %}
-                                {% else %}
-                                    {% trans "Sort" %}
-                                {% endif %}
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item {% if sort == 'recent' %}active{% endif %}" href="?sort=recent">{% trans "Recent First" %}</a></li>
-                                <li><a class="dropdown-item {% if sort == 'oldest' %}active{% endif %}" href="?sort=oldest">{% trans "Oldest First" %}</a></li>
-                                <li><a class="dropdown-item {% if sort == 'bid-low' %}active{% endif %}" href="?sort=bid-low">{% trans "Lowest Bid" %}</a></li>
-                                <li><a class="dropdown-item {% if sort == 'bid-high' %}active{% endif %}" href="?sort=bid-high">{% trans "Highest Bid" %}</a></li>
-                                <li><a class="dropdown-item {% if sort == 'delivery-short' %}active{% endif %}" href="?sort=delivery-short">{% trans "Shortest Delivery" %}</a></li>
-                            </ul>
+                        <!-- Улучшенная сортировка предложений -->
+                        <div class="sort-select-wrapper" style="width: 200px;">
+                            <select class="form-select form-select-sm bg-dark text-light border-secondary" id="proposal-sort" onchange="window.location=this.value;">
+                                <option value="?sort=recent" {% if sort == 'recent' %}selected{% endif %}>{% trans "Newest → Oldest" %}</option>
+                                <option value="?sort=oldest" {% if sort == 'oldest' %}selected{% endif %}>{% trans "Oldest → Newest" %}</option>
+                                <option value="?sort=bid-low" {% if sort == 'bid-low' %}selected{% endif %}>{% trans "Lowest Bid" %}</option>
+                                <option value="?sort=bid-high" {% if sort == 'bid-high' %}selected{% endif %}>{% trans "Highest Bid" %}</option>
+                                <option value="?sort=delivery-short" {% if sort == 'delivery-short' %}selected{% endif %}>{% trans "Shortest Delivery" %}</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -190,11 +185,7 @@
                                             <i class="fas fa-comment me-1"></i> {% trans "Message" %}
                                         </a>
                                         <a href="{% url 'accounts:freelancer_detail' proposal.freelancer.username %}" class="btn btn-sm btn-outline-primary">
-<<<<<<< HEAD
                                             <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
-=======
-                                            <i class="fas fa-user me-1"></i> {% trans "Profile" %}
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                                         </a>
                                     </div>
                                 </div>
@@ -232,23 +223,12 @@
                                                 <span class="text-muted small">{% trans "Delivery Time" %}</span>
                                                 <div>{{ proposal.delivery_time }} {% trans "days" %}</div>
                                             </div>
-                                            
-                                            {% if proposal.status == 'pending' %}
-<<<<<<< HEAD
+                                                                                        {% if proposal.status == 'pending' %}
                                                 <div class="proposal-actions d-grid gap-2">
                                                     {% csrf_token %}
                                                     <a href="{% url 'jobs:proposal_accept' pk=proposal.pk %}" class="btn btn-success w-100 mb-2 accept-proposal-btn" data-proposal-id="{{ proposal.pk }}">
                                                         <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
                                                     </a>
-=======
-                                                <div class="d-grid gap-2">
-                                                    <form method="post" action="{% url 'jobs:proposal_accept' pk=proposal.pk %}">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="btn btn-success w-100 mb-2">
-                                                            <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
-                                                        </button>
-                                                    </form>
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
                                                     
                                                     <a href="{% url 'jobs:proposal_reject' pk=proposal.pk %}" class="btn btn-outline-danger">
                                                         <i class="fas fa-times me-1"></i> {% trans "Decline" %}
@@ -269,10 +249,16 @@
                             </div>
                         </div>
                     {% empty %}
+                        <!-- Улучшенное пустое состояние -->
                         <div class="list-group-item bg-dark text-center py-5">
-                            <img src="{% static 'img/empty-proposals.svg' %}" alt="{% trans 'No proposals' %}" class="img-fluid mb-3" style="max-width: 120px; opacity: 0.7;">
-                            <h5>{% trans "No proposals yet" %}</h5>
-                            <p class="text-muted">{% trans "Your project hasn't received any proposals yet. Check back later." %}</p>
+                            <div class="empty-state" style="max-width: 400px; margin: 40px auto;">
+                                <!-- Вместо изображения используем иконку -->
+                                <div class="mb-4">
+                                    <i class="fas fa-file-alt fa-4x text-muted opacity-50"></i>
+                                </div>
+                                <h5 class="mb-3">{% trans "No proposals yet" %}</h5>
+                                <p class="text-muted" style="font-size: 0.9rem; color: #aaa !important;">{% trans "Your project hasn't received any proposals yet. Check back later." %}</p>
+                            </div>
                         </div>
                     {% endfor %}
                 </div>

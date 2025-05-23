@@ -34,10 +34,88 @@
         $('#id_cover_letter').on('input', function() {
             const maxLength = 4000;
             const currentLength = $(this).val().length;
+            const remainingChars = maxLength - currentLength;
+            
+            // Обновляем счетчик символов
+            $('#char-counter').text(remainingChars);
+            
+            // Изменяем цвет счетчика при приближении к лимиту
+            if (remainingChars < 200) {
+                $('#char-counter').removeClass('text-muted').addClass('text-warning');
+            } else {
+                $('#char-counter').removeClass('text-warning').addClass('text-muted');
+            }
             
             if (currentLength > maxLength) {
                 $(this).val($(this).val().substring(0, maxLength));
             }
+        });
+        
+        // Запускаем один раз для инициализации счетчика
+        $('#id_cover_letter').trigger('input');
+        
+        // Обработка отправки формы
+        $('form').on('submit', function(e) {
+            // Блокируем кнопку отправки и показываем индикатор загрузки
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i> {% trans "Submitting..." %}');
+            
+            // Очищаем предыдущие ошибки
+            $('.invalid-feedback').remove();
+            $('.is-invalid').removeClass('is-invalid');
+            
+            // Проверяем форму с помощью AJAX
+            $.ajax({
+                type: 'POST',
+                url: '{% url "jobs:proposal_create" project.pk %}',
+                data: new FormData(this),
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(response) {
+                    // Если успешно, перенаправляем на страницу деталей проекта
+                    window.location.href = response.redirect_url || '{% url "jobs:project_detail" project.pk %}';
+                },
+                error: function(xhr) {
+                    // Разблокируем кнопку и восстанавливаем текст
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html(originalText);
+                    
+                    // Показываем ошибки
+                    if (xhr.status === 400 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        
+                        // Отображаем ошибки под полями
+                        $.each(errors, function(fieldName, fieldErrors) {
+                            const field = $('#id_' + fieldName);
+                            field.addClass('is-invalid');
+                            
+                            // Добавляем сообщение об ошибке
+                            const errorMessages = fieldErrors.map(error => error.message).join('<br>');
+                            field.after('<div class="invalid-feedback d-block">' + errorMessages + '</div>');
+                            
+                            // Показываем общую ошибку вверху формы
+                            if (fieldName === '__all__') {
+                                $('form').prepend('<div class="alert alert-danger">' + errorMessages + '</div>');
+                            }
+                        });
+                    } else {
+                        // Общая ошибка
+                        $('form').prepend('<div class="alert alert-danger">{% trans "An error occurred. Please try again." %}</div>');
+                    }
+                    
+                    // Прокручиваем к первой ошибке
+                    if ($('.invalid-feedback:visible').length > 0) {
+                        $('html, body').animate({
+                            scrollTop: $('.invalid-feedback:visible').first().offset().top - 100
+                        }, 200);
+                    }
+                }
+            });
+            
+            e.preventDefault();
         });
     });
 </script>
@@ -110,7 +188,18 @@
                         
                         <div class="row">
                             <div class="col-md-8">
-                                {{ form.cover_letter|as_crispy_field }}
+                                <div class="form-group">
+                                    <label for="{{ form.cover_letter.id_for_label }}" class="form-label">{% trans "Cover Letter" %}</label>
+                                    <textarea name="{{ form.cover_letter.name }}" id="{{ form.cover_letter.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" rows="8">{{ form.cover_letter.value|default:"" }}</textarea>
+                                    <div class="text-end mt-1">
+                                        <small class="text-muted"><span id="char-counter">4000</span> {% trans "characters remaining" %}</small>
+                                    </div>
+                                    {% if form.cover_letter.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.cover_letter.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 {% if project.budget_type == 'fixed' %}
@@ -211,8 +300,6 @@
                     </form>
                 </div>
             </div>
-<<<<<<< HEAD
-=======
             
             <!-- Tips section -->
             <div class="card border-0 bg-dark text-light shadow-sm mt-4">
@@ -263,8 +350,7 @@
                     </div>
                 </div>
             </div>
->>>>>>> 92595c2cfd86833ec53ef1c1ca4b9aee5556f8cd
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
