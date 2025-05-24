@@ -130,13 +130,15 @@
                     
                     <!-- Dropdown для авторизованного пользователя -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}" class="avatar avatar-sm rounded-circle me-1">
-                            {% else %}
-                                <i class="fas fa-user-circle me-1"></i>
-                            {% endif %}
-                            {{ user.username }}
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="avatar avatar-md me-2">
+                                {% if user.avatar %}
+                                    <img src="{{ user.avatar.url }}" alt="{{ user.get_full_name|default:user.username }}">
+                                {% else %}
+                                    {{ user.get_full_name|slice:":1"|upper|default:user.username|slice:":1"|upper }}
+                                {% endif %}
+                            </div>
+                            <span>{{ user.username }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="fas fa-user me-2"></i> {% trans "Profile" %}</a></li>

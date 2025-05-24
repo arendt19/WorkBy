@@ -337,18 +337,31 @@ def api_mark_messages_read_view(request, pk):
     """
     API для отметки сообщений как прочитанных через AJAX
     """
-    if request.method != 'POST':
+    # Добавляем логирование
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"Получен запрос на отметку сообщений как прочитанных. Пользователь: {request.user.username}, ID разговора: {pk}")
+    logger.info(f"Method: {request.method}, POST: {request.POST}")
+    
+    # Разрешаем как GET, так и POST запросы для удобства
+    if request.method not in ['POST', 'GET']:
         return JsonResponse({'error': 'Invalid request method'}, status=400)
     
-    conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
-    
-    # Отмечаем все непрочитанные сообщения как прочитанные
-    Message.objects.filter(
-        conversation=conversation,
-        is_read=False
-    ).exclude(sender=request.user).update(is_read=True)
-    
-    return JsonResponse({'success': True})
+    try:
+        conversation = get_object_or_404(Conversation, pk=pk, participants=request.user)
+        logger.info(f"Разговор найден. ID: {conversation.id}")
+        
+        # Отмечаем все непрочитанные сообщения как прочитанные
+        updated = Message.objects.filter(
+            conversation=conversation,
+            is_read=False
+        ).exclude(sender=request.user).update(is_read=True)
+        logger.info(f"Обновлено сообщений: {updated}")
+        
+        return JsonResponse({'success': True, 'updated': updated})
+    except Exception as e:
+        logger.error(f"Ошибка при отметке сообщений как прочитанных: {str(e)}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # Тестовая функция с декоратором @login_required была удалена
 

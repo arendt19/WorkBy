@@ -53,10 +53,10 @@
     }
     
     .avatar {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
-        background-color: #0084ff;
+        background-color: #8B0000; /* Бордовый цвет вместо синего */
         display: flex;
         align-items: center;
         justify-content: center;
@@ -64,6 +64,8 @@
         font-weight: bold;
         margin-right: 15px;
         flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .avatar img {
@@ -180,17 +182,21 @@
 {% include 'includes/header.html' %}
 
 <div class="container py-4">
-    <!-- Статистика диалогов сверху -->
+    <!-- Заголовок страницы без счетчика -->
     <div class="conversations-summary mb-4">
-        <h5><i class="fas fa-comments me-2"></i>{% trans "Conversations" %} ({{ conversations|length }})</h5>
+        <h5><i class="fas fa-comments me-2"></i>{% trans "Conversations" %}</h5>
     </div>
 
     <div class="chat-container">
         <div class="chat-header">
             <h4>{% trans "Messages" %}</h4>
-            <a href="#" class="btn btn-sm btn-outline-light">
-                <i class="fas fa-search me-1"></i> {% trans "Search Messages" %}
-            </a>
+            <div class="input-group input-group-sm" style="max-width: 250px;">
+                <input type="text" class="form-control bg-dark border-dark text-light" 
+                        placeholder="{% trans 'Search Contacts...' %}" id="contactSearch">
+                <span class="input-group-text bg-dark border-dark text-light">
+                    <i class="fas fa-search"></i>
+                </span>
+            </div>
         </div>
         
         <div class="chat-list">

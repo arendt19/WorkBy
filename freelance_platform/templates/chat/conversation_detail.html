@@ -34,7 +34,6 @@
     }
     
     .sidebar {
-        width: 25%;
         background-color: #1a1a1a;
         border-right: 1px solid #333;
         display: flex;
@@ -43,7 +42,8 @@
         position: sticky;
         top: 70px; /* Высота шапки */
         height: calc(100vh - 100px);
-        width: 300px;
+        width: 280px; /* Фиксированная ширина */
+        min-width: 280px; /* Минимальная ширина */
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
         z-index: 100;
         overflow: hidden;
@@ -244,7 +244,6 @@
         display: flex;
         flex-direction: column;
         max-width: 75%;
-        animation: fadeIn 0.3s ease;
         transition: transform 0.2s ease;
     }
     
@@ -292,10 +291,7 @@
         transform: translateY(-2px);
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
+    /* Анимация fadeIn удалена для устранения мигания сообщений */
     
     .message-outgoing {
         align-self: flex-end;
@@ -365,8 +361,29 @@
         color: white;
         font-weight: bold;
         margin-right: 10px;
+        width: 40px;   /* Стандартный размер в списке */
+        height: 40px;
+        min-width: 40px;
+        font-size: 16px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden; /* Для обрезки изображений */
+    }
+    
+    /* Размер аватара в заголовке чата */
+    .chat-header .user-avatar {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        font-size: 18px;
+    }
+    
+    /* Для изображений в аватарах */
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
     
     .user-avatar:hover {
@@ -383,7 +400,6 @@
         color: #aaa;
         text-align: center;
         padding: 40px 20px;
-        animation: fadeIn 0.5s ease;
     }
     
     .empty-state-icon {
@@ -646,29 +662,35 @@
             <!-- Список контактов -->
         <div class="contact-list">
                 {% for conv in conversations_list %}
-                    <a href="{% url 'chat:conversation_detail' conv.conversation.id %}" class="contact-item {% if conv.conversation.id == conversation.id %}active{% endif %} {% if conv.unread_count %}unread{% endif %}">
-                    <div class="user-avatar">
-                            {{ conv.other_participant.get_full_name|slice:":1"|upper }}
+                    <a href="{% url 'chat:conversation_detail' conv.conversation.id %}" class="contact-item d-flex align-items-center {% if conv.conversation.id == conversation.id %}active{% endif %} {% if conv.unread_count %}unread{% endif %}">
+                        <div class="user-avatar" onclick="openUserProfile(event, '{{ conv.other_participant.username }}', '{{ conv.other_participant.user_type }}')">
+                            {% if conv.other_participant.avatar %}
+                                <img src="{{ conv.other_participant.avatar.url }}" alt="{{ conv.other_participant.get_full_name }}">
+                            {% else %}
+                                {{ conv.other_participant.get_full_name|slice:":1"|upper }}
+                            {% endif %}
                         </div>
-                        <div class="flex-grow-1">
-                            <div class="d-flex justify-content-between">
-                                {% if conv.other_participant %}
-                                    <strong>{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}</strong>
-                                {% else %}
-                                    <strong>{% trans "Удаленный пользователь" %}</strong>
-                                {% endif %}
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-truncate">
+                                    {% if conv.other_participant %}
+                                        <strong>{{ conv.other_participant.get_full_name|default:conv.other_participant.username }}</strong>
+                                    {% else %}
+                                        <strong>{% trans "Удаленный пользователь" %}</strong>
+                                    {% endif %}
+                                </div>
                                 {% if conv.unread_count %}
-                                    <span class="badge bg-danger rounded-pill">{{ conv.unread_count }}</span>
+                                    <span class="badge bg-danger rounded-pill ms-1">{{ conv.unread_count }}</span>
                                 {% endif %}
-                    </div>
-                            <div class="small text-muted text-truncate" style="max-width: 180px;">
+                            </div>
+                            <div class="small text-muted text-truncate">
                                 {% if conv.last_message %}
                                     {{ conv.last_message.content|truncatechars:25 }}
                                 {% else %}
                                     {% trans "No messages yet" %}
                                 {% endif %}
                             </div>
-                    </div>
+                        </div>
                     </a>
                 {% empty %}
                     {% if conversation %}
@@ -709,8 +731,12 @@
                     <button class="mobile-toggle me-2" id="toggleSidebar">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <div class="user-avatar" title="{% trans 'Click to view profile' %}">
-                        {{ other_participant.get_full_name|slice:":1"|upper }}
+                    <div class="user-avatar" title="{% trans 'Click to view profile' %}" onclick="openUserProfile(event, '{{ other_participant.username }}', '{{ other_participant.user_type }}')">
+                        {% if other_participant.avatar %}
+                            <img src="{{ other_participant.avatar.url }}" alt="{{ other_participant.get_full_name }}">
+                        {% else %}
+                            {{ other_participant.get_full_name|slice:":1"|upper }}
+                        {% endif %}
                     </div>
                     <div class="ms-2">
                         <div class="d-flex align-items-center">
@@ -727,16 +753,13 @@
             </div>
         </div>
             
-            <!-- Поле поиска по сообщениям -->
-            <div class="search-bar p-2 border-bottom border-dark">
-                <div class="input-group">
-                    <span class="input-group-text bg-dark border-dark text-light">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" class="form-control bg-dark border-dark text-light" 
-                        placeholder="{% trans 'Search in this conversation...' %}" id="messageSearch"
-                        aria-label="{% trans 'Search in messages' %}">
-                </div>
+            <!-- Поле поиска по чату -->
+            <div class="input-group mb-2">
+                <input type="text" class="form-control bg-dark border-dark text-light" 
+                       placeholder="{% trans 'Search in this conversation...' %}" id="messageSearch">
+                <span class="input-group-text bg-dark border-dark" style="color: #8B0000;">
+                    <i class="fas fa-search"></i>
+                </span>
             </div>
             
             <!-- Область сообщений -->
@@ -800,6 +823,23 @@
 
 {% block extra_js %}
 <script>
+    // Функция для открытия профиля пользователя в зависимости от типа
+    function openUserProfile(event, username, userType) {
+        event.stopPropagation(); // Останавливаем всплытие события
+        
+        let profileUrl;
+        if (userType === 'freelancer') {
+            profileUrl = '{% url "accounts:freelancer_detail" "USERNAME_PLACEHOLDER" %}'.replace('USERNAME_PLACEHOLDER', username);
+        } else if (userType === 'client') {
+            profileUrl = '{% url "accounts:client_detail" "USERNAME_PLACEHOLDER" %}'.replace('USERNAME_PLACEHOLDER', username);
+        } else {
+            // Если тип неизвестен, используем URL для фрилансеров (как было раньше)
+            profileUrl = '{% url "accounts:freelancer_detail" "USERNAME_PLACEHOLDER" %}'.replace('USERNAME_PLACEHOLDER', username);
+        }
+        
+        window.open(profileUrl, '_blank');
+        return false;
+    }
     // Основные переменные
     const messageContainer = document.getElementById('messageContainer');
     const messageForm = document.getElementById('messageForm');
@@ -1023,7 +1063,7 @@
                     
                     // Создаем элемент сообщения
                     const messageElement = document.createElement('div');
-                    messageElement.className = `message ${message.is_mine ? 'message-outgoing' : 'message-incoming'} ${newMessages ? 'new-message' : ''}`;
+                    messageElement.className = `message ${message.is_mine ? 'message-outgoing' : 'message-incoming'}`;
                     messageElement.setAttribute('data-message-id', message.id);
                     
                     // Содержимое сообщения
