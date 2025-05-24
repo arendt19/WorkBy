@@ -4,6 +4,134 @@
 
 {% block title %}{{ project.title }} | {% trans "Portfolio" %} | WorkBy{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Стили для просмотра изображений на весь экран */
+    .portfolio-image {
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+    }
+    
+    .portfolio-image:hover {
+        opacity: 0.9;
+    }
+    
+    .expand-image-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 10;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+    
+    .expand-image-btn:hover {
+        opacity: 1;
+    }
+    
+    .fullscreen-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .fullscreen-overlay.active {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    .fullscreen-content {
+        max-width: 90%;
+        max-height: 90vh;
+        position: relative;
+    }
+    
+    .fullscreen-image {
+        max-width: 100%;
+        max-height: 90vh;
+        object-fit: contain;
+    }
+    
+    .fullscreen-caption {
+        position: absolute;
+        bottom: 20px;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        text-align: center;
+    }
+    
+    .fullscreen-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.5);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s ease;
+    }
+    
+    .fullscreen-close:hover {
+        background: rgba(255, 0, 0, 0.7);
+    }
+    
+    .fullscreen-controls {
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+    
+    .fullscreen-control-btn {
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border: none;
+        padding: 5px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    
+    .fullscreen-control-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .thumbnail-card {
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+    
+    .thumbnail-card:hover {
+        transform: translateY(-3px);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <div class="row">
@@ -47,12 +175,21 @@
                                 <div class="carousel-inner">
                                     {% for image in images %}
                                         <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                                            <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ image.caption|default:project.title }}" style="max-height: 500px; object-fit: contain;">
+                                            <img src="{{ image.image.url }}" class="d-block w-100 portfolio-image" 
+                                                 alt="{{ image.caption|default:project.title }}" 
+                                                 style="max-height: 500px; object-fit: contain;"
+                                                 data-image-id="{{ image.id }}"
+                                                 data-fullsize="{{ image.image.url }}"
+                                                 data-caption="{{ image.caption|default:'' }}"
+                                                 onclick="openFullscreen(this)">
                                             {% if image.caption %}
                                                 <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
                                                     <p class="mb-0">{{ image.caption }}</p>
                                                 </div>
                                             {% endif %}
+                                            <button class="btn btn-light btn-sm expand-image-btn" type="button" onclick="openFullscreen(this.previousElementSibling)">
+                                                <i class="bi bi-arrows-fullscreen"></i>
+                                            </button>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -64,6 +201,21 @@
                                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                     <span class="visually-hidden">{% trans "Next" %}</span>
                                 </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Миниатюры всех изображений в проекте -->
+                        <div class="project-thumbnails mb-4">
+                            <div class="row">
+                                {% for image in images %}
+                                    <div class="col-md-2 col-sm-3 col-4 mb-3">
+                                        <div class="thumbnail-card" data-bs-target="#projectCarousel" data-bs-slide-to="{{ forloop.counter0 }}">
+                                            <img src="{{ image.image.url }}" class="img-thumbnail w-100" 
+                                                alt="{{ image.caption|default:project.title }}" 
+                                                style="height: 80px; object-fit: cover;">
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
                     {% endif %}
@@ -124,4 +276,132 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+<!-- Полноэкранный просмотр изображений -->
+<div class="fullscreen-overlay" id="fullscreen-overlay">
+    <div class="fullscreen-close" onclick="closeFullscreen()">
+        <i class="bi bi-x"></i>
+    </div>
+    <div class="fullscreen-content">
+        <img src="" alt="" class="fullscreen-image" id="fullscreen-image">
+        <div class="fullscreen-caption" id="fullscreen-caption"></div>
+        <div class="fullscreen-controls">
+            <button class="fullscreen-control-btn" id="prev-image">
+                <i class="bi bi-chevron-left"></i> {% trans "Previous" %}
+            </button>
+            <button class="fullscreen-control-btn" id="next-image">
+                {% trans "Next" %} <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Глобальные переменные для полноэкранного просмотра
+    let currentImageIndex = 0;
+    const images = [];
+    
+    // Инициализация после загрузки страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        // Собираем все изображения из карусели
+        document.querySelectorAll('.portfolio-image').forEach(function(img, index) {
+            images.push({
+                id: img.dataset.imageId,
+                src: img.dataset.fullsize,
+                caption: img.dataset.caption,
+                index: index
+            });
+        });
+        
+        // Настраиваем обработчики для миниатюр
+        document.querySelectorAll('.thumbnail-card').forEach(function(thumb) {
+            thumb.addEventListener('click', function() {
+                const slideIndex = parseInt(this.getAttribute('data-bs-slide-to'));
+                const carousel = document.getElementById('projectCarousel');
+                const bsCarousel = bootstrap.Carousel.getInstance(carousel);
+                bsCarousel.to(slideIndex);
+            });
+        });
+        
+        // Кнопки переключения изображений в полноэкранном режиме
+        document.getElementById('prev-image').addEventListener('click', function() {
+            showPrevImage();
+        });
+        
+        document.getElementById('next-image').addEventListener('click', function() {
+            showNextImage();
+        });
+        
+        // Обработка клавиш для полноэкранного режима
+        document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('fullscreen-overlay').classList.contains('active')) {
+                return;
+            }
+            
+            if (e.key === 'Escape') {
+                closeFullscreen();
+            } else if (e.key === 'ArrowLeft') {
+                showPrevImage();
+            } else if (e.key === 'ArrowRight') {
+                showNextImage();
+            }
+        });
+    });
+    
+    // Открыть полноэкранный просмотр
+    function openFullscreen(imgElement) {
+        const overlay = document.getElementById('fullscreen-overlay');
+        const fullscreenImg = document.getElementById('fullscreen-image');
+        const captionElement = document.getElementById('fullscreen-caption');
+        
+        // Находим индекс текущего изображения
+        const imageId = imgElement.dataset.imageId;
+        currentImageIndex = images.findIndex(img => img.id === imageId);
+        if (currentImageIndex === -1) currentImageIndex = 0;
+        
+        // Отображаем изображение
+        fullscreenImg.src = images[currentImageIndex].src;
+        captionElement.textContent = images[currentImageIndex].caption;
+        
+        // Показываем оверлей
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // Закрыть полноэкранный просмотр
+    function closeFullscreen() {
+        const overlay = document.getElementById('fullscreen-overlay');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Показать предыдущее изображение
+    function showPrevImage() {
+        if (images.length === 0) return;
+        
+        currentImageIndex--;
+        if (currentImageIndex < 0) currentImageIndex = images.length - 1;
+        
+        const fullscreenImg = document.getElementById('fullscreen-image');
+        const captionElement = document.getElementById('fullscreen-caption');
+        
+        fullscreenImg.src = images[currentImageIndex].src;
+        captionElement.textContent = images[currentImageIndex].caption;
+    }
+    
+    // Показать следующее изображение
+    function showNextImage() {
+        if (images.length === 0) return;
+        
+        currentImageIndex++;
+        if (currentImageIndex >= images.length) currentImageIndex = 0;
+        
+        const fullscreenImg = document.getElementById('fullscreen-image');
+        const captionElement = document.getElementById('fullscreen-caption');
+        
+        fullscreenImg.src = images[currentImageIndex].src;
+        captionElement.textContent = images[currentImageIndex].caption;
+    }
+</script>
+{% endblock %}

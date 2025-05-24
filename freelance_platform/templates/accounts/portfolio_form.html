@@ -13,18 +13,60 @@
 
 {% block extra_css %}
 <style>
+    /* Основные стили карточек и контейнеров */
+    .portfolio-form-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .portfolio-card {
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: #222;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        margin-bottom: 2rem;
+    }
+    
+    .portfolio-card-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        background-color: #333;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+    
+    .portfolio-card-body {
+        padding: 1.5rem;
+    }
+    
+    /* Стили для блока изображений */
+    .images-container {
+        background-color: #333;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
     .image-preview {
         max-height: 150px;
         max-width: 100%;
         margin-top: 10px;
+        border-radius: 6px;
+        object-fit: cover;
     }
     
     .formset-item {
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 15px;
-        transition: opacity 0.3s ease;
+        background-color: #222;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .formset-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
     
     .delete-formset-row {
@@ -46,15 +88,21 @@
         justify-content: center;
         text-align: center;
         cursor: pointer;
-        color: #6c757d;
-        border: 2px dashed #dee2e6;
-        border-radius: 5px;
-        transition: border-color 0.3s ease;
+        color: #adb5bd;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    .drop-zone:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+        background-color: rgba(0, 0, 0, 0.3);
     }
     
     .drop-zone--over {
         border-color: #0d6efd;
-        background-color: rgba(13, 110, 253, 0.05);
+        background-color: rgba(13, 110, 253, 0.1);
     }
     
     .drop-zone__prompt {
@@ -64,9 +112,9 @@
     .drop-zone__thumb {
         width: 100%;
         height: 100%;
-        border-radius: 5px;
+        border-radius: 8px;
         overflow: hidden;
-        background-color: #f8f9fa;
+        background-color: #252525;
         background-size: cover;
         background-position: center;
         position: relative;
@@ -80,7 +128,7 @@
         width: 100%;
         padding: 5px;
         color: white;
-        background: rgba(0, 0, 0, 0.6);
+        background: rgba(0, 0, 0, 0.7);
         font-size: 12px;
         text-align: center;
     }
@@ -88,22 +136,149 @@
     .drop-zone__error {
         margin-top: 10px;
         font-size: 0.875rem;
+        color: #dc3545;
+    }
+    
+    /* Стили для карточек изображений */
+    .image-card {
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+        height: 150px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .image-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+    
+    .image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .image-card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+    }
+    
+    .image-card:hover .image-card-overlay {
+        opacity: 1;
+    }
+    
+    .remove-image {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        padding: 3px 6px;
+        font-size: 12px;
+        z-index: 2;
+    }
+    
+    .image-order-badge {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        padding: 2px 6px;
+        font-size: 11px;
+        border-radius: 10px;
+    }
+    
+    .image-caption {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        right: 5px;
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        padding: 3px 6px;
+        font-size: 12px;
+        border-radius: 3px;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Стили для дропзоны */
+    .drop-zone__input {
+        display: none;
     }
     
     /* Улучшения для мобильных устройств */
     @media (max-width: 768px) {
+        .portfolio-card-body {
+            padding: 1rem;
+        }
+        
+        .images-container {
+            padding: 1rem;
+        }
+        
         .drop-zone {
             height: 120px;
             padding: 15px;
         }
     }
+    
+    /* Стили для блока подсказок */
+    .tips-block {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-left: 4px solid #0d6efd;
+        padding: 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Стили для кнопок */
+    .btn-portfolio-primary {
+        background-color: #8B0000;
+        border-color: #8B0000;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-portfolio-primary:hover {
+        background-color: #A52A2A;
+        border-color: #A52A2A;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-portfolio-secondary {
+        background-color: #333;
+        border-color: #333;
+        padding: 0.5rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-portfolio-secondary:hover {
+        background-color: #444;
+        border-color: #444;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-lg-12">
+<div class="portfolio-form-container mt-4">
+    <div class="row mb-3">
+        <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{% url 'accounts:profile' %}">{% trans "Profile" %}</a></li>
@@ -119,137 +294,368 @@
             </nav>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        {% if is_creating %}
-                            {% trans "Create New Portfolio Project" %}
-                        {% else %}
-                            {% trans "Edit Portfolio Project" %}
-                        {% endif %}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row">
+            <!-- Основная форма (левая колонка) -->
+            <div class="col-lg-8 mb-4">
+                <div class="portfolio-card">
+                    <div class="portfolio-card-header">
+                        <h4 class="mb-0">
+                            {% if is_creating %}
+                                {% trans "Create New Portfolio Project" %}
+                            {% else %}
+                                {% trans "Edit Portfolio Project" %}
+                            {% endif %}
+                        </h4>
+                    </div>
+                    
+                    <div class="portfolio-card-body">
+                        <div class="form-group mb-4">
+                            {{ form.title|as_crispy_field }}
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            {{ form.description|as_crispy_field }}
+                        </div>
                         
                         <div class="row">
-                            <div class="col-md-8">
-                                <div class="form-group mb-3">
-                                    {{ form.title|as_crispy_field }}
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    {{ form.completed_date|as_crispy_field }}
                                 </div>
-                                
-                                <div class="form-group mb-3">
-                                    {{ form.description|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    {{ form.client_name|as_crispy_field }}
                                 </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            {{ form.completed_date|as_crispy_field }}
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-3">
-                                            {{ form.client_name|as_crispy_field }}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group mb-3">
-                                    {{ form.url|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            {{ form.url|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Правая колонка (категории и изображения) -->
+            <div class="col-lg-4 mb-4">
+                <div class="portfolio-card mb-4">
+                    <div class="portfolio-card-header">
+                        <h5 class="mb-0">{% trans "Categories" %}</h5>
+                    </div>
+                    <div class="portfolio-card-body">
+                        {{ form.categories|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="portfolio-card">
+                    <div class="portfolio-card-header">
+                        <h5 class="mb-0">{% trans "Project Images" %}</h5>
+                    </div>
+                    <div class="portfolio-card-body">
+                        <div class="tips-block mb-4">
+                            <h6 class="mb-2">{% trans "Tips" %}:</h6>
+                            <ul class="mb-0 small">
+                                <li>{% trans "Upload high-quality images to showcase your work" %}</li>
+                                <li>{% trans "First image will be displayed as the main thumbnail" %}</li>
+                                <li>{% trans "Add captions to describe each image" %}</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="images-upload-section">
+                            <p class="text-muted small mb-3">{% trans "Drag and drop images or click to select files. Maximum size: 5MB." %}</p>
+                            
+                            {{ formset.management_form }}
+                            
+                            <!-- Все загруженные изображения в виде миниатюр -->
+                            <div class="uploaded-images-container mb-4">
+                                <div class="row" id="preview-container">
+                                    {% for form in formset %}
+                                        {% if form.instance.pk and form.instance.image %}
+                                            <div class="col-md-3 col-sm-4 col-6 mb-3 preview-item" data-form-id="{{ form.prefix }}">
+                                                <div class="image-card position-relative">
+                                                    <img src="{{ form.instance.image.url }}" alt="{{ form.instance.caption|default:'Preview' }}" class="img-thumbnail w-100">
+                                                    <div class="image-card-overlay">
+                                                        <button type="button" class="btn btn-sm btn-danger remove-image" data-form-id="{{ form.prefix }}">
+                                                            <i class="bi bi-x-lg"></i>
+                                                        </button>
+                                                        <span class="image-order-badge bg-dark">#{{ form.instance.order }}</span>
+                                                        {% if form.instance.caption %}
+                                                            <div class="image-caption text-truncate">{{ form.instance.caption }}</div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
                                 </div>
                             </div>
                             
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    {{ form.categories|as_crispy_field }}
-                                </div>
-                                
-                                <hr>
-                                
-                                <div class="mb-3">
-                                    <h5>{% trans "Project Images" %}</h5>
-                                    <p class="text-muted small">{% trans "Add images to showcase your project. First image will be used as the thumbnail." %}</p>
-                                    <p class="text-muted small">{% trans "Drag and drop images or click to select files. Maximum size: 5MB." %}</p>
-                                </div>
-                                
-                                {{ formset.management_form }}
-                                
-                                <div id="formset-container">
-                                    {% for form in formset %}
-                                        <div class="formset-item {% if forloop.last and not form.instance.pk %}formset-empty{% endif %}">
-                                            {% if form.instance.pk %}
-                                                <div class="form-group mb-3">
-                                                    {% if form.instance.image %}
-                                                        <img src="{{ form.instance.image.url }}" alt="Preview" class="image-preview">
-                                                    {% endif %}
-                                                </div>
-                                            {% endif %}
-                                            
-                                            {{ form.id }}
-                                            
-                                            <div class="form-group mb-3">
-                                                {{ form.image|as_crispy_field }}
-                                            </div>
-                                            
-                                            <div class="form-group mb-3">
-                                                {{ form.caption|as_crispy_field }}
-                                            </div>
-                                            
-                                            <div class="form-group mb-3">
-                                                {{ form.order|as_crispy_field }}
-                                            </div>
-                                            
-                                            <div class="form-check mb-3">
-                                                {{ form.DELETE }}
-                                                <label for="{{ form.DELETE.id_for_label }}" class="form-check-label delete-formset-row">
-                                                    {% trans "Delete this image" %}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                                
-                                <button type="button" id="add-image" class="btn btn-outline-primary mb-3">
-                                    <i class="bi bi-plus-circle"></i> {% trans "Add Another Image" %}
-                                </button>
-                                
-                                <div class="alert alert-info small">
-                                    <i class="bi bi-info-circle"></i> {% trans "Tips:" %}
-                                    <ul class="mb-0 mt-1">
-                                        <li>{% trans "Upload high-quality images to showcase your work" %}</li>
-                                        <li>{% trans "First image will be displayed as the main thumbnail" %}</li>
-                                        <li>{% trans "Add captions to describe each image" %}</li>
-                                    </ul>
+                            <!-- Форма для загрузки новых изображений -->
+                            <div class="image-upload-dropzone mb-4">
+                                <div class="drop-zone" id="drop-zone">
+                                    <span class="drop-zone__prompt">
+                                        <i class="bi bi-cloud-arrow-up fs-3 mb-2 d-block"></i>
+                                        {% trans "Drag files here or click to upload" %}
+                                    </span>
+                                    <input type="file" id="main-file-input" class="drop-zone__input" multiple accept="image/*">
                                 </div>
                             </div>
+                            
+                            <!-- Скрытые формы формсета -->
+                            <div id="formset-container" class="d-none">
+                                {% for form in formset %}
+                                    <div class="formset-item {% if forloop.last and not form.instance.pk %}formset-empty{% endif %}" id="form-{{ form.prefix }}">
+                                        {{ form.id }}
+                                        {{ form.image }}
+                                        {{ form.caption }}
+                                        {{ form.order }}
+                                        {{ form.DELETE }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            
+                            <!-- Кнопка для загрузки еще изображений -->
+                            <div class="text-center">
+                                <button type="button" id="add-more-images" class="btn btn-portfolio-primary mb-3">
+                                    <i class="bi bi-plus-circle"></i> {% trans "Add More Images" %}
+                                </button>
+                            </div>
                         </div>
-                        
-                        <div class="mt-4 text-center">
-                            <a href="{% url 'accounts:portfolio_list' %}" class="btn btn-secondary me-2">
-                                <i class="bi bi-x-circle"></i> {% trans "Cancel" %}
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-save"></i> 
-                                {% if is_creating %}
-                                    {% trans "Create Project" %}
-                                {% else %}
-                                    {% trans "Save Changes" %}
-                                {% endif %}
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        
+        <div class="row">
+            <div class="col-12 text-center mt-4 mb-5">
+                <a href="{% url 'accounts:portfolio_list' %}" class="btn btn-portfolio-secondary me-3">
+                    <i class="bi bi-x-circle"></i> {% trans "Cancel" %}
+                </a>
+                <button type="submit" class="btn btn-portfolio-primary">
+                    <i class="bi bi-save"></i> 
+                    {% if is_creating %}
+                        {% trans "Create Project" %}
+                    {% else %}
+                        {% trans "Save Changes" %}
+                    {% endif %}
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/portfolio.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Настройка дропзоны для загрузки изображений
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('main-file-input');
+        
+        if (dropZone && fileInput) {
+            // Обработчик клика по дропзоне
+            dropZone.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Предотвращение стандартного поведения браузера при перетаскивании
+            ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+            
+            // Добавление класса при перетаскивании над зоной
+            ['dragover', 'dragenter'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function() {
+                    dropZone.classList.add('drop-zone--over');
+                });
+            });
+            
+            // Удаление класса при уходе из зоны
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, function() {
+                    dropZone.classList.remove('drop-zone--over');
+                });
+            });
+            
+            // Обработка загруженных файлов
+            dropZone.addEventListener('drop', function(e) {
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // Обработка выбранных файлов через стандартный выбор файлов
+            fileInput.addEventListener('change', function() {
+                handleFiles(this.files);
+            });
+        }
+        
+        // Кнопка добавления еще изображений
+        const addMoreImagesBtn = document.getElementById('add-more-images');
+        if (addMoreImagesBtn) {
+            addMoreImagesBtn.addEventListener('click', function() {
+                fileInput.click();
+            });
+        }
+        
+        // Обработка кнопок удаления изображений
+        document.querySelectorAll('.remove-image').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const formId = this.dataset.formId;
+                const formItem = document.getElementById('form-' + formId);
+                if (formItem) {
+                    // Помечаем как удаленное
+                    const deleteCheckbox = formItem.querySelector('input[type="checkbox"]');
+                    if (deleteCheckbox) {
+                        deleteCheckbox.checked = true;
+                    }
+                    
+                    // Скрываем превью
+                    const previewItem = document.querySelector('.preview-item[data-form-id="' + formId + '"]');
+                    if (previewItem) {
+                        previewItem.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        // Функция обработки загруженных файлов
+        function handleFiles(files) {
+            Array.from(files).forEach(function(file) {
+                if (file.type.startsWith('image/')) {
+                    // Проверка размера файла (5MB максимум)
+                    if (file.size <= 5 * 1024 * 1024) {
+                        addNewImageForm(file);
+                    } else {
+                        alert('Файл "' + file.name + '" слишком большой. Максимальный размер: 5MB');
+                    }
+                } else {
+                    alert('Файл "' + file.name + '" не является изображением');
+                }
+            });
+        }
+        
+        // Добавление новой формы для изображения
+        function addNewImageForm(file) {
+            // Находим пустую форму (последнюю в формсете)
+            const emptyForm = document.querySelector('.formset-empty');
+            if (!emptyForm) {
+                alert('Достигнут максимальный лимит изображений');
+                return;
+            }
+            
+            // Создаем превью изображения
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgSrc = e.target.result;
+                const previewContainer = document.getElementById('preview-container');
+                
+                // Создаем новый элемент превью
+                const previewItem = document.createElement('div');
+                previewItem.className = 'col-md-3 col-sm-4 col-6 mb-3 preview-item new-upload';
+                previewItem.innerHTML = `
+                    <div class="image-card position-relative">
+                        <img src="${imgSrc}" alt="Preview" class="img-thumbnail w-100">
+                        <div class="image-card-overlay">
+                            <button type="button" class="btn btn-sm btn-danger remove-new-image">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <div class="image-caption text-truncate">${file.name}</div>
+                        </div>
+                    </div>
+                `;
+                
+                // Добавляем в контейнер
+                previewContainer.appendChild(previewItem);
+                
+                // Обработчик для кнопки удаления
+                const removeBtn = previewItem.querySelector('.remove-new-image');
+                removeBtn.addEventListener('click', function() {
+                    previewItem.remove();
+                    // Удаляем файл из формы, если он был добавлен
+                    const fileInput = emptyForm.querySelector('input[type="file"]');
+                    if (fileInput && fileInput._file === file) {
+                        // Сбрасываем файловый инпут
+                        fileInput.value = '';
+                        delete fileInput._file;
+                    }
+                });
+                
+                // Добавляем файл в форму
+                const fileInput = emptyForm.querySelector('input[type="file"]');
+                if (fileInput) {
+                    // Создаем новый FileList с нашим файлом
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    fileInput.files = dataTransfer.files;
+                    fileInput._file = file;
+                    
+                    // Добавляем подпись и порядок
+                    const captionInput = emptyForm.querySelector('input[name$="-caption"]');
+                    if (captionInput) {
+                        captionInput.value = file.name.split('.')[0];
+                    }
+                    
+                    const orderInput = emptyForm.querySelector('input[name$="-order"]');
+                    if (orderInput) {
+                        // Устанавливаем порядок на основе количества изображений
+                        const existingImages = document.querySelectorAll('.preview-item').length;
+                        orderInput.value = existingImages;
+                    }
+                    
+                    // Обновляем total forms в management form
+                    updateFormCount();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Обновление счетчика форм в management form
+        function updateFormCount() {
+            const totalForms = document.querySelector('input[name="images-TOTAL_FORMS"]');
+            if (totalForms) {
+                const formItems = document.querySelectorAll('.formset-item:not(.formset-empty)').length;
+                const emptyForm = document.querySelector('.formset-empty');
+                
+                // Увеличиваем счетчик форм
+                totalForms.value = formItems + 1;
+                
+                // Клонируем пустую форму и обновляем индексы
+                if (emptyForm) {
+                    const newEmptyForm = emptyForm.cloneNode(true);
+                    const formIndex = parseInt(totalForms.value);
+                    
+                    // Обновляем id и name атрибуты
+                    newEmptyForm.id = newEmptyForm.id.replace('-' + (formIndex - 1), '-' + formIndex);
+                    newEmptyForm.querySelectorAll('[name]').forEach(function(input) {
+                        input.name = input.name.replace('-' + (formIndex - 1) + '-', '-' + formIndex + '-');
+                        input.id = input.id.replace('-' + (formIndex - 1) + '-', '-' + formIndex + '-');
+                    });
+                    
+                    // Сбрасываем значения
+                    newEmptyForm.querySelectorAll('input[type="text"], input[type="number"]').forEach(function(input) {
+                        input.value = '';
+                    });
+                    newEmptyForm.querySelectorAll('input[type="file"]').forEach(function(input) {
+                        input.value = '';
+                    });
+                    newEmptyForm.querySelectorAll('input[type="checkbox"]').forEach(function(input) {
+                        input.checked = false;
+                    });
+                    
+                    // Добавляем новую пустую форму
+                    emptyForm.classList.remove('formset-empty');
+                    const formContainer = document.getElementById('formset-container');
+                    formContainer.appendChild(newEmptyForm);
+                }
+            }
+        }
+    });
+</script>
 {% endblock %} 

@@ -385,7 +385,8 @@ def portfolio_project_create_view(request):
                 formset.save()
             
             messages.success(request, _('Portfolio project created successfully'))
-            return redirect('portfolio_detail', pk=project.pk)
+            # Исправленный редирект с использованием правильного URL
+            return redirect('accounts:portfolio_list')
     else:
         form = PortfolioProjectForm()
         formset = PortfolioImageFormSet()
