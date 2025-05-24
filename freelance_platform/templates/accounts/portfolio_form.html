@@ -272,6 +272,50 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
+    
+    /* Стили для интерактивного календаря */
+    .datepicker-dropdown {
+        background-color: #333;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    }
+    
+    .datepicker table tr td,
+    .datepicker table tr th {
+        color: #fff;
+    }
+    
+    .datepicker table tr td.day:hover,
+    .datepicker table tr td.focused {
+        background-color: #444;
+    }
+    
+    .datepicker table tr td.active,
+    .datepicker table tr td.active:hover {
+        background-color: #8B0000 !important;
+    }
+    
+    .datepicker .datepicker-switch:hover,
+    .datepicker .prev:hover,
+    .datepicker .next:hover,
+    .datepicker tfoot tr th:hover {
+        background-color: #444;
+    }
+    
+    .datepicker-months .month:hover,
+    .datepicker-years .year:hover,
+    .datepicker-decades .decade:hover,
+    .datepicker-centuries .century:hover {
+        background-color: #444;
+    }
+    
+    .datepicker table tr td.today {
+        background-color: rgba(139, 0, 0, 0.3) !important;
+    }
+    
+    .datepicker-days th.dow {
+        color: #999;
+    }
 </style>
 {% endblock %}
 
@@ -324,7 +368,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group mb-4">
-                                    {{ form.completed_date|as_crispy_field }}
+                                    <label for="id_completed_date">{% trans "Completion Date" %}</label>
+                                    <div class="input-group date">
+                                        <input type="text" name="completed_date" class="form-control datepicker" id="id_completed_date" placeholder="{% trans 'YYYY-MM-DD' %}" autocomplete="off" value="{{ form.completed_date.value|date:'Y-m-d' }}">
+                                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -453,6 +501,24 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация датапикера для поля даты
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true,
+            language: document.documentElement.lang || 'en',
+            clearBtn: true,
+            templates: {
+                leftArrow: '<i class="bi bi-chevron-left"></i>',
+                rightArrow: '<i class="bi bi-chevron-right"></i>'
+            }
+        });
+        
+        // Настройка внешнего вида календаря
+        // Добавляем классы для темной темы
+        $(document).on('shown.bs.datepicker', function() {
+            $('.datepicker-dropdown').addClass('dark-theme');
+        });
         // Настройка дропзоны для загрузки изображений
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('main-file-input');
