@@ -30,7 +30,8 @@
                                 </span>
                                 <input type="text" name="date_from" placeholder="{% trans "From" %}" 
                                        class="form-control bg-dark text-light border-secondary datepicker" 
-                                       id="id_date_from" value="{{ form.date_from.value|default:'' }}" autocomplete="off">
+                                       id="id_date_from" value="{{ form.date_from.value|default:'' }}" autocomplete="off"
+                                       style="cursor: pointer;">
                             </div>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark border-secondary">
@@ -38,7 +39,8 @@
                                 </span>
                                 <input type="text" name="date_to" placeholder="{% trans "To" %}" 
                                        class="form-control bg-dark text-light border-secondary datepicker" 
-                                       id="id_date_to" value="{{ form.date_to.value|default:'' }}" autocomplete="off">
+                                       id="id_date_to" value="{{ form.date_to.value|default:'' }}" autocomplete="off"
+                                       style="cursor: pointer;">
                             </div>
                         </div>
                         
@@ -322,8 +324,46 @@
             appendTo: document.body,
             position: 'auto center',
             static: false,
-            animate: true
+            animate: true,
+            altInput: true,
+            altFormat: 'd.m.Y'
         });
+        
+        // Добавляем обработчики кликов на иконки календаря
+        $('.datepicker').each(function(index) {
+            const $input = $(this);
+            const instance = $input[0]._flatpickr;
+            
+            if (instance) {
+                // Добавляем обработчик клика на иконку календаря
+                $input.parent().find('.input-group-text').on('click', function() {
+                    instance.open();
+                });
+                
+                // Добавляем обработчик клика на поле ввода даты
+                $input.on('click', function() {
+                    instance.open();
+                });
+            }
+        });
+        
+        // Синхронизируем датапикеры для выбора диапазона дат
+        const fromPicker = $('#id_date_from')[0]._flatpickr;
+        const toPicker = $('#id_date_to')[0]._flatpickr;
+        
+        if (fromPicker && toPicker) {
+            fromPicker.config.onChange.push(function(selectedDates) {
+                if (selectedDates[0]) {
+                    toPicker.set('minDate', selectedDates[0]);
+                }
+            });
+            
+            toPicker.config.onChange.push(function(selectedDates) {
+                if (selectedDates[0]) {
+                    fromPicker.set('maxDate', selectedDates[0]);
+                }
+            });
+        }
         
         // Предварительно заполненные даты
         const dateRanges = {

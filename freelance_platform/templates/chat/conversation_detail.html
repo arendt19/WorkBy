@@ -741,9 +741,15 @@
                     <div class="ms-2">
                         <div class="d-flex align-items-center">
                             <strong class="me-2">{{ other_participant.get_full_name|default:other_participant.username }}</strong>
-                            <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light btn-sm action-btn">
-                                <i class="fas fa-user"></i>
-                            </a>
+                            {% if other_participant.user_type == 'freelancer' %}
+                                <a href="{% url 'accounts:freelancer_detail' other_participant.username %}" class="btn btn-sm btn-outline-light btn-sm action-btn">
+                                    <i class="fas fa-user"></i>
+                                </a>
+                            {% else %}
+                                <a href="{% url 'accounts:client_detail' other_participant.username %}" class="btn btn-sm btn-outline-light btn-sm action-btn">
+                                    <i class="fas fa-user-tie"></i>
+                                </a>
+                            {% endif %}
                         </div>
                         <div class="small text-success">
                             <i class="fas fa-circle me-1" style="font-size: 0.6rem;"></i> {% trans "Online" %}

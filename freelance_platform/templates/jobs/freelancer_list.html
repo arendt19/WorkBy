@@ -7,25 +7,30 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="mb-4">{% trans "Find Freelancers" %}</h1>
+    <h1 class="mb-4 text-light">{% trans "Find Freelancers" %}</h1>
     
     <div class="row">
         <!-- Фильтры -->
         <div class="col-lg-3">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">{% trans "Filter Freelancers" %}</h5>
+            <div class="card bg-dark text-light shadow-sm mb-4" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <div class="card-header border-0" style="background: linear-gradient(to right, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.9)); padding: 16px 20px; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                    <div class="d-flex align-items-center">
+                        <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 32px; height: 32px; background-color: rgba(139, 0, 0, 0.2); border: 1px solid rgba(139, 0, 0, 0.3);">
+                            <i class="fas fa-filter" style="color: #8B0000; font-size: 0.9rem;"></i>
+                        </div>
+                        <h5 class="card-title mb-0 fw-bold ms-2">{% trans "Filter Freelancers" %}</h5>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-4">
                     <form method="get" action="{% url 'jobs:freelancer_list' %}">
                         <div class="mb-3">
-                            <label for="query" class="form-label">{% trans "Search" %}</label>
-                            <input type="text" class="form-control" id="query" name="query" placeholder="{% trans 'Search by name or skills' %}" value="{{ query }}">
+                            <label for="query" class="form-label text-light">{% trans "Search" %}</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="query" name="query" placeholder="{% trans 'Search by name or skills' %}" value="{{ query }}" style="border-radius: 8px;">
                         </div>
                         
                         <div class="mb-3">
-                            <label for="category" class="form-label">{% trans "Category" %}</label>
-                            <select class="form-select" id="category" name="category">
+                            <label for="category" class="form-label text-light">{% trans "Category" %}</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="category" name="category" style="border-radius: 8px;">
                                 <option value="">{% trans "All Categories" %}</option>
                                 {% for category in categories %}
                                     <option value="{{ category.id }}" {% if category.id|stringformat:"s" == category_id %}selected{% endif %}>
@@ -36,8 +41,8 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="min_rating" class="form-label">{% trans "Minimum Rating" %}</label>
-                            <select class="form-select" id="min_rating" name="min_rating">
+                            <label for="min_rating" class="form-label text-light">{% trans "Minimum Rating" %}</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="min_rating" name="min_rating" style="border-radius: 8px;">
                                 <option value="">{% trans "Any Rating" %}</option>
                                 <option value="5" {% if min_rating == '5' %}selected{% endif %}>5 {% trans "stars" %}</option>
                                 <option value="4" {% if min_rating == '4' %}selected{% endif %}>4+ {% trans "stars" %}</option>
@@ -47,12 +52,12 @@
                         </div>
                         
                         <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="is_available" name="is_available" value="true" {% if is_available == 'true' %}checked{% endif %}>
-                            <label class="form-check-label" for="is_available">{% trans "Available for Hire" %}</label>
+                            <input type="checkbox" class="form-check-input bg-dark border-secondary" id="is_available" name="is_available" value="true" {% if is_available == 'true' %}checked{% endif %}>
+                            <label class="form-check-label text-light" for="is_available">{% trans "Available for Hire" %}</label>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="bi bi-filter"></i> {% trans "Apply Filters" %}
+                        <button type="submit" class="btn btn-danger w-100" style="border-radius: 8px; background: linear-gradient(to right, #8B0000, #a52a2a); box-shadow: 0 4px 10px rgba(139, 0, 0, 0.3); transition: all 0.3s ease;">
+                            <i class="fas fa-filter me-2"></i> {% trans "Apply Filters" %}
                         </button>
                     </form>
                 </div>
@@ -61,101 +66,126 @@
         
         <!-- Список фрилансеров -->
         <div class="col-lg-9">
-            <div class="card shadow-sm">
-                <div class="card-header bg-light">
+            <div class="card bg-dark text-light shadow-sm" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <div class="card-header border-0" style="background: linear-gradient(to right, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.9)); padding: 16px 20px; border-top-left-radius: 12px; border-top-right-radius: 12px;">
                     <div class="d-flex justify-content-between align-items-center">
-                        <span>
-                            <strong>{{ freelancers.count }}</strong> {% trans "freelancers found" %}
-                        </span>
+                        <div class="d-flex align-items-center">
+                            <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 32px; height: 32px; background-color: rgba(139, 0, 0, 0.2); border: 1px solid rgba(139, 0, 0, 0.3);">
+                                <i class="fas fa-users" style="color: #8B0000; font-size: 0.9rem;"></i>
+                            </div>
+                            <span class="fw-bold ms-2">
+                                {{ freelancers.count }} {% trans "freelancers found" %}
+                            </span>
+                        </div>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-sort-down"></i> {% trans "Sort By" %}
+                            <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius: 6px; transition: all 0.2s ease;">
+                                <i class="fas fa-sort-amount-down me-1"></i> {% trans "Sort By" %}
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-                                <li><a class="dropdown-item" href="?{% if query %}query={{ query }}&{% endif %}{% if category_id %}category={{ category_id }}&{% endif %}{% if min_rating %}min_rating={{ min_rating }}&{% endif %}{% if is_available %}is_available={{ is_available }}&{% endif %}sort=rating">{% trans "Rating (High to Low)" %}</a></li>
-                                <li><a class="dropdown-item" href="?{% if query %}query={{ query }}&{% endif %}{% if category_id %}category={{ category_id }}&{% endif %}{% if min_rating %}min_rating={{ min_rating }}&{% endif %}{% if is_available %}is_available={{ is_available }}&{% endif %}sort=experience">{% trans "Experience" %}</a></li>
-                                <li><a class="dropdown-item" href="?{% if query %}query={{ query }}&{% endif %}{% if category_id %}category={{ category_id }}&{% endif %}{% if min_rating %}min_rating={{ min_rating }}&{% endif %}{% if is_available %}is_available={{ is_available }}&{% endif %}sort=hourly_rate">{% trans "Hourly Rate (Low to High)" %}</a></li>
+                            <ul class="dropdown-menu dropdown-menu-end bg-dark" aria-labelledby="sortDropdown">
+                                <li><a class="dropdown-item text-light" href="?{% if query %}query={{ query }}&{% endif %}{% if category_id %}category={{ category_id }}&{% endif %}{% if min_rating %}min_rating={{ min_rating }}&{% endif %}{% if is_available %}is_available={{ is_available }}&{% endif %}sort=rating">{% trans "Rating (High to Low)" %}</a></li>
+                                <li><a class="dropdown-item text-light" href="?{% if query %}query={{ query }}&{% endif %}{% if category_id %}category={{ category_id }}&{% endif %}{% if min_rating %}min_rating={{ min_rating }}&{% endif %}{% if is_available %}is_available={{ is_available }}&{% endif %}sort=experience">{% trans "Experience" %}</a></li>
+                                <li><a class="dropdown-item text-light" href="?{% if query %}query={{ query }}&{% endif %}{% if category_id %}category={{ category_id }}&{% endif %}{% if min_rating %}min_rating={{ min_rating }}&{% endif %}{% if is_available %}is_available={{ is_available }}&{% endif %}sort=hourly_rate">{% trans "Hourly Rate (Low to High)" %}</a></li>
                             </ul>
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-3" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                     {% if freelancers %}
-                        <div class="list-group list-group-flush">
+                        <div class="d-flex flex-column gap-3">
                             {% for freelancer in freelancers %}
-                                <div class="list-group-item p-3">
-                                    <div class="row">
-                                        <div class="col-md-2 text-center">
-                                            {% if freelancer.avatar %}
-                                                <img src="{{ freelancer.avatar.url }}" alt="{{ freelancer.get_full_name }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                                            {% else %}
-                                                <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto" style="width: 80px; height: 80px;">
-                                                    <span style="font-size: 2rem;">{{ freelancer.get_initials }}</span>
+                                <div class="card bg-dark text-light border-0 p-0 mb-0" style="border-radius: 10px; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05);">
+                                    <div class="card-body p-0">
+                                        <div class="row g-0">
+                                            <!-- Аватар и рейтинг -->
+                                            <div class="col-md-2 text-center p-3" style="background-color: rgba(0, 0, 0, 0.2);">
+                                                {% if freelancer.avatar %}
+                                                    <img src="{{ freelancer.avatar.url }}" alt="{{ freelancer.get_full_name }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover; border: 2px solid rgba(139, 0, 0, 0.3);">
+                                                {% else %}
+                                                    <div class="d-flex justify-content-center align-items-center rounded-circle mx-auto" style="width: 80px; height: 80px; background-color: #8B0000; box-shadow: 0 3px 8px rgba(139, 0, 0, 0.3);">
+                                                        <span class="text-white" style="font-size: 2rem;">{{ freelancer.get_initials }}</span>
+                                                    </div>
+                                                {% endif %}
+                                                
+                                                <div class="rating mt-3">
+                                                    {% with rating=freelancer.freelancer_profile.rating|default:0 %}
+                                                        <div class="d-flex align-items-center justify-content-center">
+                                                            {% for i in '12345' %}
+                                                                {% if forloop.counter <= rating %}
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                {% elif forloop.counter <= rating|add:0.5 %}
+                                                                    <i class="fas fa-star-half-alt text-warning"></i>
+                                                                {% else %}
+                                                                    <i class="far fa-star text-warning"></i>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </div>
+                                                        <span class="d-block small fw-bold text-center mt-1" style="color: {% if rating >= 4.5 %}#28a745{% elif rating >= 3.5 %}#ffc107{% elif rating > 0 %}#6c757d{% else %}#6c757d{% endif %};">
+                                                            {% if rating > 0 %}
+                                                                {{ rating|floatformat:1 }}
+                                                            {% else %}
+                                                                <span class="small opacity-50">{% trans "Not rated" %}</span>
+                                                            {% endif %}
+                                                        </span>
+                                                    {% endwith %}
                                                 </div>
-                                            {% endif %}
+                                            </div>
                                             
-                                            <div class="rating mt-2">
-                                                {% with rating=freelancer.freelancer_profile.rating|default:0 %}
-                                                    {% for i in "12345" %}
-                                                        {% if forloop.counter <= rating|floatformat:"0" %}
-                                                            <i class="fas fa-star text-warning"></i>
+                                            <!-- Информация о фрилансере -->
+                                            <div class="col-md-7 p-3">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <h5 class="mb-0">
+                                                        <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="text-decoration-none text-light" style="transition: all 0.2s ease;">
+                                                            {{ freelancer.get_full_name|default:freelancer.username }}
+                                                            <i class="fas fa-external-link-alt ms-1" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                                                        </a>
+                                                    </h5>
+                                                    {% if freelancer.freelancer_profile.is_available %}
+                                                        <span class="badge rounded-pill ms-2" style="background-color: rgba(40, 167, 69, 0.2); border: 1px solid #28a745; color: #28a745; font-size: 0.75rem; padding: 0.3rem 0.6rem;">
+                                                            <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> {% trans "Available" %}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                
+                                                <div class="mb-2">
+                                                    <span style="color: #8B0000; font-weight: 600;">{{ freelancer.freelancer_profile.specialization|default:"" }}</span>
+                                                </div>
+
+                                                <p class="mb-3 text-muted" style="opacity: 0.8; font-size: 0.95rem;">
+                                                    {{ freelancer.freelancer_profile.bio|default:""| truncatechars:150 }}
+                                                </p>
+                                                
+                                                <!-- Навыки фрилансера -->
+                                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                                    {% with skills=freelancer.freelancer_profile.skills.all %}
+                                                        {% if skills %}
+                                                            {% for skill in skills|slice:':3' %}
+                                                                <span class="badge" style="background-color: rgba(139, 0, 0, 0.15); color: #d9534f; border: 1px solid rgba(139, 0, 0, 0.2); font-weight: normal; font-size: 0.8rem; border-radius: 4px; padding: 0.3rem 0.6rem;">{{ skill.name }}</span>
+                                                            {% endfor %}
+                                                            {% if skills.count > 3 %}
+                                                                <span class="badge bg-secondary" style="font-weight: normal; font-size: 0.8rem; border-radius: 4px; padding: 0.3rem 0.6rem;">+{{ skills.count|add:"-3" }}</span>
+                                                            {% endif %}
                                                         {% else %}
-                                                            <i class="far fa-star text-warning"></i>
+                                                            <span class="text-muted small">{% trans "No skills listed" %}</span>
                                                         {% endif %}
-                                                    {% endfor %}
-                                                    <span class="d-block small">{{ rating|floatformat:1 }}</span>
-                                                {% endwith %}
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="col-md-7">
-                                            <h5 class="mb-1">
-                                                <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="text-decoration-none">
-                                                    {{ freelancer.get_full_name|default:freelancer.username }}
-                                                </a>
-                                                {% if freelancer.freelancer_profile.is_available %}
-                                                    <span class="badge bg-success ms-2">{% trans "Available" %}</span>
-                                                {% endif %}
-                                            </h5>
-                                            
-                                            <p class="mb-2">
-                                                <strong>{{ freelancer.freelancer_profile.specialization|default:"" }}</strong>
-                                            </p>
-                                            
-                                            <p class="mb-2 small">{{ freelancer.bio|truncatechars:150 }}</p>
-                                            
-                                            {% if freelancer.skills %}
-                                                <div class="skills mb-2">
-                                                    {% for skill in freelancer.skills|split:"," %}
-                                                        <span class="badge bg-light text-dark me-1 mb-1">{{ skill|strip }}</span>
-                                                    {% endfor %}
+                                                    {% endwith %}
                                                 </div>
-                                            {% endif %}
-                                        </div>
-                                        
-                                        <div class="col-md-3 text-md-end">
-                                            {% if freelancer.hourly_rate %}
-                                                <div class="hourly-rate mb-2">
-                                                    <span class="fw-bold">{{ freelancer.hourly_rate }} ₸</span>
-                                                    <span class="text-muted">/ {% trans "hour" %}</span>
-                                                </div>
-                                            {% endif %}
-                                            
-                                            <div class="mb-3">
-                                                {% if freelancer.freelancer_profile.experience_years %}
-                                                    <span class="text-muted">
-                                                        {{ freelancer.freelancer_profile.experience_years }} {% trans "years exp." %}
-                                                    </span>
-                                                {% endif %}
                                             </div>
                                             
-                                            <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="btn btn-sm btn-outline-primary mb-2">
-                                                {% trans "View Profile" %}
-                                            </a>
-                                            
-                                            <a href="{% url 'chat:start_conversation' freelancer.id %}" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-chat-dots"></i> {% trans "Contact" %}
-                                            </a>
+                                            <!-- Кнопка контакта -->
+                                            <div class="col-md-3 d-flex align-items-center justify-content-center p-3" style="background-color: rgba(0, 0, 0, 0.1);">
+                                                <div class="text-center">
+                                                    {% if freelancer.hourly_rate %}
+                                                        <div class="hourly-rate mb-3">
+                                                            <span class="fw-bold text-light" style="font-size: 1.1rem;">{{ freelancer.hourly_rate }} ₸</span>
+                                                            <span class="text-muted">/час</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    <a href="{% url 'accounts:freelancer_detail' freelancer.username %}" class="btn btn-danger" style="background: linear-gradient(to right, #8B0000, #a52a2a); border: none; border-radius: 8px; padding: 8px 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15); transition: all 0.2s ease;">
+                                                        <i class="fas fa-user-plus me-2"></i> {% trans "Contact" %}
+                                                    </a>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -164,10 +194,10 @@
                     {% else %}
                         <div class="text-center py-5">
                             <div class="mb-3">
-                                <i class="bi bi-people" style="font-size: 3rem; color: #ddd;"></i>
+                                <i class="fas fa-users fa-3x" style="color: rgba(255, 255, 255, 0.1);"></i>
                             </div>
                             <h5>{% trans "No freelancers found matching your criteria" %}</h5>
-                            <p class="text-muted">{% trans "Try adjusting your filters or search terms" %}</p>
+                            <p class="text-muted">{% trans "Try adjusting your filters to see more results" %}</p>
                         </div>
                     {% endif %}
                 </div>
@@ -175,4 +205,4 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

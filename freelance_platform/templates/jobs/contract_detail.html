@@ -396,245 +396,276 @@
 {% endblock extra_css %}
 
 {% block content %}
-<div class="container py-2">
-    <!-- Хлебные крошки -->
-    <nav aria-label="breadcrumb" class="mb-2">
-        <ol class="breadcrumb bg-dark bg-opacity-50 p-2 rounded mb-0">
-            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}" class="text-light">{% trans "Home" %}</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'jobs:contract_list' %}" class="text-light">{% trans "My Contracts" %}</a></li>
-            <li class="breadcrumb-item active text-light" aria-current="page">{% trans "Contract" %} #{{ contract.contract_id }}</li>
+<div class="container py-3">
+    <!-- Хлебные крошки с улучшенным стилем -->
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb bg-dark bg-opacity-50 p-2 rounded mb-0" style="backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.05);">
+            <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}" class="text-light text-decoration-none"><i class="fas fa-home me-1"></i> {% trans "Home" %}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'jobs:contract_list' %}" class="text-light text-decoration-none"><i class="fas fa-file-contract me-1"></i> {% trans "My Contracts" %}</a></li>
+            <li class="breadcrumb-item active text-light" aria-current="page"><span class="fw-bold">{% trans "Contract" %} #{{ contract.contract_id }}</span></li>
         </ol>
     </nav>
     
     <!-- Основной контент -->
     <div class="row gx-4">
         <div class="col-md-8">
-            <div class="card bg-dark text-light mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">{% trans "Contract Details" %}</h5>
-                    <p class="card-text">{% trans "Contract ID:" %} {{ contract.contract_id }}</p>
-                    <p class="card-text">{% trans "Status:" %} 
-                        <span class="badge bg-{{ contract.get_status_class }}">{{ contract.get_status_display }}</span>
-                    </p>
-                    <p class="card-text">{% trans "Client:" %} {{ contract.client.get_full_name }}</p>
-                    <p class="card-text">{% trans "Freelancer:" %} {{ contract.freelancer.get_full_name }}</p>
-                    <p class="card-text">{% trans "Created:" %} {{ contract.created_at|date:"d F Y" }}</p>
-                    <p class="card-text">{% trans "Deadline:" %} {{ contract.deadline|date:"d F Y" }}</p>
-                    <p class="card-text">{% trans "Total Amount:" %} {{ contract.amount }} ₸</p>
-                    <p class="card-text">{% trans "Description:" %} {{ contract.description }}</p>
-                </div>
-            </div>
-            
-            <!-- Секция с вехами контракта -->
-            <div class="card bg-dark text-light">
-                <div class="card-header d-flex justify-content-between align-items-center bg-dark py-3">
-                    <h5 class="mb-0 fw-bold">{% trans "Milestones" %}</h5>
-                    {% if contract.client == request.user and contract.status == 'active' %}
-                    <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-sm btn-danger">
-                        <i class="fas fa-plus-circle me-1"></i> {% trans "New Milestone" %}
-                    </a>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <!-- Прогресс выполнения контракта -->
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="mb-0 fw-bold">{% trans "Contract Progress" %}</h6>
-                            <span class="badge bg-danger small">
-                                {% with completed=contract.milestones.filter.count|default:0 total=contract.milestones.all.count|default:1 %}
-                                {{ completed }}/{{ total }} {% trans "milestones completed" %}
-                                {% endwith %}
-                            </span>
-                        </div>
-                        <div class="progress bg-dark border" style="height: 6px;">
-                            {% with completed=contract.milestones.filter.count|default:0 total=contract.milestones.all.count|default:1 %}
-                            <div class="progress-bar bg-danger progress-bar-striped progress-bar-animated" role="progressbar" 
-                                style="width: {% widthratio completed total 100 %}%" 
-                                aria-valuenow="{{ completed }}" aria-valuemin="0" aria-valuemax="{{ total }}">                                
-                            </div>                            
-                            {% endwith %}
-                        </div>
-                        <div class="text-center mt-1 small">
-                            {% with completed=contract.milestones.filter.count|default:0 total=contract.milestones.all.count|default:1 %}
-                            <span class="text-muted">{% widthratio completed total 100 %}% {% trans "complete" %}</span>
-                            {% endwith %}
-                        </div>
+            <!-- Основная информация о контракте -->
+            <div class="card bg-dark text-light mb-4 shadow-sm" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden;">
+                <!-- Заголовок с более современным дизайном -->
+                <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background: linear-gradient(to right, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.9)); padding: 16px 20px;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-contract me-2" style="color: #8B0000; font-size: 1.2rem;"></i>
+                        <h5 class="card-title mb-0 fw-bold">{% trans "Contract Details" %}</h5>
                     </div>
-                    
-                    {% if contract.milestones.exists %}
-                        <!-- Список вех проекта -->
-                        {% for milestone in contract.milestones.all %}
-                        <div class="milestone-item status-{{ milestone.status }} border-start border-3 ps-3 mb-4" style="border-color: var(--milestone-color) !important;">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h6 class="mb-0 fw-bold">
-                                    {% if milestone.milestone_type %}
-                                    <span class="badge bg-secondary me-2">{{ milestone.get_milestone_type_display }}</span>
-                                    {% endif %}
-                                    {{ milestone.title }}
-                                </h6>
-                                <span class="badge bg-{{ milestone.status }} pulse-{{ milestone.status }}">{{ milestone.get_status_display }}</span>
-                            </div>
-                            
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted">{% trans "Due:" %} {{ milestone.due_date|date:"d F Y" }}</span>
-                                <span class="fw-bold">{{ milestone.amount }} ₸</span>
-                            </div>
-                            
-                            <div class="border-top border-secondary pt-2 mt-2">
-                                <p class="mb-3">{{ milestone.description|truncatewords:30 }}</p>
-                            </div>
-                            
-                            <div class="d-flex justify-content-end">
-                                <!-- Действия для фрилансера -->
-                                {% if contract.freelancer == request.user and milestone.status == 'in_progress' %}
-                                <a href="{% url 'jobs:milestone_submit' milestone.pk %}" class="btn btn-danger btn-sm me-2">
-                                    <i class="fas fa-paper-plane me-1"></i> {% trans "Submit for Review" %}
-                                </a>
-                                {% elif contract.freelancer == request.user and milestone.status == 'pending' %}
-                                <button class="btn btn-outline-secondary btn-sm me-2" disabled>
-                                    <i class="fas fa-paper-plane me-1"></i> {% trans "Not Started Yet" %}
-                                </button>
-                                {% endif %}
-                                
-                                <!-- Действия для клиента -->
-                                {% if contract.client == request.user %}
-                                    {% if milestone.status == 'submitted' %}
-                                    <div class="btn-group">
-                                        <a href="{% url 'jobs:milestone_complete' milestone.pk %}" class="btn btn-success btn-sm animate-pulse">
-                                            <i class="fas fa-check-circle me-1"></i> {% trans "Approve & Pay" %}
-                                        </a>
-                                        <a href="{% url 'jobs:milestone_reject' milestone.pk %}" class="btn btn-danger btn-sm">
-                                            <i class="fas fa-times-circle me-1"></i> {% trans "Reject" %}
-                                        </a>
+                    <span class="badge bg-{{ contract.get_status_class }}" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                        <i class="fas fa-circle me-1" style="font-size: 0.6rem; color: {% if contract.status == 'active' %}#28a745{% elif contract.status == 'completed' %}#007bff{% elif contract.status == 'cancelled' %}#6c757d{% else %}inherit{% endif %};"></i>
+                        {{ contract.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="contract-info">
+                        <!-- Основная информация о контракте -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="d-flex align-items-center mb-3" style="transition: all 0.2s ease;">
+                                    <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 32px; height: 32px; background-color: rgba(139, 0, 0, 0.2); border: 1px solid rgba(139, 0, 0, 0.3); transition: all 0.2s ease;">
+                                        <i class="fas fa-hashtag" style="color: #8B0000; font-size: 0.8rem;"></i>
                                     </div>
-                                    {% endif %}
-                                {% endif %}
+                                    <div class="ms-3 flex-grow-1">
+                                        <div class="small text-muted">{% trans "Contract ID" %}</div>
+                                        <div class="fw-bold">{{ contract.contract_id }}</div>
+                                    </div>
+                                    <div class="small text-muted" title="{% trans 'Creation Date' %}">
+                                        <i class="far fa-calendar-alt me-1"></i> {{ contract.created_at|date:"d M Y" }}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    {% else %}
-                        <!-- Если вех еще нет -->
-                        <div class="text-center py-4">
-                            <i class="fas fa-tasks fa-3x mb-3 text-muted animate-pulse"></i>
-                            <p>{% trans "No milestones have been created for this contract yet." %}</p>
-                            {% if contract.client == request.user and contract.status == 'active' %}
-                            <a href="{% url 'jobs:milestone_create' contract.pk %}" class="btn btn-primary">
-                                <i class="fas fa-plus-circle me-1"></i> {% trans "Create First Milestone" %}
-                            </a>
-                            {% endif %}
+                        
+                        <!-- Участники контракта -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-muted" style="font-size: 0.95rem; position: relative; padding-left: 15px;">
+                                <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 5px; height: 18px; background-color: #8B0000; border-radius: 3px;"></span>
+                                {% trans "Participants" %}
+                            </h6>
+                            <div class="d-flex align-items-center mb-3 p-3 rounded" style="background-color: rgba(255, 255, 255, 0.03); transition: all 0.2s ease; border-left: 3px solid rgba(255, 255, 255, 0.1);">
+                                <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 50px; height: 50px; background-color: #8B0000; box-shadow: 0 3px 8px rgba(139, 0, 0, 0.3);">
+                                    <i class="fas fa-user-tie fa-lg text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="small text-muted">{% trans "Client" %}</div>
+                                    <div>
+                                        {% if request.user == contract.client %}
+                                            <span class="text-light fw-bold">{{ contract.client.get_full_name|default:contract.client.username }}</span>
+                                        {% else %}
+                                            <a href="{% url 'accounts:client_detail' contract.client.username %}" class="text-light text-decoration-none fw-bold d-flex align-items-center">
+                                                {{ contract.client.get_full_name|default:contract.client.username }}
+                                                <i class="fas fa-external-link-alt ms-2" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center p-3 rounded" style="background-color: rgba(255, 255, 255, 0.03); transition: all 0.2s ease; border-left: 3px solid rgba(255, 255, 255, 0.1);">
+                                <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 50px; height: 50px; background-color: #8B0000; box-shadow: 0 3px 8px rgba(139, 0, 0, 0.3);">
+                                    <i class="fas fa-user fa-lg text-white"></i>
+                                </div>
+                                <div class="ms-3 flex-grow-1">
+                                    <div class="small text-muted">{% trans "Freelancer" %}</div>
+                                    <div>
+                                        {% if request.user == contract.freelancer %}
+                                            <span class="text-light fw-bold">{{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</span>
+                                        {% else %}
+                                            <a href="{% url 'accounts:freelancer_detail' contract.freelancer.username %}" class="text-light text-decoration-none fw-bold d-flex align-items-center">
+                                                {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
+                                                <i class="fas fa-external-link-alt ms-2" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Блок действий контракта -->
-            <div class="card bg-dark text-light mb-4">
-                <div class="card-body p-0">
-                    <!-- Заголовок блока действий -->
-                    <div class="card-header bg-dark border-0">
-                        <h5 class="card-title mb-0">{% trans "Contract Actions" %}</h5>
-                    </div>
-                    
-                    <!-- Кнопки действий -->
-                    <div class="p-3">
-                        <!-- Кнопка сообщения (всегда видна) -->
-                        <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-danger w-100 mb-3">
-                            <i class="fas fa-comments me-2"></i> {% trans "Message" %}
-                        </a>
                         
-                        <!-- Кнопка завершения контракта (только для активных контрактов и клиентов) -->
-                        {% if contract.client == request.user and contract.status == 'active' %}
-                        <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-outline-danger w-100">
-                            <i class="fas fa-check-circle me-2"></i> {% trans "Complete Contract & Pay" %}
-                        </a>
-                        <div class="mt-2 small text-muted text-center">{% trans "Mark contract as completed and pay full amount to freelancer." %}</div>
-                        {% endif %}
-                        
-                        <!-- Кнопка для оставления отзыва -->
-                        {% if contract.client == request.user and contract.status == 'completed' %}
-                            {% if not contract.review %}
-                            <li class="list-group-item bg-dark text-light border-secondary">
-                                <a href="{% url 'jobs:leave_review' contract.pk %}" class="btn btn-warning animate-pulse btn-sm w-100">
-                                    <i class="fas fa-star me-1"></i> {% trans "Leave a Review" %}
-                                </a>
-                            </li>
-                            {% else %}
-                            <!-- Показываем информацию о существующем отзыве -->
-                            <li class="list-group-item bg-dark text-light border-secondary">
-                                <div class="card border-0 bg-dark text-light p-3 border border-secondary">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <h6 class="mb-0 me-2">{% trans "Your Review:" %}</h6>
-                                        <div class="ms-auto">
-                                            {% for i in "12345" %}
-                                                {% if forloop.counter <= contract.review.rating %}
-                                                    <i class="fas fa-star text-warning"></i>
-                                                {% else %}
-                                                    <i class="far fa-star text-warning"></i>
-                                                {% endif %}
-                                            {% endfor %}
+                        <!-- Временные рамки -->
+                        <div class="mb-4">
+                            <h6 class="mb-3 text-muted" style="font-size: 0.95rem; position: relative; padding-left: 15px;">
+                                <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 5px; height: 18px; background-color: #8B0000; border-radius: 3px;"></span>
+                                {% trans "Time Frames" %}
+                            </h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded h-100" style="background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid rgba(255, 255, 255, 0.1);">
+                                        <div class="d-flex align-items-center">
+                                            <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 30px; height: 30px; min-width: 30px; background-color: rgba(139, 0, 0, 0.2); border: 1px solid rgba(139, 0, 0, 0.3);">
+                                                <i class="fas fa-calendar-plus" style="color: #8B0000; font-size: 0.8rem;"></i>
+                                            </div>
+                                            <div class="ms-2">
+                                                <div class="small text-muted">{% trans "Created" %}</div>
+                                                <div>{{ contract.created_at|date:"d F Y" }}</div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <p class="card-text small mb-0">{{ contract.review.comment }}</p>
-                                    <small class="text-muted">{{ contract.review.created_at|date:"d F Y" }}</small>
                                 </div>
-                            </li>
-                            {% endif %}
-                        {% endif %}
-                    </ul>
+                                <div class="col-md-6">
+                                    <div class="p-3 rounded h-100" style="background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid {% if contract.deadline < now %}rgba(220, 53, 69, 0.7){% else %}rgba(255, 255, 255, 0.1){% endif %};">
+                                        <div class="d-flex align-items-center">
+                                            <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 30px; height: 30px; min-width: 30px; background-color: rgba(139, 0, 0, 0.2); border: 1px solid rgba(139, 0, 0, 0.3);">
+                                                <i class="fas fa-calendar-day" style="color: #8B0000; font-size: 0.8rem;"></i>
+                                            </div>
+                                            <div class="ms-2">
+                                                <div class="small text-muted">{% trans "Deadline" %}</div>
+                                                <div>{{ contract.deadline|date:"d F Y" }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Описание контракта -->
+                        <div>
+                            <h6 class="mb-3 text-muted" style="font-size: 0.95rem; position: relative; padding-left: 15px;">
+                                <span style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 5px; height: 18px; background-color: #8B0000; border-radius: 3px;"></span>
+                                {% trans "Project Description" %}
+                            </h6>
+                            <div class="p-3 rounded" style="background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid rgba(255, 255, 255, 0.1);">
+                                {{ contract.description|linebreaks }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <!-- Блок информации о прогрессе -->
-            <div class="card bg-dark text-light">
-                <div class="card-header bg-dark border-bottom border-secondary py-3" data-bs-toggle="collapse" href="#howItWorksCollapse" role="button" aria-expanded="false">
+
+
+        </div>
+        <div class="col-md-4">
+            <!-- Боковая панель с действиями -->
+            <div class="card bg-dark text-light mb-4 shadow-sm" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+                <div class="card-header border-0" style="background: linear-gradient(to right, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.9)); padding: 16px 20px;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-sliders-h me-2" style="color: #8B0000; font-size: 1.2rem;"></i>
+                        <h5 class="card-title mb-0 fw-bold">{% trans "Actions" %}</h5>
+                    </div>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-grid gap-3">
+                        <!-- Кнопка сообщения -->
+                        {% if request.user == contract.client and contract.freelancer != request.user %}
+                            <a href="{% url 'chat:start_conversation' contract.freelancer.id %}" class="btn btn-outline-light d-flex align-items-center justify-content-center" style="border-radius: 8px; transition: all 0.2s ease; padding: 10px 15px;">
+                                <i class="fas fa-comments me-2"></i>
+                                {% trans 'Message Freelancer' %}
+                            </a>
+                        {% elif request.user == contract.freelancer and contract.client != request.user %}
+                            <a href="{% url 'chat:start_conversation' contract.client.id %}" class="btn btn-outline-light d-flex align-items-center justify-content-center" style="border-radius: 8px; transition: all 0.2s ease; padding: 10px 15px;">
+                                <i class="fas fa-comments me-2"></i>
+                                {% trans 'Message Client' %}
+                            </a>
+                        {% endif %}
+                        
+                        {% if contract.client == request.user and contract.status == 'active' %}
+                            <a href="{% url 'jobs:contract_complete' contract.pk %}" class="btn btn-outline-danger d-flex align-items-center justify-content-center" style="border-radius: 8px; padding: 10px 15px; transition: all 0.2s ease; border-width: 2px;">
+                                <i class="fas fa-check-circle me-2"></i> {% trans "Complete Contract & Pay" %}
+                            </a>
+                            <div class="small text-muted text-center">{% trans "Mark contract as completed and pay full amount to freelancer." %}</div>
+                        {% endif %}
+                    
+                    <!-- Кнопка для оставления отзыва с улучшенным дизайном -->
+                    {% if contract.client == request.user and contract.status == 'completed' %}
+                        {% if not contract.review %}
+                        <div class="action-button mb-3 mt-4">
+                            <div class="p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107;">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-info-circle text-warning me-2"></i>
+                                    <div class="small">{% trans "Please share your experience with this freelancer" %}</div>
+                                </div>
+                                <a href="{% url 'jobs:leave_review' contract.pk %}" class="btn btn-warning w-100" style="border-radius: 8px; padding: 10px; transition: all 0.2s ease;">
+                                    <i class="fas fa-star me-1"></i> {% trans "Leave a Review" %}
+                                </a>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Показываем информацию о существующем отзыве в современном дизайне -->
+                        <div class="review-section mt-4">
+                            <div class="p-3 rounded" style="background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid rgba(255, 193, 7, 0.5);">
+                                <h6 class="d-flex align-items-center mb-3">
+                                    <i class="fas fa-star text-warning me-2"></i>
+                                    {% trans "Your Review" %}
+                                </h6>
+                                <div class="d-flex mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= contract.review.rating %}
+                                            <i class="fas fa-star text-warning me-1"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-warning me-1"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <div class="ms-2 small fw-bold">{{ contract.review.rating }}/5</div>
+                                </div>
+                                <p class="card-text small mb-1" style="font-style: italic;">"{{ contract.review.comment }}"</p>
+                                <div class="d-flex justify-content-end">
+                                    <small class="text-muted">{{ contract.review.created_at|date:"d F Y" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Блок информации о работе контракта с современным дизайном -->
+            <div class="card bg-dark text-light shadow-sm" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); overflow: hidden;">
+                <div class="card-header border-0" style="background: linear-gradient(to right, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.9)); padding: 16px 20px;" data-bs-toggle="collapse" href="#howItWorksCollapse" role="button" aria-expanded="false">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="card-title mb-0 fw-bold"><i class="fas fa-info-circle me-2"></i>{% trans "How It Works" %}</h5>
-                        <i class="fas fa-chevron-down ms-3"></i>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle me-2" style="color: #8B0000; font-size: 1.2rem;"></i>
+                            <h5 class="card-title mb-0 fw-bold">{% trans "How It Works" %}</h5>
+                        </div>
+                        <i class="fas fa-chevron-down transition-icon" style="transition: all 0.3s ease;"></i>
                     </div>
                 </div>
                 <div class="collapse" id="howItWorksCollapse">
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <div class="timeline">
-                        <div class="timeline-point d-flex mb-3">
-                            <div class="timeline-icon bg-primary">
-                                <i class="fas fa-list-check"></i>
+                            <div class="timeline-point d-flex mb-4" style="position: relative;">
+                                <div class="timeline-icon d-flex justify-content-center align-items-center rounded-circle" style="width: 48px; height: 48px; min-width: 48px; background: linear-gradient(135deg, #4a6bff, #2541b8); box-shadow: 0 3px 10px rgba(74, 107, 255, 0.3); z-index: 2;">
+                                    <i class="fas fa-list-check text-white"></i>
+                                </div>
+                                <div class="ms-3 p-3 rounded" style="background-color: rgba(74, 107, 255, 0.1); border-left: 3px solid rgba(74, 107, 255, 0.5); flex-grow: 1;">
+                                    <h6 class="fw-bold">{% trans "1. Complete Tasks" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Freelancer completes tasks for each milestone." %}</p>
+                                </div>
                             </div>
-                            <div class="ms-3">
-                                <h6>{% trans "Complete Tasks" %}</h6>
-                                <p class="small text-muted">{% trans "Freelancer completes tasks for each milestone." %}</p>
+                            <div class="timeline-point d-flex mb-4" style="position: relative;">
+                                <div class="timeline-icon d-flex justify-content-center align-items-center rounded-circle" style="width: 48px; height: 48px; min-width: 48px; background: linear-gradient(135deg, #17a2b8, #0f7888); box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3); z-index: 2;">
+                                    <i class="fas fa-paper-plane text-white"></i>
+                                </div>
+                                <div class="ms-3 p-3 rounded" style="background-color: rgba(23, 162, 184, 0.1); border-left: 3px solid rgba(23, 162, 184, 0.5); flex-grow: 1;">
+                                    <h6 class="fw-bold">{% trans "2. Submit for Review" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Freelancer submits work for client review." %}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div class="timeline-point d-flex mb-3">
-                            <div class="timeline-icon bg-info">
-                                <i class="fas fa-paper-plane"></i>
+                            <div class="timeline-point d-flex mb-4" style="position: relative;">
+                                <div class="timeline-icon d-flex justify-content-center align-items-center rounded-circle" style="width: 48px; height: 48px; min-width: 48px; background: linear-gradient(135deg, #28a745, #1e7e34); box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3); z-index: 2;">
+                                    <i class="fas fa-check-circle text-white"></i>
+                                </div>
+                                <div class="ms-3 p-3 rounded" style="background-color: rgba(40, 167, 69, 0.1); border-left: 3px solid rgba(40, 167, 69, 0.5); flex-grow: 1;">
+                                    <h6 class="fw-bold">{% trans "3. Approve & Pay" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Client approves work and payment is released." %}</p>
+                                </div>
                             </div>
-                            <div class="ms-3">
-                                <h6>{% trans "Submit for Review" %}</h6>
-                                <p class="small text-muted">{% trans "Freelancer submits milestone for client review." %}</p>
-                            </div>
-                        </div>
-                        <div class="timeline-point d-flex mb-3">
-                            <div class="timeline-icon bg-success">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="ms-3">
-                                <h6>{% trans "Approve & Pay" %}</h6>
-                                <p class="small text-muted">{% trans "Client approves work and payment is released." %}</p>
-                            </div>
-                        </div>
-                        <div class="timeline-point d-flex">
-                            <div class="timeline-icon bg-warning">
-                                <i class="fas fa-star"></i>
-                            </div>
-                            <div class="ms-3">
-                                <h6>{% trans "Leave Review" %}</h6>
-                                <p class="small text-muted">{% trans "Client leaves feedback after completion." %}</p>
+                            <div class="timeline-point d-flex" style="position: relative;">
+                                <div class="timeline-icon d-flex justify-content-center align-items-center rounded-circle" style="width: 48px; height: 48px; min-width: 48px; background: linear-gradient(135deg, #ffc107, #d39e00); box-shadow: 0 3px 10px rgba(255, 193, 7, 0.3); z-index: 2;">
+                                    <i class="fas fa-star text-white"></i>
+                                </div>
+                                <div class="ms-3 p-3 rounded" style="background-color: rgba(255, 193, 7, 0.1); border-left: 3px solid rgba(255, 193, 7, 0.5); flex-grow: 1;">
+                                    <h6 class="fw-bold">{% trans "4. Leave Review" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Client leaves feedback after completion." %}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
@@ -726,6 +757,47 @@
         removeGreenButtons();
         setTimeout(removeGreenButtons, 500);
         setTimeout(removeGreenButtons, 1500);
+        
+        // Добавляем анимацию для выпадающего блока How It Works
+        const howItWorksHeader = document.querySelector('[href="#howItWorksCollapse"]');
+        const chevronIcon = document.querySelector('.transition-icon');
+        
+        if (howItWorksHeader && chevronIcon) {
+            howItWorksHeader.addEventListener('click', function() {
+                chevronIcon.classList.toggle('rotate-180');
+            });
+        }
+        
+        // Добавляем эффект наведения на карточки участников
+        const participantCards = document.querySelectorAll('.d-flex.align-items-center.p-3.rounded');
+        
+        participantCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                this.style.transform = 'translateX(5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'rgba(255, 255, 255, 0.03)';
+                this.style.transform = 'translateX(0)';
+            });
+        });
+        
+        // Добавляем стили для поворота иконки
+        const style = document.createElement('style');
+        style.textContent = `
+            .rotate-180 {
+                transform: rotate(180deg);
+            }
+            .transition-icon {
+                transition: transform 0.3s ease;
+            }
+            .action-button a:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(139, 0, 0, 0.4) !important;
+            }
+        `;
+        document.head.appendChild(style);
     });
 </script>
 {% endblock %}

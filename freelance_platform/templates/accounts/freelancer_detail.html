@@ -298,13 +298,17 @@
                                             {% endif %}
                                             <div>
                                                 <div class="fw-bold">{{ review.client.get_full_name|default:review.client.username }}</div>
-                                                <div class="small text-muted">
-                                                    {% for i in review.rating|get_range %}
-                                                        <i class="fas fa-star text-warning"></i>
-                                                    {% endfor %}
-                                                    {% for i in "12345"|slice:review.rating|get_range|length %}
-                                                        <i class="far fa-star text-warning"></i>
-                                                    {% endfor %}
+                                                <div class="small text-muted d-flex align-items-center">
+                                                    <div class="me-2">
+                                                        {% for i in '12345' %}
+                                                            {% if forloop.counter <= review.rating %}
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            {% else %}
+                                                                <i class="far fa-star text-warning"></i>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                    <span class="fw-bold">{{ review.rating }}.0</span>
                                                 </div>
                                             </div>
                                         </div>

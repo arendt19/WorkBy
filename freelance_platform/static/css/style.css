@@ -1,5 +1,31 @@
 /* Основные стили для проекта WorkBy */
 
+/* Удаление белой полоски под навигационной панелью */
+body::before {
+    display: none !important;
+}
+
+/* Дополнительные стили для удаления белой полоски */
+.navbar-dark {
+    border-bottom: none !important;
+}
+
+.navbar + div, 
+header + div,
+.navbar-fixed-top + div,
+.navbar + main,
+.navbar + .container,
+.navbar + .container-fluid {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    border-top: none !important;
+}
+
+/* Устанавливаем сплошной темный фон */
+body, html {
+    background-color: #121212 !important;
+}
+
 /* Общие стили */
 :root {
     /* Основная цветовая схема */
