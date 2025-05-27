@@ -1,0 +1,48 @@
+{% load i18n %}
+
+<footer class="bg-dark py-4 mt-auto">
+    <div class="container">
+        <div class="row align-items-center justify-content-between">
+            <div class="col-lg-3 text-center text-lg-start mb-4 mb-lg-0">
+                <div class="fw-bold text-lg mb-2 text-light" style="letter-spacing: 1px;">WorkBy</div>
+                <p class="small text-muted mb-0">{% trans "Find the perfect freelancer for your project" %}</p>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="row g-4">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <h5 class="fw-bold text-light mb-3">{% trans "For Freelancers" %}</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><a href="{% url 'jobs:project_list' %}" class="text-muted">{% trans "Find Projects" %}</a></li>
+                            <li class="mb-2"><a href="{% url 'jobs:categories' %}" class="text-muted">{% trans "Browse Categories" %}</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <h5 class="fw-bold text-light mb-3">{% trans "For Clients" %}</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><a href="{% url 'jobs:project_create' %}" class="text-muted">{% trans "Post a Project" %}</a></li>
+                            <li class="mb-2"><a href="{% url 'jobs:project_list' %}" class="text-muted">{% trans "Find Freelancers" %}</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="fw-bold text-light mb-3">{% trans "Resources" %}</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-2"><a href="{% url 'jobs:about' %}" class="text-muted">{% trans "About Us" %}</a></li>
+                            <li class="mb-2"><a href="#" class="text-muted">{% trans "Support" %}</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-3 text-center text-lg-end mt-4 mt-lg-0">
+                <div class="d-flex justify-content-center justify-content-lg-end gap-3 mb-3">
+                    <a href="#" class="text-muted"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-muted"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-muted"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-muted"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+                <p class="small text-muted mb-0">© 2025 WorkBy. {% trans "All rights reserved" %}.</p>
+            </div>
+        </div>
+    </div>
+</footer> 

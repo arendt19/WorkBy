@@ -1,0 +1,23 @@
+{% load i18n %}
+{% trans "Hello" %}, {{ freelancer_name }}!
+
+{% trans "Great news! A new contract has been created for the project" %} "{{ project_title }}".
+
+{% trans "The client" %} {{ client_name }} {% trans "has accepted your proposal and a contract has been established." %}
+
+{% trans "Contract Details" %}:
+- {% trans "Contract ID" %}: #{{ contract_id }}
+- {% trans "Project" %}: {{ project_title }}
+- {% trans "Client" %}: {{ client_name }}
+- {% trans "Amount" %}: ₸{{ contract_amount }}
+- {% trans "Deadline" %}: {{ contract_deadline|date:"d M Y" }}
+
+{% trans "You can now start working on this project. Please review the contract details and reach out to the client to discuss the next steps." %}
+
+{% trans "We recommend breaking down the project into milestones to make tracking progress easier and ensure timely payments." %}
+
+{% trans "View Contract" %}: {{ contract_url }}
+
+---
+© {% now "Y" %} WorkBy. {% trans "All rights reserved." %}
+{% trans "This is an automated message. Please do not reply to this email." %}

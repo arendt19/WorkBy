@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Complete Contract" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm bg-dark text-light">
+                <div class="card-header bg-dark border-bottom border-secondary">
+                    <h5 class="mb-0">{% trans "Complete Contract and Pay" %}</h5>
+                </div>
+                <div class="card-body pt-4">
+                    <div class="alert alert-info mb-4 p-3">
+                        <i class="fas fa-info-circle me-2 fs-5"></i>
+                        {% trans "You are about to mark this contract as completed and pay the freelancer." %}
+                    </div>
+                    
+                    <div class="p-4 bg-dark border border-secondary rounded mb-4">
+                        <table class="table table-dark table-borderless mb-0">
+                            <tbody>
+                                <tr class="border-bottom border-secondary">
+                                    <td class="text-muted ps-0 w-50">{% trans "Contract" %}:</td>
+                                    <td class="fw-bold text-end pe-0">{{ contract.title }}</td>
+                                </tr>
+                                <tr class="border-bottom border-secondary">
+                                    <td class="text-muted ps-0">{% trans "Freelancer" %}:</td>
+                                    <td class="fw-bold text-end pe-0">{{ contract.freelancer.get_full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted ps-0">{% trans "Amount to Pay" %}:</td>
+                                    <td class="fw-bold text-danger text-end pe-0">{{ contract.amount }} ₸</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-warning mb-4 mx-auto" style="max-width: 90%;">
+                        <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                        {% trans "By confirming, you agree that the work has been completed satisfactorily. This payment is final and cannot be refunded." %}
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between mb-4">
+                            <a href="{% url 'jobs:contract_detail' contract.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>{% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-check-circle me-2"></i> {% trans "Confirm & Pay" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Включаем HTML5 валидацию форм
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+</script>
+{% endblock %} 

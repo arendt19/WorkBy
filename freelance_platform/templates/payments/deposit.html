@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Deposit" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 bg-dark text-light shadow-sm">
+                <div class="card-header bg-dark py-3">
+                    <h4 class="mb-0">{% trans "Deposit Funds" %}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Левая колонка - форма -->
+                            <div class="col-md-7">
+                                <div class="card bg-dark bg-opacity-50 border-light border-opacity-10 mb-4">
+                                    <div class="card-body">
+                                        <div class="mb-4">
+                                            <label class="form-label">{% trans "Amount" %} (₸)</label>
+                                            <input type="number" name="amount" class="form-control bg-dark text-light" placeholder="₸100.00" required id="id_amount">
+                                            {% if form.amount.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ form.amount.errors }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <label class="form-label">{% trans "Payment Method" %}</label>
+                                            <div class="d-flex align-items-center p-3 bg-dark bg-opacity-50 rounded">
+                                                <input type="radio" name="payment_method" id="yoomoney" value="yoomoney" checked class="me-3">
+                                                <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                                                    <i class="fas fa-money-bill text-primary fa-2x"></i>
+                                                </div>
+                                                <div>
+                                                    <label for="yoomoney" class="mb-0 form-check-label">ЮMoney</label>
+                                                    <small class="text-muted d-block">{% trans "Default payment method" %}</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-danger w-100 btn-lg">
+                                            <i class="fas fa-plus me-2"></i> {% trans "Deposit" %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Правая колонка - информация -->
+                            <div class="col-md-5">
+                                <div class="card bg-dark bg-opacity-50 border-light border-opacity-10 mb-4">
+                                    <div class="card-header bg-dark">
+                                        <h5 class="mb-0">{% trans "Information" %}</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <h6 class="text-primary">{% trans "Minimum Deposit" %}</h6>
+                                            <p class="mb-0">₸100</p>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <h6 class="text-primary">{% trans "Maximum Deposit" %}</h6>
+                                            <p class="mb-0">₸100,000</p>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <h6 class="text-primary">{% trans "Processing Time" %}</h6>
+                                            <p class="mb-0">{% trans "Instant" %}</p>
+                                        </div>
+                                        
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            {% trans "Your funds will be available immediately after successful payment." %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

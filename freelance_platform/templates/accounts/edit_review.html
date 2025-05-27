@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Edit Review" %} - {{ freelancer.get_full_name|default:freelancer.username }}{% endblock %}
+
+{% block head_extra %}
+<style>
+    .rating-stars {
+        display: inline-block;
+        font-size: 1.5rem;
+    }
+    .rating-stars input {
+        display: none;
+    }
+    .rating-stars label {
+        float: right;
+        color: #ddd;
+        cursor: pointer;
+        transition: color 0.3s;
+        margin-right: 5px;
+    }
+    .rating-stars label:before {
+        content: '\2605';
+    }
+    .rating-stars input:checked ~ label,
+    .rating-stars:not(:checked) > label:hover,
+    .rating-stars:not(:checked) > label:hover ~ label {
+        color: #8B0000;
+    }
+    .rating-category {
+        margin-bottom: 1.5rem;
+    }
+    .rating-title {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{% trans "Edit Review for" %} {{ freelancer.get_full_name|default:freelancer.username }}</h4>
+                </div>
+                <div class="card-body">
+                    {% if review.project %}
+                    <div class="mb-4">
+                        <p class="mb-1">{% trans "Project" %}:</p>
+                        <h5>
+                            <a href="{% url 'jobs:project_detail' review.project.id %}">
+                                {{ review.project.title }}
+                            </a>
+                        </h5>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Общий рейтинг -->
+                        <div class="rating-category">
+                            <div class="rating-title">{% trans "Overall Rating" %} *</div>
+                            <div class="rating-stars">
+                                <input type="radio" id="rating-5" name="rating" value="5" {% if form.rating.value == 5 %}checked{% endif %} required>
+                                <label for="rating-5" title="5 stars"></label>
+                                <input type="radio" id="rating-4" name="rating" value="4" {% if form.rating.value == 4 %}checked{% endif %}>
+                                <label for="rating-4" title="4 stars"></label>
+                                <input type="radio" id="rating-3" name="rating" value="3" {% if form.rating.value == 3 %}checked{% endif %}>
+                                <label for="rating-3" title="3 stars"></label>
+                                <input type="radio" id="rating-2" name="rating" value="2" {% if form.rating.value == 2 %}checked{% endif %}>
+                                <label for="rating-2" title="2 stars"></label>
+                                <input type="radio" id="rating-1" name="rating" value="1" {% if form.rating.value == 1 %}checked{% endif %}>
+                                <label for="rating-1" title="1 star"></label>
+                            </div>
+                        </div>
+                        
+                        <!-- Качество работы -->
+                        <div class="rating-category">
+                            <div class="rating-title">{% trans "Work Quality" %} *</div>
+                            <div class="rating-stars">
+                                <input type="radio" id="quality-5" name="quality_rating" value="5" {% if review_detail.quality_rating == 5 %}checked{% endif %} required>
+                                <label for="quality-5" title="5 stars"></label>
+                                <input type="radio" id="quality-4" name="quality_rating" value="4" {% if review_detail.quality_rating == 4 %}checked{% endif %}>
+                                <label for="quality-4" title="4 stars"></label>
+                                <input type="radio" id="quality-3" name="quality_rating" value="3" {% if review_detail.quality_rating == 3 %}checked{% endif %}>
+                                <label for="quality-3" title="3 stars"></label>
+                                <input type="radio" id="quality-2" name="quality_rating" value="2" {% if review_detail.quality_rating == 2 %}checked{% endif %}>
+                                <label for="quality-2" title="2 stars"></label>
+                                <input type="radio" id="quality-1" name="quality_rating" value="1" {% if review_detail.quality_rating == 1 %}checked{% endif %}>
+                                <label for="quality-1" title="1 star"></label>
+                            </div>
+                            <div class="small text-muted">{% trans "How satisfied are you with the quality of work delivered?" %}</div>
+                        </div>
+                        
+                        <!-- Коммуникация -->
+                        <div class="rating-category">
+                            <div class="rating-title">{% trans "Communication" %} *</div>
+                            <div class="rating-stars">
+                                <input type="radio" id="communication-5" name="communication_rating" value="5" {% if review_detail.communication_rating == 5 %}checked{% endif %} required>
+                                <label for="communication-5" title="5 stars"></label>
+                                <input type="radio" id="communication-4" name="communication_rating" value="4" {% if review_detail.communication_rating == 4 %}checked{% endif %}>
+                                <label for="communication-4" title="4 stars"></label>
+                                <input type="radio" id="communication-3" name="communication_rating" value="3" {% if review_detail.communication_rating == 3 %}checked{% endif %}>
+                                <label for="communication-3" title="3 stars"></label>
+                                <input type="radio" id="communication-2" name="communication_rating" value="2" {% if review_detail.communication_rating == 2 %}checked{% endif %}>
+                                <label for="communication-2" title="2 stars"></label>
+                                <input type="radio" id="communication-1" name="communication_rating" value="1" {% if review_detail.communication_rating == 1 %}checked{% endif %}>
+                                <label for="communication-1" title="1 star"></label>
+                            </div>
+                            <div class="small text-muted">{% trans "How well did the freelancer communicate throughout the project?" %}</div>
+                        </div>
+                        
+                        <!-- Соблюдение сроков -->
+                        <div class="rating-category">
+                            <div class="rating-title">{% trans "Deadline Adherence" %} *</div>
+                            <div class="rating-stars">
+                                <input type="radio" id="deadline-5" name="deadline_rating" value="5" {% if review_detail.deadline_rating == 5 %}checked{% endif %} required>
+                                <label for="deadline-5" title="5 stars"></label>
+                                <input type="radio" id="deadline-4" name="deadline_rating" value="4" {% if review_detail.deadline_rating == 4 %}checked{% endif %}>
+                                <label for="deadline-4" title="4 stars"></label>
+                                <input type="radio" id="deadline-3" name="deadline_rating" value="3" {% if review_detail.deadline_rating == 3 %}checked{% endif %}>
+                                <label for="deadline-3" title="3 stars"></label>
+                                <input type="radio" id="deadline-2" name="deadline_rating" value="2" {% if review_detail.deadline_rating == 2 %}checked{% endif %}>
+                                <label for="deadline-2" title="2 stars"></label>
+                                <input type="radio" id="deadline-1" name="deadline_rating" value="1" {% if review_detail.deadline_rating == 1 %}checked{% endif %}>
+                                <label for="deadline-1" title="1 star"></label>
+                            </div>
+                            <div class="small text-muted">{% trans "Did the freelancer deliver on time?" %}</div>
+                        </div>
+                        
+                        <!-- Соотношение цена/качество -->
+                        <div class="rating-category">
+                            <div class="rating-title">{% trans "Value for Money" %} *</div>
+                            <div class="rating-stars">
+                                <input type="radio" id="cost-5" name="cost_rating" value="5" {% if review_detail.cost_rating == 5 %}checked{% endif %} required>
+                                <label for="cost-5" title="5 stars"></label>
+                                <input type="radio" id="cost-4" name="cost_rating" value="4" {% if review_detail.cost_rating == 4 %}checked{% endif %}>
+                                <label for="cost-4" title="4 stars"></label>
+                                <input type="radio" id="cost-3" name="cost_rating" value="3" {% if review_detail.cost_rating == 3 %}checked{% endif %}>
+                                <label for="cost-3" title="3 stars"></label>
+                                <input type="radio" id="cost-2" name="cost_rating" value="2" {% if review_detail.cost_rating == 2 %}checked{% endif %}>
+                                <label for="cost-2" title="2 stars"></label>
+                                <input type="radio" id="cost-1" name="cost_rating" value="1" {% if review_detail.cost_rating == 1 %}checked{% endif %}>
+                                <label for="cost-1" title="1 star"></label>
+                            </div>
+                            <div class="small text-muted">{% trans "Was the work worth what you paid?" %}</div>
+                        </div>
+                        
+                        <!-- Комментарий -->
+                        <div class="mb-3">
+                            <label for="{{ form.comment.id_for_label }}" class="form-label">{% trans "Your Review" %} *</label>
+                            {{ form.comment }}
+                            {% if form.comment.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.comment.errors }}
+                                </div>
+                            {% endif %}
+                            <div class="small text-muted mt-1">{% trans "Share your experience working with this freelancer" %}</div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> {% trans "Save Changes" %}
+                            </button>
+                            <a href="{% url 'accounts:freelancer_detail' freelancer.id %}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-times me-1"></i> {% trans "Cancel" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Синхронизация общего рейтинга с детальными рейтингами
+    const overallRatingInputs = document.querySelectorAll('input[name="rating"]');
+    overallRatingInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const value = this.value;
+            // Установить такое же значение для всех детальных рейтингов
+            document.querySelector(`input[name="quality_rating"][value="${value}"]`).checked = true;
+            document.querySelector(`input[name="communication_rating"][value="${value}"]`).checked = true;
+            document.querySelector(`input[name="deadline_rating"][value="${value}"]`).checked = true;
+            document.querySelector(`input[name="cost_rating"][value="${value}"]`).checked = true;
+        });
+    });
+});
+</script>
+{% endblock %} 

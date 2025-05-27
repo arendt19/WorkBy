@@ -1,0 +1,17 @@
+{% extends "email/base_email.html" %}
+
+{% block title %}Обновление контракта - FreelanceKZ{% endblock %}
+
+{% block header %}Обновление статуса контракта{% endblock %}
+
+{% block content %}
+<h2>Здравствуйте, {{ user.get_full_name|default:user.username }}!</h2>
+
+<p>Произошло обновление статуса контракта на платформе FreelanceKZ.</p>
+
+<div class="message-box">
+    {{ notification.content }}
+</div>
+
+<p>Для просмотра деталей контракта, нажмите на кнопку ниже:</p>
+{% endblock %} 

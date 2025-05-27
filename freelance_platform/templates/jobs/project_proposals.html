@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Proposals" %} | {{ project.title }} | WorkBy{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Обработка нажатия на кнопку принятия предложения
+        $('.accept-proposal-btn').click(function(e) {
+            e.preventDefault();
+            
+            const proposalId = $(this).data('proposal-id');
+            const buttonElement = $(this);
+            const actionsContainer = buttonElement.closest('.proposal-actions');
+            
+            // Показываем индикатор загрузки
+            actionsContainer.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><div class="mt-2">{% trans "Processing..." %}</div></div>');
+            
+            // Отправляем AJAX-запрос
+            $.ajax({
+                url: buttonElement.attr('href'),
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
+                },
+                success: function(response) {
+                    // Обновляем UI для показа принятого статуса
+                    actionsContainer.html('<div class="alert alert-success mb-0"><i class="fas fa-check-circle me-1"></i> {% trans "Accepted" %}</div>');
+                    
+                    // Перенаправляем на страницу контракта
+                    if (response.redirect_url) {
+                        window.location.href = response.redirect_url;
+                    } else {
+                        window.location.reload();
+                    }
+                },
+                error: function() {
+                    // В случае ошибки показываем сообщение
+                    actionsContainer.html('<div class="alert alert-danger mb-0"><i class="fas fa-exclamation-circle me-1"></i> {% trans "Error occurred. Please try again." %}</div>');
+                    
+                    // Восстанавливаем кнопки через 3 секунды
+                    setTimeout(function() {
+                        window.location.reload();
+                    }, 3000);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <!-- Улучшенные хлебные крошки с отступами -->
+    <div class="row mt-4 mb-4">
+        <div class="col-lg-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-dark bg-opacity-50 py-2 px-3 rounded shadow-sm">
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:home' %}" class="text-light">{% trans "Home" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:my_projects' %}" class="text-light">{% trans "My Projects" %}</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'jobs:project_detail' project.pk %}" class="text-light">{{ project.title }}</a></li>
+                    <li class="breadcrumb-item active text-light" aria-current="page">{% trans "Proposals" %}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Заголовок с отдельным фоном и кнопкой назад -->
+            <div class="d-flex justify-content-between align-items-center p-4 bg-dark rounded shadow-sm mb-4">
+                <h1 class="h3 mb-0 fw-bold">{% trans "Proposals for" %}: {{ project.title }}</h1>
+                <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>{% trans "Back to Project" %}
+                </a>
+            </div>
+            
+            <!-- Информационная панель с гридом и визуальными разделителями -->
+            <div class="card border-0 bg-dark text-light shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="project-info-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                        <div class="info-item p-3 border-end border-secondary">
+                            <h6 class="text-muted mb-2">{% trans "Budget" %}</h6>
+                            <p class="h5 text-primary mb-0 d-flex align-items-center">
+                                <i class="fas fa-money-bill-wave me-2 text-muted"></i>
+                                {{ project.budget_min }} - {{ project.budget_max }} ₸
+                            </p>
+                        </div>
+                        <div class="info-item p-3 border-end border-secondary">
+                            <h6 class="text-muted mb-2">{% trans "Deadline" %}</h6>
+                            <p class="h5 mb-0 d-flex align-items-center">
+                                <i class="far fa-calendar-alt me-2 text-muted"></i>
+                                {% if project.deadline %}
+                                    {{ project.deadline|date:"d M Y" }}
+                                {% else %}
+                                    <span class="text-muted">{% trans "Not specified" %}</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="info-item p-3">
+                            <h6 class="text-muted mb-2">{% trans "Status" %}</h6>
+                            <p class="mb-0 d-flex align-items-center">
+                                {% if project.status == 'open' %}
+                                    <span class="status-indicator me-2" style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: #4caf50;"></span>
+                                    <span class="badge status-badge status-{{ project.status }}" style="color: #4caf50;">
+                                        {{ project.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge status-badge status-{{ project.status }}">
+                                        {{ project.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-12">
+            <!-- Блок с фильтрами -->
+            <div class="card border-0 bg-dark text-light shadow-sm mb-4">
+                <div class="card-header bg-dark py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fs-5">{% trans "Proposals" %} ({{ proposals_count }})</h5>
+                        
+                        <!-- Улучшенная сортировка предложений -->
+                        <div class="sort-select-wrapper" style="width: 200px;">
+                            <select class="form-select form-select-sm bg-dark text-light border-secondary" id="proposal-sort" onchange="window.location=this.value;">
+                                <option value="?sort=recent" {% if sort == 'recent' %}selected{% endif %}>{% trans "Newest → Oldest" %}</option>
+                                <option value="?sort=oldest" {% if sort == 'oldest' %}selected{% endif %}>{% trans "Oldest → Newest" %}</option>
+                                <option value="?sort=bid-low" {% if sort == 'bid-low' %}selected{% endif %}>{% trans "Lowest Bid" %}</option>
+                                <option value="?sort=bid-high" {% if sort == 'bid-high' %}selected{% endif %}>{% trans "Highest Bid" %}</option>
+                                <option value="?sort=delivery-short" {% if sort == 'delivery-short' %}selected{% endif %}>{% trans "Shortest Delivery" %}</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group list-group-flush">
+                    {% for proposal in proposals %}
+                        <div class="list-group-item bg-dark border-light border-opacity-10">
+                            <div class="row">
+                                <!-- Информация о фрилансере -->
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center mb-3">
+                                        {% if proposal.freelancer.avatar %}
+                                            <img src="{{ proposal.freelancer.avatar.url }}" alt="{{ proposal.freelancer.get_full_name }}" class="rounded-circle me-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                                                <span class="text-white fw-bold">{{ proposal.freelancer.get_full_name|slice:":1"|upper }}</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div>
+                                            <h6 class="mb-0">
+                                                <a href="{% url 'accounts:freelancer_detail' proposal.freelancer.username %}" class="text-decoration-none text-light">
+                                                    {{ proposal.freelancer.get_full_name|default:proposal.freelancer.username }}
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">
+                                                {% if proposal.freelancer.location %}
+                                                    <i class="fas fa-map-marker-alt me-1"></i> {{ proposal.freelancer.location }}
+                                                {% else %}
+                                                    <i class="fas fa-globe me-1"></i> {% trans "Remote" %}
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="freelancer-skills mb-3">
+                                        {% for skill in proposal.freelancer.skills.all|slice:":3" %}
+                                            <span class="badge bg-secondary me-1 mb-1">{{ skill.name }}</span>
+                                        {% endfor %}
+                                        {% if proposal.freelancer.skills.count > 3 %}
+                                            <span class="badge bg-secondary">+{{ proposal.freelancer.skills.count|add:"-3" }}</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'chat:start_conversation' proposal.freelancer.id %}" class="btn btn-sm btn-outline-light">
+                                            <i class="fas fa-comment me-1"></i> {% trans "Message" %}
+                                        </a>
+                                        <a href="{% url 'accounts:freelancer_detail' proposal.freelancer.username %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-user me-1"></i> {% trans "View Profile" %}
+                                        </a>
+                                    </div>
+                                </div>
+                                
+                                <!-- Содержание предложения -->
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <span class="badge status-badge status-{{ proposal.status }} mb-2">{{ proposal.get_status_display }}</span>
+                                        <p>{{ proposal.cover_letter|linebreaksbr|truncatewords:50 }}</p>
+                                    </div>
+                                    
+                                    {% if proposal.attachment %}
+                                        <div class="mb-3">
+                                            <a href="{{ proposal.attachment.url }}" class="btn btn-sm btn-outline-light" target="_blank">
+                                                <i class="fas fa-paperclip me-1"></i> {% trans "View Attachment" %}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="text-muted small">
+                                        <i class="fas fa-clock me-1"></i> {% trans "Submitted" %}: {{ proposal.created_at|date:"d M Y, H:i" }}
+                                    </div>
+                                </div>
+                                
+                                <!-- Ставка и действия -->
+                                <div class="col-md-3">
+                                    <div class="card bg-dark-gray h-100">
+                                        <div class="card-body">
+                                            <div class="bid-amount mb-3">
+                                                <span class="text-muted small">{% trans "Bid Amount" %}</span>
+                                                <h4 class="text-primary mb-0">{{ proposal.bid_amount }} ₸</h4>
+                                            </div>
+                                            
+                                            <div class="delivery-time mb-3">
+                                                <span class="text-muted small">{% trans "Delivery Time" %}</span>
+                                                <div>{{ proposal.delivery_time }} {% trans "days" %}</div>
+                                            </div>
+                                                                                        {% if proposal.status == 'pending' %}
+                                                <div class="proposal-actions d-grid gap-2">
+                                                    {% csrf_token %}
+                                                    <a href="{% url 'jobs:proposal_accept' pk=proposal.pk %}" class="btn btn-success w-100 mb-2 accept-proposal-btn" data-proposal-id="{{ proposal.pk }}">
+                                                        <i class="fas fa-check me-1"></i> {% trans "Accept Proposal" %}
+                                                    </a>
+                                                    
+                                                    <a href="{% url 'jobs:proposal_reject' pk=proposal.pk %}" class="btn btn-outline-danger">
+                                                        <i class="fas fa-times me-1"></i> {% trans "Decline" %}
+                                                    </a>
+                                                </div>
+                                            {% elif proposal.status == 'accepted' %}
+                                                <div class="alert alert-success mb-0">
+                                                    <i class="fas fa-check-circle me-1"></i> {% trans "Accepted" %}
+                                                </div>
+                                            {% elif proposal.status == 'rejected' %}
+                                                <div class="alert alert-danger mb-0">
+                                                    <i class="fas fa-times-circle me-1"></i> {% trans "Declined" %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <!-- Улучшенное пустое состояние -->
+                        <div class="list-group-item bg-dark text-center py-5">
+                            <div class="empty-state" style="max-width: 400px; margin: 40px auto;">
+                                <!-- Вместо изображения используем иконку -->
+                                <div class="mb-4">
+                                    <i class="fas fa-file-alt fa-4x text-muted opacity-50"></i>
+                                </div>
+                                <h5 class="mb-3">{% trans "No proposals yet" %}</h5>
+                                <p class="text-muted" style="font-size: 0.9rem; color: #aaa !important;">{% trans "Your project hasn't received any proposals yet. Check back later." %}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

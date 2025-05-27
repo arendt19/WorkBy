@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["migrations"]
+
+# Настройки тестирования удалены в ходе очистки кода
+
+[tool.pyright]
+include = ["**/*.py"]
+exclude = ["**/node_modules", "**/__pycache__", "**/migrations", ".venv", "venv"]
+reportMissingImports = false
+reportMissingModuleSource = false
+reportAttributeAccessIssue = false
+reportOperatorIssue = false
+reportArgumentType = false
+reportCallIssue = false
+reportOptionalMemberAccess = false
+reportUnboundVariable = false
+reportGeneralTypeIssues = false
+reportIndexIssue = false
+reportInvalidTypeArguments = false
+typeCheckingMode = "basic"
+pythonVersion = "3.10"
+stubPath = "typings"
+django = true 

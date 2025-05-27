@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Confirm Project Deletion" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">{% trans "Confirm Project Deletion" %}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h5 class="alert-heading">{% trans "Warning!" %}</h5>
+                        <p>{% trans "Are you sure you want to cancel the following project?" %}</p>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h4 class="card-title">{{ project.title }}</h4>
+                            <p class="card-text"><strong>{% trans "Category:" %}</strong> {{ project.category.name }}</p>
+                            <p class="card-text"><strong>{% trans "Budget:" %}</strong> {{ project.budget_min }} - {{ project.budget_max }} ₸</p>
+                            <p class="card-text"><strong>{% trans "Status:" %}</strong> {{ project.get_status_display }}</p>
+                            <p class="card-text">{{ project.description|truncatewords:50 }}</p>
+                        </div>
+                    </div>
+                    
+                    <p class="mb-4">{% trans "This action will change the project status to 'cancelled'. All proposals for this project will be automatically rejected." %}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> {% trans "Back to Project" %}
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash-alt"></i> {% trans "Cancel Project" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

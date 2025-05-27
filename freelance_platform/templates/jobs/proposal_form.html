@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Submit Proposal" %} | {{ project.title }} | WorkBy{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+<script>
+    $(document).ready(function() {
+        // jQuery для улучшения интерфейса формы
+        $('#id_cover_letter').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_cover_letter').attr('rows', 8);
+        
+        {% if project.budget_type == 'fixed' %}
+        // Для фиксированной цены
+        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_delivery_time').addClass('form-select bg-dark bg-opacity-50 text-light border-secondary');
+        {% else %}
+        // Для почасовой ставки
+        $('#id_bid_amount').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        $('#id_estimated_hours').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        {% endif %}
+        
+        $('#id_attachment').addClass('form-control bg-dark bg-opacity-50 text-light border-secondary');
+        
+        // Character counter for cover letter
+        $('#id_cover_letter').on('input', function() {
+            const maxLength = 4000;
+            const currentLength = $(this).val().length;
+            const remainingChars = maxLength - currentLength;
+            
+            // Обновляем счетчик символов
+            $('#char-counter').text(remainingChars);
+            
+            // Изменяем цвет счетчика при приближении к лимиту
+            if (remainingChars < 200) {
+                $('#char-counter').removeClass('text-muted').addClass('text-warning');
+            } else {
+                $('#char-counter').removeClass('text-warning').addClass('text-muted');
+            }
+            
+            if (currentLength > maxLength) {
+                $(this).val($(this).val().substring(0, maxLength));
+            }
+        });
+        
+        // Запускаем один раз для инициализации счетчика
+        $('#id_cover_letter').trigger('input');
+        
+        // Обработка отправки формы
+        $('form').on('submit', function(e) {
+            // Блокируем кнопку отправки и показываем индикатор загрузки
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            submitBtn.prop('disabled', true);
+            submitBtn.html('<i class="fas fa-spinner fa-spin me-1"></i> {% trans "Submitting..." %}');
+            
+            // Очищаем предыдущие ошибки
+            $('.invalid-feedback').remove();
+            $('.is-invalid').removeClass('is-invalid');
+            
+            // Проверяем форму с помощью AJAX
+            $.ajax({
+                type: 'POST',
+                url: '{% url "jobs:proposal_create" project.pk %}',
+                data: new FormData(this),
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(response) {
+                    // Если успешно, перенаправляем на страницу деталей проекта
+                    window.location.href = response.redirect_url || '{% url "jobs:project_detail" project.pk %}';
+                },
+                error: function(xhr) {
+                    // Разблокируем кнопку и восстанавливаем текст
+                    submitBtn.prop('disabled', false);
+                    submitBtn.html(originalText);
+                    
+                    // Показываем ошибки
+                    if (xhr.status === 400 && xhr.responseJSON && xhr.responseJSON.errors) {
+                        const errors = xhr.responseJSON.errors;
+                        
+                        // Отображаем ошибки под полями
+                        $.each(errors, function(fieldName, fieldErrors) {
+                            const field = $('#id_' + fieldName);
+                            field.addClass('is-invalid');
+                            
+                            // Добавляем сообщение об ошибке
+                            const errorMessages = fieldErrors.map(error => error.message).join('<br>');
+                            field.after('<div class="invalid-feedback d-block">' + errorMessages + '</div>');
+                            
+                            // Показываем общую ошибку вверху формы
+                            if (fieldName === '__all__') {
+                                $('form').prepend('<div class="alert alert-danger">' + errorMessages + '</div>');
+                            }
+                        });
+                    } else {
+                        // Общая ошибка
+                        $('form').prepend('<div class="alert alert-danger">{% trans "An error occurred. Please try again." %}</div>');
+                    }
+                    
+                    // Прокручиваем к первой ошибке
+                    if ($('.invalid-feedback:visible').length > 0) {
+                        $('html, body').animate({
+                            scrollTop: $('.invalid-feedback:visible').first().offset().top - 100
+                        }, 200);
+                    }
+                }
+            });
+            
+            e.preventDefault();
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 bg-dark text-light shadow-sm">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{% trans "Submit Proposal for" %}: "{{ project.title }}"</h5>
+                    <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Project" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Project summary -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-3">
+                            <div>
+                                <span class="badge bg-{{ project.get_status_class }} mb-2">{{ project.get_status_display }}</span>
+                                <h6 class="text-muted mb-0">{% trans "Budget" %}</h6>
+                                <div class="fs-5">
+                                    {% if project.budget_type == 'fixed' %}
+                                    {% trans "Fixed" %}: ₸{{ project.budget_min }} - ₸{{ project.budget_max }}
+                                    {% else %}
+                                    {% trans "Hourly" %}: ₸{{ project.budget_min }} - ₸{{ project.budget_max }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <h6 class="text-muted mb-0">{% trans "Deadline" %}</h6>
+                                <div class="fs-5">
+                                    {% if project.deadline %}
+                                    {{ project.deadline|date:"d M Y" }}
+                                    {% else %}
+                                    {% trans "Not specified" %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <h6 class="text-muted mb-0">{% trans "Client" %}</h6>
+                            <div class="d-flex align-items-center">
+                                {% if project.client.profile.avatar %}
+                                <img src="{{ project.client.profile.avatar.url }}" alt="{{ project.client.get_full_name }}" class="rounded-circle me-2" width="24" height="24">
+                                {% else %}
+                                <div class="user-initial-avatar bg-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 24px; height: 24px;">
+                                    <span class="text-white" style="font-size: 12px;">{{ project.client.get_full_name|slice:":1" }}</span>
+                                </div>
+                                {% endif %}
+                                <span>{{ project.client.get_full_name }}</span>
+                            </div>
+                        </div>
+                        
+                        <h6 class="text-muted mb-1">{% trans "Skills Required" %}</h6>
+                        <div class="mb-3">
+                            {% for skill in project.skills.all %}
+                            <span class="badge bg-secondary me-1 mb-1">{{ skill.name }}</span>
+                            {% empty %}
+                            <span class="text-muted">{% trans "No specific skills listed" %}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="{{ form.cover_letter.id_for_label }}" class="form-label">{% trans "Cover Letter" %}</label>
+                                    <textarea name="{{ form.cover_letter.name }}" id="{{ form.cover_letter.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" rows="8">{{ form.cover_letter.value|default:"" }}</textarea>
+                                    <div class="text-end mt-1">
+                                        <small class="text-muted"><span id="char-counter">4000</span> {% trans "characters remaining" %}</small>
+                                    </div>
+                                    {% if form.cover_letter.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.cover_letter.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                {% if project.budget_type == 'fixed' %}
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.bid_amount.id_for_label }}" class="form-label">
+                                        {% trans "Your Bid" %} (₸)
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark text-light border-secondary">₸</span>
+                                        <input type="number" name="{{ form.bid_amount.name }}" id="{{ form.bid_amount.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" value="{{ form.bid_amount.value|default:'' }}" step="0.01" min="0">
+                                    </div>
+                                    {% if form.bid_amount.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.bid_amount.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        {% trans "Client's budget" %}: ₸{{ project.budget_min }} - ₸{{ project.budget_max }}
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.delivery_time.id_for_label }}" class="form-label">
+                                        {% trans "Delivery Time" %}
+                                    </label>
+                                    <select name="{{ form.delivery_time.name }}" id="{{ form.delivery_time.id_for_label }}" class="form-select bg-dark bg-opacity-50 text-light border-secondary">
+                                        {% for value, text in form.fields.delivery_time.choices %}
+                                            <option value="{{ value }}" {% if form.delivery_time.value == value|stringformat:"i" %}selected{% endif %}>{{ text }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    {% if form.delivery_time.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.delivery_time.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.bid_amount.id_for_label }}" class="form-label">
+                                        {% trans "Hourly Rate" %} (₸)
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-dark text-light border-secondary">₸</span>
+                                        <input type="number" name="{{ form.bid_amount.name }}" id="{{ form.bid_amount.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" value="{{ form.bid_amount.value|default:'' }}" step="0.01" min="0">
+                                        <span class="input-group-text bg-dark text-light border-secondary">/hr</span>
+                                    </div>
+                                    {% if form.bid_amount.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.bid_amount.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        {% trans "Client's budget" %}: ₸{{ project.budget_min }} - ₸{{ project.budget_max }}/hr
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.estimated_hours.id_for_label }}" class="form-label">
+                                        {% trans "Estimated Hours" %}
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="number" name="{{ form.estimated_hours.name }}" id="{{ form.estimated_hours.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary" value="{{ form.estimated_hours.value|default:'' }}" step="1" min="1">
+                                        <span class="input-group-text bg-dark text-light border-secondary">{% trans "hours" %}</span>
+                                    </div>
+                                    {% if form.estimated_hours.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.estimated_hours.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                                
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.attachment.id_for_label }}" class="form-label">
+                                        {% trans "Attachment" %} ({% trans "Optional" %})
+                                    </label>
+                                    <input type="file" name="{{ form.attachment.name }}" id="{{ form.attachment.id_for_label }}" class="form-control bg-dark bg-opacity-50 text-light border-secondary">
+                                    {% if form.attachment.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.attachment.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="form-text">
+                                        {% trans "Max file size" %}: 10MB
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'jobs:project_detail' project.pk %}" class="btn btn-outline-light">
+                                <i class="fas fa-times me-1"></i> {% trans "Cancel" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i> {% trans "Submit Proposal" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tips section -->
+            <div class="card border-0 bg-dark text-light shadow-sm mt-4">
+                <div class="card-header bg-dark">
+                    <h5 class="mb-0">{% trans "Tips for a Successful Proposal" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="icon-box bg-primary bg-opacity-10 p-2 rounded">
+                                        <i class="fas fa-lightbulb text-primary"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>{% trans "Be Specific" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Explain exactly how you'll approach the project and address the client's needs." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="icon-box bg-success bg-opacity-10 p-2 rounded">
+                                        <i class="fas fa-trophy text-success"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>{% trans "Highlight Experience" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Mention relevant projects you've completed that demonstrate your expertise." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0 me-3">
+                                    <div class="icon-box bg-warning bg-opacity-10 p-2 rounded">
+                                        <i class="fas fa-coins text-warning"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h6>{% trans "Set Fair Rates" %}</h6>
+                                    <p class="small text-muted mb-0">{% trans "Bid competitively but don't undervalue your expertise and time." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

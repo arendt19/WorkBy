@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Manage Withdrawal Methods" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card bg-dark text-white border-secondary shadow">
+                <div class="card-header bg-dark d-flex justify-content-between align-items-center border-secondary">
+                    <h4 class="mb-0">
+                        <i class="fas fa-credit-card text-danger me-2"></i>
+                        {% trans "Manage Withdrawal Methods" %}
+                    </h4>
+                    <a href="{% url 'payments:add_withdrawal_method' %}" class="btn btn-danger">
+                        <i class="fas fa-plus me-2"></i> {% trans "Add Method" %}
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if methods %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Method Type" %}</th>
+                                        <th>{% trans "Name" %}</th>
+                                        <th>{% trans "Account Details" %}</th>
+                                        <th>{% trans "Status" %}</th>
+                                        <th>{% trans "Actions" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for method in methods %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if method.method_type == 'yoomoney' %}
+                                                        <i class="fas fa-wallet text-warning me-2"></i>
+                                                    {% elif method.method_type == 'kaspi' %}
+                                                        <i class="fas fa-money-bill-alt text-danger me-2"></i>
+                                                    {% elif method.method_type == 'bank_transfer' %}
+                                                        <i class="fas fa-university text-info me-2"></i>
+                                                    {% elif method.method_type == 'paypal' %}
+                                                        <i class="fab fa-paypal text-primary me-2"></i>
+                                                    {% elif method.method_type == 'crypto' %}
+                                                        <i class="fab fa-bitcoin text-warning me-2"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-credit-card text-secondary me-2"></i>
+                                                    {% endif %}
+                                                    {{ method.get_method_type_display }}
+                                                </div>
+                                            </td>
+                                            <td>{{ method.name }}</td>
+                                            <td>
+                                                {% if method.method_type == 'yoomoney' %}
+                                                    {% trans "Account" %}: {{ method.details.account }}
+                                                {% elif method.method_type == 'kaspi' %}
+                                                    {% trans "Account" %}: {{ method.details.account }}
+                                                {% elif method.method_type == 'bank_transfer' %}
+                                                    {{ method.details.bank_name }} - {{ method.details.account }}
+                                                {% elif method.method_type == 'paypal' %}
+                                                    {{ method.details.email }}
+                                                {% elif method.method_type == 'crypto' %}
+                                                    {{ method.details.provider }} - {{ method.details.address|truncatechars:12 }}
+                                                {% else %}
+                                                    {% trans "Account details" %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if method.is_default %}
+                                                    <span class="badge bg-success">{% trans "Default" %}</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">{% trans "Alternative" %}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{% url 'payments:edit_withdrawal_method' method.pk %}" class="btn btn-sm btn-outline-light">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    {% if not method.is_default %}
+                                                        <a href="{% url 'payments:set_default_withdrawal_method' method.pk %}" class="btn btn-sm btn-outline-success" title="{% trans 'Set as default' %}">
+                                                            <i class="fas fa-star"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                    <a href="{% url 'payments:delete_withdrawal_method' method.pk %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('{% trans "Are you sure you want to delete this method?" %}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="alert alert-info mt-4">
+                            <h5 class="alert-heading">{% trans "About Withdrawal Methods" %}</h5>
+                            <p>{% trans "You can add multiple withdrawal methods to your account. The method marked as 'Default' will be pre-selected when you request a withdrawal." %}</p>
+                            <p class="mb-0">{% trans "Your withdrawal method information is securely stored and will only be used when processing your withdrawal requests." %}</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <h5 class="alert-heading">{% trans "No Withdrawal Methods" %}</h5>
+                            <p>{% trans "You haven't added any withdrawal methods yet. Please add at least one method to receive payments." %}</p>
+                            <hr>
+                            <div class="text-center">
+                                <a href="{% url 'payments:add_withdrawal_method' %}" class="btn btn-danger">
+                                    <i class="fas fa-plus me-2"></i> {% trans "Add First Method" %}
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'payments:wallet' %}" class="btn btn-outline-light">
+                            <i class="fas fa-wallet me-2"></i> {% trans "Back to Wallet" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,111 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "New Contract Created" %}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .footer {
+            background-color: #f7f7f7;
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+        h1 {
+            color: #fff;
+            font-size: 24px;
+            margin: 0;
+        }
+        h2 {
+            color: #2c3e50;
+            font-size: 20px;
+            margin: 0 0 20px;
+        }
+        p {
+            margin: 0 0 15px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #3498db;
+        }
+        .details {
+            background-color: #f7f7f7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .btn {
+            display: inline-block;
+            background: #3498db;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% trans "New Contract Created" %}</h1>
+        </div>
+        <div class="content">
+            <h2>{% trans "Hello" %}, {{ freelancer_name }}!</h2>
+            
+            <p>{% trans "Great news! A new contract has been created for the project" %} <span class="highlight">"{{ project_title }}"</span>.</p>
+            
+            <p>{% trans "The client" %} <strong>{{ client_name }}</strong> {% trans "has accepted your proposal and a contract has been established." %}</p>
+            
+            <div class="details">
+                <p><strong>{% trans "Contract ID" %}:</strong> #{{ contract_id }}</p>
+                <p><strong>{% trans "Project" %}:</strong> {{ project_title }}</p>
+                <p><strong>{% trans "Client" %}:</strong> {{ client_name }}</p>
+                <p><strong>{% trans "Amount" %}:</strong> ₸{{ contract_amount }}</p>
+                <p><strong>{% trans "Deadline" %}:</strong> {{ contract_deadline|date:"d M Y" }}</p>
+            </div>
+            
+            <p>{% trans "You can now start working on this project. Please review the contract details and reach out to the client to discuss the next steps." %}</p>
+            
+            <p>{% trans "We recommend breaking down the project into milestones to make tracking progress easier and ensure timely payments." %}</p>
+            
+            <a href="{{ contract_url }}" class="btn">{% trans "View Contract" %}</a>
+        </div>
+        <div class="footer">
+            <p>© {% now "Y" %} WorkBy. {% trans "All rights reserved." %}</p>
+            <p>{% trans "This is an automated message. Please do not reply to this email." %}</p>
+        </div>
+    </div>
+</body>
+</html>

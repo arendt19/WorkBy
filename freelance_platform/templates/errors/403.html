@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "403 - Access Denied" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 text-center">
+            <img src="{% static 'img/error-403.svg' %}" alt="403 Error" class="img-fluid mb-4" style="max-height: 250px;">
+            <h1 class="display-4 mb-4 text-danger">{% trans "403" %}</h1>
+            <h2 class="mb-4">{% trans "Access Denied" %}</h2>
+            <p class="lead mb-5">{% trans "You don't have permission to access this page." %}</p>
+            <div class="d-flex justify-content-center">
+                <a href="{% url 'jobs:home' %}" class="btn btn-primary me-3">
+                    <i class="fas fa-home me-2"></i> {% trans "Go to Home" %}
+                </a>
+                <a href="javascript:history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i> {% trans "Go Back" %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

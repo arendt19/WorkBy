@@ -1,0 +1,644 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}
+    {% if is_edit %}
+        {% trans "Edit Project" %}
+    {% else %}
+        {% trans "Post New Project" %}
+    {% endif %} | WorkBy
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Стили для формы */
+    .form-select, .form-control {
+        background-color: #333;
+        color: #fff;
+        border-color: #555;
+    }
+    
+    .form-select option {
+        background-color: #333;
+        color: #fff;
+    }
+    
+    /* Стили для тегов */
+    .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        min-height: 30px;
+        margin-top: 8px;
+    }
+    
+    .tag {
+        display: inline-flex;
+        align-items: center;
+        background-color: #375a7f;
+        color: #fff;
+        padding: 4px 8px;
+        border-radius: 4px;
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .tag .close {
+        margin-left: 5px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    /* Стили для секций */
+    .form-section {
+        background-color: #2d2d2d;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+    
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+        color: #fff;
+    }
+    
+    .form-section-title i {
+        margin-right: 8px;
+        color: #375a7f;
+    }
+    
+    /* Стили для переключателей */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 26px;
+        margin-top: 2px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #444;
+        transition: .4s;
+        border-radius: 26px;
+        border: 1px solid #666;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    }
+    
+    input:checked + .toggle-slider {
+        background-color: #2c7be5;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+    
+    /* Добавляем текст вкл/выкл для лучшей видимости */
+    .toggle-slider:after {
+        content: "OFF";
+        color: #aaa;
+        display: block;
+        position: absolute;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 70%;
+        font-size: 9px;
+        font-family: sans-serif;
+    }
+    
+    input:checked + .toggle-slider:after {
+        content: "ON";
+        left: 30%;
+        color: #fff;
+    }
+    
+    /* Стили для подсказок */
+    .tooltip-icon {
+        color: #6c757d;
+        margin-left: 5px;
+        cursor: help;
+    }
+    
+    /* Стили для валидации */
+    .required-field::after {
+        content: " *";
+        color: #e74c3c;
+    }
+    
+    /* Стили для фиксированной панели действий */
+    .action-panel-sticky {
+        position: sticky;
+        bottom: 0;
+        padding: 20px;
+        background-color: #222;
+        border-top: 1px solid #444;
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.3);
+        width: 100%;
+        z-index: 100;
+        margin-top: 30px;
+    }
+    
+    /* Стили для инпутов с валютой */
+    .currency-input {
+        position: relative;
+    }
+    
+    .currency-input input {
+        padding-right: 30px;
+    }
+    
+    .currency-symbol {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {% if is_edit %}
+                            {% trans "Edit Project" %}
+                        {% else %}
+                            {% trans "Post New Project" %}
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <h5 class="mb-0">{% trans "Project Details" %}</h5>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.title.id_for_label }}" class="form-label required-field">{{ form.title.label }}</label>
+                                {{ form.title }}
+                                {% if form.title.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.title.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.title.help_text %}
+                                    <div class="form-text">{{ form.title.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.description.id_for_label }}" class="form-label required-field">{{ form.description.label }}</label>
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.description.errors }}
+                                    </div>
+                                {% endif %}
+                                {% if form.description.help_text %}
+                                    <div class="form-text">{{ form.description.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.category.id_for_label }}" class="form-label required-field">{{ form.category.label }}</label>
+                                <div class="input-group">
+                                    {{ form.category }}
+                                    <span class="input-group-text" data-bs-toggle="tooltip" title="{% trans 'Select a category for your project' %}">
+                                        <i class="bi bi-question-circle"></i>
+                                    </span>
+                                </div>
+                                {% if form.category.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.category.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="tag-input" class="form-label">{% trans "Tags" %}</label>
+                                <div class="input-group">
+                                    <input type="text" id="tag-input" class="form-control" placeholder="{% trans 'Type a tag and press Enter' %}">
+                                    <span class="input-group-text" data-bs-toggle="tooltip" title="{% trans 'Enter keywords that describe your project (e.g. web design, logo, programming)' %}">
+                                        <i class="bi bi-question-circle"></i>
+                                    </span>
+                                </div>
+                                <div id="tags-container" class="tags-container"></div>
+                                <input type="hidden" name="tags" id="{{ form.tags.id_for_label }}" value="{{ form.tags.value|default:'' }}">
+                                {% if form.tags.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tags.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-cash-coin"></i>
+                                <h5 class="mb-0">{% trans "Budget & Timeline" %}</h5>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.budget_type.id_for_label }}" class="form-label required-field">{{ form.budget_type.label }}</label>
+                                {{ form.budget_type }}
+                                {% if form.budget_type.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.budget_type.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.budget_min.id_for_label }}" class="form-label required-field">{{ form.budget_min.label }}</label>
+                                    <div class="currency-input">
+                                        <input type="number" name="budget_min" id="{{ form.budget_min.id_for_label }}" 
+                                               class="form-control" step="0.01" min="0" 
+                                               placeholder="{% trans 'Min ₸' %}" 
+                                               value="{{ form.budget_min.value|default:'' }}">
+                                        <span class="currency-symbol">₸</span>
+                                    </div>
+                                    {% if form.budget_min.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.budget_min.errors }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6 mb-4">
+                                    <label for="{{ form.budget_max.id_for_label }}" class="form-label required-field">{{ form.budget_max.label }}</label>
+                                    <div class="currency-input">
+                                        <input type="number" name="budget_max" id="{{ form.budget_max.id_for_label }}" 
+                                               class="form-control" step="0.01" min="0" 
+                                               placeholder="{% trans 'Max ₸' %}" 
+                                               value="{{ form.budget_max.value|default:'' }}">
+                                        <span class="currency-symbol">₸</span>
+                                    </div>
+                                    {% if form.budget_max.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {{ form.budget_max.errors }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text" id="budget-validation-message"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="{{ form.deadline.id_for_label }}" class="form-label required-field d-flex align-items-center">
+                                    <i class="bi bi-calendar me-2"></i>
+                                    {{ form.deadline.label }}
+                                </label>
+                                <input type="datetime-local" name="deadline" id="{{ form.deadline.id_for_label }}" 
+                                       class="form-control date-input" 
+                                       value="{{ form.deadline.value|date:'Y-m-d\TH:i'|default:'' }}">
+                                {% if form.deadline.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.deadline.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <div class="form-section-title">
+                                <i class="bi bi-list-check"></i>
+                                <h5 class="mb-0">{% trans "Project Requirements" %}</h5>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="experience-select" class="form-label">{% trans "Experience Required" %}</label>
+                                <select id="experience-select" name="experience_required" class="form-select">
+                                    <option value="" {% if not form.experience_required.value %}selected{% endif %}>{% trans "Any level" %}</option>
+                                    <option value="Junior" {% if form.experience_required.value == 'Junior' %}selected{% endif %}>{% trans "Junior" %}</option>
+                                    <option value="Mid-level" {% if form.experience_required.value == 'Mid-level' %}selected{% endif %}>{% trans "Mid-level" %}</option>
+                                    <option value="Senior" {% if form.experience_required.value == 'Senior' %}selected{% endif %}>{% trans "Senior" %}</option>
+                                    <option value="Expert" {% if form.experience_required.value == 'Expert' %}selected{% endif %}>{% trans "Expert" %}</option>
+                                </select>
+                                {% if form.experience_required.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.experience_required.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="location-input" class="form-label">{% trans "Location Required" %}</label>
+                                <div class="input-group">
+                                    <input type="text" id="location-input" class="form-control" placeholder="{% trans 'Type a location and press Enter' %}">
+                                    <span class="input-group-text" data-bs-toggle="tooltip" title="{% trans 'Enter cities or countries where freelancer should be located' %}">
+                                        <i class="bi bi-question-circle"></i>
+                                    </span>
+                                </div>
+                                <div id="locations-container" class="tags-container"></div>
+                                <input type="hidden" name="location_required" id="{{ form.location_required.id_for_label }}" value="{{ form.location_required.value|default:'' }}">
+                                {% if form.location_required.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.location_required.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="{{ form.is_remote.id_for_label }}" class="form-label mb-0">{% trans "Remote Only" %}</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="{{ form.is_remote.id_for_label }}" name="is_remote" {% if form.is_remote.value %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-text">{% trans "Project can be done remotely" %}</div>
+                                {% if form.is_remote.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.is_remote.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <label for="{{ form.is_private.id_for_label }}" class="form-label mb-0">{% trans "Private Project" %}</label>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="{{ form.is_private.id_for_label }}" name="is_private" {% if form.is_private.value %}checked{% endif %}>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                                <div class="form-text">{% trans "Private projects are only visible to invited freelancers" %}</div>
+                                {% if form.is_private.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.is_private.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Примечание о обязательных полях -->
+                        <div class="text-end mb-3">
+                            <small class="text-muted">* {% trans "Required fields" %}</small>
+                        </div>
+                        
+                        <!-- Фиксированная панель действий -->
+                        <div class="action-panel-sticky">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i> {% trans "Back" %}
+                                </a>
+                                
+                                <div>
+                                    {% if is_edit %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save me-1"></i> {% trans "Save Changes" %}
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-plus-circle me-1"></i> {% trans "Create Project" %}
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация подсказок
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Система тегов для проекта
+        const tagInput = document.getElementById('tag-input');
+        const tagsContainer = document.getElementById('tags-container');
+        const tagsHiddenInput = document.getElementById('{{ form.tags.id_for_label }}');
+        
+        if (tagInput && tagsContainer && tagsHiddenInput) {
+            // Загрузка существующих тегов
+            let tags = [];
+            if (tagsHiddenInput.value) {
+                tags = tagsHiddenInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+                renderTags();
+            }
+            
+            // Добавление нового тега
+            tagInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const tag = this.value.trim();
+                    if (tag && !tags.includes(tag)) {
+                        tags.push(tag);
+                        this.value = '';
+                        renderTags();
+                        updateTagsHiddenInput();
+                    }
+                }
+            });
+            
+            // Отображение тегов
+            function renderTags() {
+                tagsContainer.innerHTML = '';
+                tags.forEach((tag, index) => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.innerHTML = `${tag} <i class="bi bi-x-circle close" data-index="${index}"></i>`;
+                    tagsContainer.appendChild(tagElement);
+                    
+                    // Обработчик для удаления тега
+                    tagElement.querySelector('.close').addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        tags.splice(index, 1);
+                        renderTags();
+                        updateTagsHiddenInput();
+                    });
+                });
+            }
+            
+            // Обновление скрытого поля ввода
+            function updateTagsHiddenInput() {
+                tagsHiddenInput.value = tags.join(', ');
+            }
+        }
+        
+        // Система тегов для локаций
+        const locationInput = document.getElementById('location-input');
+        const locationsContainer = document.getElementById('locations-container');
+        const locationsHiddenInput = document.getElementById('{{ form.location_required.id_for_label }}');
+        
+        if (locationInput && locationsContainer && locationsHiddenInput) {
+            // Загрузка существующих локаций
+            let locations = [];
+            if (locationsHiddenInput.value) {
+                locations = locationsHiddenInput.value.split(',').map(location => location.trim()).filter(location => location !== '');
+                renderLocations();
+            }
+            
+            // Добавление новой локации
+            locationInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const location = this.value.trim();
+                    if (location && !locations.includes(location)) {
+                        locations.push(location);
+                        this.value = '';
+                        renderLocations();
+                        updateLocationsHiddenInput();
+                    }
+                }
+            });
+            
+            // Отображение локаций
+            function renderLocations() {
+                locationsContainer.innerHTML = '';
+                locations.forEach((location, index) => {
+                    const locationElement = document.createElement('span');
+                    locationElement.className = 'tag';
+                    locationElement.innerHTML = `<i class="bi bi-geo-alt"></i> ${location} <i class="bi bi-x-circle close" data-index="${index}"></i>`;
+                    locationsContainer.appendChild(locationElement);
+                    
+                    // Обработчик для удаления локации
+                    locationElement.querySelector('.close').addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        locations.splice(index, 1);
+                        renderLocations();
+                        updateLocationsHiddenInput();
+                    });
+                });
+            }
+            
+            // Обновление скрытого поля ввода
+            function updateLocationsHiddenInput() {
+                locationsHiddenInput.value = locations.join(', ');
+            }
+        }
+        
+        // Валидация бюджета
+        const budgetMin = document.getElementById('{{ form.budget_min.id_for_label }}');
+        const budgetMax = document.getElementById('{{ form.budget_max.id_for_label }}');
+        const budgetValidationMessage = document.getElementById('budget-validation-message');
+        
+        if (budgetMin && budgetMax && budgetValidationMessage) {
+            function validateBudget() {
+                const min = parseFloat(budgetMin.value) || 0;
+                const max = parseFloat(budgetMax.value) || 0;
+                
+                if (min > 0 && max > 0 && min > max) {
+                    budgetValidationMessage.textContent = '{% trans "Minimum budget cannot be greater than maximum budget" %}';
+                    budgetValidationMessage.classList.add('text-danger');
+                    budgetMax.classList.add('is-invalid');
+                    return false;
+                } else {
+                    budgetValidationMessage.textContent = '';
+                    budgetMax.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+            
+            budgetMin.addEventListener('input', validateBudget);
+            budgetMax.addEventListener('input', validateBudget);
+        }
+        
+        // Валидация формы перед отправкой
+        const projectForm = document.querySelector('form');
+        
+        if (projectForm) {
+            projectForm.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Проверка обязательных полей
+                const requiredFields = ['{{ form.title.id_for_label }}', '{{ form.description.id_for_label }}', 
+                                       '{{ form.category.id_for_label }}', '{{ form.budget_type.id_for_label }}',
+                                       '{{ form.deadline.id_for_label }}'];
+                
+                requiredFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field && !field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+                    } else if (field) {
+                        field.classList.remove('is-invalid');
+                    }
+                });
+                
+                // Проверка бюджета
+                if (budgetMin && budgetMax) {
+                    if (!validateBudget()) {
+                        isValid = false;
+                    }
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    // Прокрутка к первому невалидному полю
+                    const firstInvalid = document.querySelector('.is-invalid');
+                    if (firstInvalid) {
+                        firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    // Показать уведомление об ошибке
+                    const errorAlert = document.createElement('div');
+                    errorAlert.className = 'alert alert-danger alert-dismissible fade show';
+                    errorAlert.innerHTML = `
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% trans "Please fix the errors in the form before submitting" %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    
+                    // Добавить уведомление в начало формы
+                    const formBody = document.querySelector('.card-body');
+                    formBody.insertBefore(errorAlert, formBody.firstChild);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

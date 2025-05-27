@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "My Proposals" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 text-light mb-0">{% trans "My Proposals" %}</h1>
+            <p class="text-muted mt-2">
+                <i class="fas fa-info-circle me-1"></i>
+                {% if proposals.paginator.count %}
+                    {% trans "Showing" %} {{ proposals|length }} {% trans "of" %} {{ proposals.paginator.count }} {% trans "proposals" %}
+                {% endif %}
+            </p>
+        </div>
+        <a href="{% url 'jobs:project_list' %}" class="btn btn-primary">
+            <i class="fas fa-search me-2"></i>{% trans "Find Projects" %}
+        </a>
+    </div>
+    
+    <!-- Табы фильтрации над карточками -->
+    <div class="mb-4">
+        <ul class="nav nav-pills">
+            <li class="nav-item">
+                <a class="nav-link {% if not request.GET.status %}active{% endif %}" href="{% url 'jobs:my_proposals' %}">
+                    <i class="fas fa-list me-1"></i> {% trans "All" %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.status == 'pending' %}active{% endif %}" href="{% url 'jobs:my_proposals' %}?status=pending">
+                    <span class="badge bg-warning text-dark me-1">{{ pending_count|default:"0" }}</span>
+                    {% trans "Pending" %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.status == 'accepted' %}active{% endif %}" href="{% url 'jobs:my_proposals' %}?status=accepted">
+                    <span class="badge bg-success me-1">{{ accepted_count|default:"0" }}</span>
+                    {% trans "Accepted" %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.status == 'rejected' %}active{% endif %}" href="{% url 'jobs:my_proposals' %}?status=rejected">
+                    <span class="badge bg-danger me-1">{{ rejected_count|default:"0" }}</span>
+                    {% trans "Rejected" %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.GET.status == 'withdrawn' %}active{% endif %}" href="{% url 'jobs:my_proposals' %}?status=withdrawn">
+                    <span class="badge bg-secondary me-1">{{ withdrawn_count|default:"0" }}</span>
+                    {% trans "Withdrawn" %}
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="card border-0 bg-dark text-light shadow-sm">
+        <div class="card-body p-0">
+            {% if proposals %}
+                <div class="list-group list-group-flush">
+                    {% for proposal in proposals %}
+                        <div class="list-group-item bg-dark bg-opacity-50 border-light border-opacity-10 p-4">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="badge bg-{{ proposal.get_status_class }} me-2">
+                                            {{ proposal.get_status_display }}
+                                        </span>
+                                        <h5 class="mb-0">
+                                            <a href="{% url 'jobs:project_detail' pk=proposal.project.pk %}" class="text-light text-decoration-none">
+                                                {{ proposal.project.title|title }}
+                                            </a>
+                                        </h5>
+                                    </div>
+                                    
+                                    <div class="mb-2 text-muted small">
+                                        <i class="fas fa-user me-1"></i>
+                                        {% trans "Client" %}:
+                                        <a href="{% url 'accounts:client_detail' username=proposal.project.client.username %}" class="text-decoration-none">
+                                            {{ proposal.project.client.get_full_name }}
+                                        </a>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-clock me-1"></i>
+                                        {% trans "Submitted" %}: {{ proposal.created_at|date:"d M Y" }}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="text-truncate-3">
+                                            {{ proposal.cover_letter|linebreaksbr|truncatewords:30 }}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Информация о ставке и сроке доставки -->
+                                    <div class="d-flex flex-wrap mt-3">
+                                        <div class="me-4 mb-2">
+                                            <span class="text-muted me-1"><i class="fas fa-coins"></i> {% trans "Your Bid:" %}</span>
+                                            <span class="fw-bold">₸{{ proposal.bid_amount }}</span>
+                                        </div>
+                                        
+                                        {% if proposal.delivery_time %}
+                                        <div class="mb-2">
+                                            <span class="text-muted me-1"><i class="fas fa-calendar-alt"></i> {% trans "Delivery Time:" %}</span>
+                                            <span>{{ proposal.get_delivery_time_display }}</span>
+                                        </div>
+                                        {% else %}
+                                        <div class="mb-2">
+                                            <span class="text-muted me-1"><i class="fas fa-calendar-alt"></i> {% trans "Delivery Time:" %}</span>
+                                            <span class="text-muted">{% trans "Not specified" %}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4 d-flex align-items-end justify-content-md-end mt-3 mt-md-0">
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'jobs:proposal_detail' pk=proposal.pk %}" class="btn btn-outline-light">
+                                            <i class="fas fa-file-alt me-1"></i> {% trans "View Proposal" %}
+                                        </a>
+                                        
+                                        {% if proposal.status == 'pending' %}
+                                            <div class="dropdown">
+                                                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="proposalActions{{ proposal.pk }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fas fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="proposalActions{{ proposal.pk }}">
+                                                    <li>
+                                                        <a href="{% url 'jobs:proposal_edit' pk=proposal.pk %}" class="dropdown-item">
+                                                            <i class="fas fa-edit me-1"></i> {% trans "Edit" %}
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="{% url 'jobs:proposal_withdraw' pk=proposal.pk %}" class="dropdown-item text-danger">
+                                                            <i class="fas fa-times me-1"></i> {% trans "Withdraw" %}
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <img src="{% static 'img/empty-proposals.svg' %}" alt="{% trans 'No proposals' %}" class="img-fluid mb-3" style="max-width: 180px; opacity: 0.7;">
+                    <h5 class="text-light">{% trans "You haven't submitted any proposals yet" %}</h5>
+                    <p class="text-muted">{% trans "Start bidding on projects to build your portfolio and earn money" %}</p>
+                    <a href="{% url 'jobs:project_list' %}" class="btn btn-primary mt-2">
+                        <i class="fas fa-search me-2"></i>{% trans "Browse Projects" %}
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if proposals.has_other_pages %}
+        <div class="card-footer bg-dark">
+            <nav>
+                <ul class="pagination pagination-sm justify-content-center mb-0">
+                    {% if proposals.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ proposals.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for i in proposals.paginator.page_range %}
+                        {% if proposals.number == i %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ i }}</span>
+                        </li>
+                        {% elif i > proposals.number|add:'-3' and i < proposals.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ i }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                                {{ i }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if proposals.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ proposals.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ proposals.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

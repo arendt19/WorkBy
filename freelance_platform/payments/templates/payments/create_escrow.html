@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Create Escrow Payment" %}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card bg-dark text-white border-secondary shadow">
+                <div class="card-header bg-dark border-secondary">
+                    <h4 class="mb-0">
+                        <i class="fas fa-shield-alt text-danger me-2"></i>
+                        {% trans "Create Escrow Payment" %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">{% trans "What is Escrow?" %}</h5>
+                        <p>{% trans "Escrow is a secure payment system where client funds are safely held until work is completed and approved. This protects both the client and freelancer during the project." %}</p>
+                        <hr>
+                        <p class="mb-0">{% trans "The amount will be held securely until you approve the milestone as completed." %}</p>
+                    </div>
+
+                    <h5 class="mb-3">{% trans "Milestone Details" %}</h5>
+                    <div class="bg-darker p-3 rounded mb-4">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <p class="mb-1"><strong>{% trans "Milestone:" %}</strong> {{ milestone.title }}</p>
+                                <p class="mb-1"><strong>{% trans "Contract:" %}</strong> {{ contract.title }}</p>
+                                <p class="mb-1"><strong>{% trans "Freelancer:" %}</strong> {{ freelancer.get_full_name }}</p>
+                                <p class="mb-0"><strong>{% trans "Due Date:" %}</strong> {{ milestone.due_date|date:"d M Y" }}</p>
+                            </div>
+                            <div class="text-end">
+                                <h3 class="text-danger mb-0">{{ milestone.amount }} ₸</h3>
+                                <small class="text-muted">{% trans "Milestone Amount" %}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="mb-3">{% trans "Your Wallet Balance" %}</h5>
+                        {% if wallet %}
+                            <div class="bg-darker p-3 rounded d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="mb-0">{{ wallet.balance }} ₸</h4>
+                                    <small class="text-muted">{% trans "Available Balance" %}</small>
+                                </div>
+                                
+                                {% if wallet.balance < milestone.amount %}
+                                <div>
+                                    <span class="badge bg-danger">{% trans "Insufficient Funds" %}</span>
+                                    <div class="mt-2">
+                                        <a href="{% url 'payments:deposit' %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-plus me-1"></i> {% trans "Add Funds" %}
+                                        </a>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div>
+                                    <span class="badge bg-success">{% trans "Sufficient Funds" %}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                {% trans "You don't have a wallet set up yet." %}
+                                <a href="{% url 'payments:wallet' %}" class="alert-link">{% trans "Set up your wallet" %}</a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <h5 class="mb-3">{% trans "Funding Options" %}</h5>
+                            <div class="bg-darker p-3 rounded">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="radio" name="fund_immediately" id="fund_now" value="yes" checked>
+                                    <label class="form-check-label" for="fund_now">
+                                        <strong>{% trans "Fund Now" %}</strong>
+                                        <p class="text-muted mb-0 small">{% trans "Create and fund the escrow payment immediately from your wallet." %}</p>
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="fund_immediately" id="fund_later" value="no">
+                                    <label class="form-check-label" for="fund_later">
+                                        <strong>{% trans "Fund Later" %}</strong>
+                                        <p class="text-muted mb-0 small">{% trans "Just create the escrow payment now and fund it later." %}</p>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            {% if wallet and wallet.balance >= milestone.amount %}
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-shield-alt me-2"></i> {% trans "Create Escrow Payment" %}
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-danger" {% if not wallet or wallet.balance < milestone.amount and fund_immediately == 'yes' %}disabled{% endif %}>
+                                    <i class="fas fa-shield-alt me-2"></i> {% trans "Create Escrow Payment" %}
+                                </button>
+                                <div class="mt-2 text-muted small">
+                                    {% trans "You need to add funds to your wallet or choose 'Fund Later' option" %}
+                                </div>
+                            {% endif %}
+                            <a href="{% url 'jobs:contract_detail' pk=contract.pk %}" class="btn btn-outline-light ms-2">
+                                <i class="fas fa-arrow-left me-2"></i> {% trans "Back to Contract" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

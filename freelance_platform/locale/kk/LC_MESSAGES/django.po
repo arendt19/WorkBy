@@ -1,0 +1,542 @@
+# Kazakh translations for WorkBy project.
+# Copyright (C) 2025 WorkBy
+# This file is distributed under the same license as the WorkBy package.
+msgid ""
+msgstr ""
+"Project-Id-Version: WorkBy 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-04-11 15:00+0500\n"
+"PO-Revision-Date: 2025-04-19 16:30+0500\n"
+"Last-Translator: WorkBy Team <info@workby.kz>\n"
+"Language-Team: Kazakh <kk@workby.kz>\n"
+"Language: kk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# Общие переводы
+msgid "Home"
+msgstr "Басты бет"
+
+msgid "Find Projects"
+msgstr "Жобаларды табу"
+
+msgid "Categories"
+msgstr "Санаттар"
+
+msgid "Browse Categories"
+msgstr "Санаттарды шолу"
+
+msgid "Find projects in your area of expertise"
+msgstr "Өз тәжірибеңіз саласындағы жобаларды табыңыз"
+
+msgid "Projects"
+msgstr "Жобалар"
+
+msgid "Browse"
+msgstr "Шолу"
+
+msgid "No categories found."
+msgstr "Санаттар табылмады."
+
+msgid "Projects in this category"
+msgstr "Бұл санаттағы жобалар"
+
+msgid "View Details"
+msgstr "Толығырақ"
+
+msgid "No projects found in this category."
+msgstr "Бұл санатта жобалар табылмады."
+
+msgid "Post a Project"
+msgstr "Жоба жариялау"
+
+msgid "Profile"
+msgstr "Профиль"
+
+msgid "My Projects"
+msgstr "Менің жобаларым"
+
+msgid "My Proposals"
+msgstr "Менің ұсыныстарым"
+
+msgid "Contracts"
+msgstr "Келісімшарттар"
+
+msgid "Wallet"
+msgstr "Әмиян"
+
+msgid "Light Mode"
+msgstr "Жарық режим"
+
+msgid "Dark Mode"
+msgstr "Қараңғы режим"
+
+msgid "Log Out"
+msgstr "Шығу"
+
+msgid "Log In"
+msgstr "Кіру"
+
+msgid "Sign Up"
+msgstr "Тіркелу"
+
+msgid "The leading freelance platform in Kazakhstan"
+msgstr "Қазақстандағы жетекші фриланс платформасы"
+
+msgid "For Clients"
+msgstr "Тапсырыс берушілерге"
+
+msgid "How it Works"
+msgstr "Қалай жұмыс істейді"
+
+msgid "Success Stories"
+msgstr "Табыс тарихтары"
+
+msgid "For Freelancers"
+msgstr "Фрилансерлерге"
+
+msgid "Tips & Tricks"
+msgstr "Кеңестер мен әдістер"
+
+msgid "Resources"
+msgstr "Ресурстар"
+
+msgid "Help & Support"
+msgstr "Көмек және қолдау"
+
+msgid "Trust & Safety"
+msgstr "Сенім және қауіпсіздік"
+
+msgid "Terms of Service"
+msgstr "Қызмет көрсету шарттары"
+
+msgid "Privacy Policy"
+msgstr "Құпиялылық саясаты"
+
+msgid "Connect"
+msgstr "Байланыс"
+
+msgid "All rights reserved."
+msgstr "Барлық құқықтар қорғалған."
+
+# Фриланс терминология
+msgid "Fixed price"
+msgstr "Бекітілген баға"
+
+msgid "Hourly rate"
+msgstr "Сағаттық мөлшерлеме"
+
+msgid "Entry level"
+msgstr "Бастапқы деңгей"
+
+msgid "Intermediate"
+msgstr "Орташа деңгей"
+
+msgid "Expert"
+msgstr "Сарапшы"
+
+msgid "Budget"
+msgstr "Бюджет"
+
+msgid "Deadline"
+msgstr "Мерзім"
+
+msgid "Remote work"
+msgstr "Қашықтан жұмыс"
+
+msgid "Only clients can post projects"
+msgstr "Тек тапсырыс берушілер ғана жобаларды жариялай алады"
+
+msgid "Project created successfully"
+msgstr "Жоба сәтті жасалды"
+
+msgid "Post New Project"
+msgstr "Жаңа жоба жариялау"
+
+# Дополнительные переводы для футера
+msgid "Find Freelancers"
+msgstr "Фрилансерлерді табу"
+
+msgid "Manage Contracts"
+msgstr "Келісімшарттарды басқару"
+
+msgid "Portfolio"
+msgstr "Портфолио"
+
+msgid "Payments"
+msgstr "Төлемдер"
+
+msgid "New Projects"
+msgstr "Жаңа жобалар"
+
+# Навигация и переключение языка
+msgid "Toggle theme"
+msgstr "Тақырыпты ауыстыру"
+
+msgid "Messages"
+msgstr "Хабарламалар"
+
+msgid "English"
+msgstr "Ағылшын"
+
+msgid "Russian"
+msgstr "Орыс"
+
+msgid "Kazakh"
+msgstr "Қазақ"
+
+msgid "About Us"
+msgstr "Біз туралы"
+
+# Элементы главной страницы
+msgid "WorkBy - Find Freelancers in Kazakhstan"
+msgstr "WorkBy - Қазақстанда фрилансерлерді табыңыз"
+
+msgid "Find the perfect freelance services for your business"
+msgstr "Бизнесіңіз үшін мінсіз фриланс қызметтерін табыңыз"
+
+msgid "Connect with talented freelancers in Kazakhstan and around the world"
+msgstr "Қазақстан мен әлемдегі талантты фрилансерлермен байланысыңыз"
+
+msgid "Search for services..."
+msgstr "Қызметтерді іздеу..."
+
+msgid "Search"
+msgstr "Іздеу"
+
+msgid "Projects Posted"
+msgstr "Жарияланған жобалар"
+
+msgid "Professional Freelancers"
+msgstr "Кәсіби фрилансерлер"
+
+msgid "Satisfied Clients"
+msgstr "Қанағаттанған клиенттер"
+
+msgid "Popular Categories"
+msgstr "Танымал санаттар"
+
+msgid "View All Categories"
+msgstr "Барлық санаттарды көру"
+
+msgid "Latest Projects"
+msgstr "Соңғы жобалар"
+
+msgid "No projects found."
+msgstr "Жобалар табылмады."
+
+msgid "View All Projects"
+msgstr "Барлық жобаларды көру"
+
+msgid "How It Works"
+msgstr "Қалай жұмыс істейді"
+
+msgid "1. Post a Project"
+msgstr "1. Жоба жариялаңыз"
+
+msgid "Describe your project and the skills required. Set your budget and deadline."
+msgstr "Жобаңызды және қажетті дағдыларды сипаттаңыз. Бюджетті және мерзімді белгілеңіз."
+
+msgid "2. Receive Proposals"
+msgstr "2. Ұсыныстарды алыңыз"
+
+msgid "Review proposals from qualified freelancers interested in your project."
+msgstr "Жобаңызға қызығушылық танытқан білікті фрилансерлердің ұсыныстарын қарап шығыңыз."
+
+msgid "3. Get Work Done"
+msgstr "3. Жұмысты аяқтаңыз"
+
+msgid "Choose the best freelancer and get your project completed on time."
+msgstr "Ең жақсы фрилансерді таңдап, жобаңызды уақытында орындаңыз."
+
+msgid "Ready to get started?"
+msgstr "Бастауға дайынсыз ба?"
+
+msgid "Join thousands of clients and freelancers on WorkBy"
+msgstr "WorkBy-да мыңдаған клиенттер мен фрилансерлерге қосылыңыз"
+
+# Переводы для предложений и связанного функционала
+msgid "Proposals"
+msgstr "Ұсыныстар"
+
+msgid "All"
+msgstr "Барлығы"
+
+msgid "Pending"
+msgstr "Күтуде"
+
+msgid "Accepted"
+msgstr "Қабылданды"
+
+msgid "Rejected"
+msgstr "Қабылданбады"
+
+msgid "Withdrawn"
+msgstr "Қайтарып алынды"
+
+msgid "Client"
+msgstr "Тапсырыс беруші"
+
+msgid "Submitted"
+msgstr "Жіберілді"
+
+msgid "View"
+msgstr "Көру"
+
+msgid "Edit"
+msgstr "Өңдеу"
+
+msgid "Withdraw"
+msgstr "Қайтарып алу"
+
+msgid "You haven't submitted any proposals yet"
+msgstr "Сіз әлі ұсыныс жібермедіңіз"
+
+msgid "Start bidding on projects to build your portfolio and earn money"
+msgstr "Портфолиоңызды құру және ақша табу үшін жобаларға ұсыныстар жіберіңіз"
+
+msgid "Browse Projects"
+msgstr "Жобаларды шолу"
+
+msgid "Proposals for"
+msgstr "Ұсыныстар:"
+
+msgid "Back to Project"
+msgstr "Жобаға оралу"
+
+msgid "No proposals yet"
+msgstr "Әзірге ұсыныстар жоқ"
+
+msgid "Your project hasn't received any proposals yet. Check back later."
+msgstr "Сіздің жобаңыз әлі ұсыныстар алған жоқ. Кейінірек қайта тексеріңіз."
+
+msgid "Submit Proposal"
+msgstr "Ұсыныс жіберу"
+
+msgid "Proposal Sent"
+msgstr "Ұсыныс жіберілді"
+
+msgid "Back to My Proposals"
+msgstr "Менің ұсыныстарыма оралу"
+
+msgid "Accept Proposal"
+msgstr "Ұсынысты қабылдау"
+
+msgid "Decline"
+msgstr "Бас тарту"
+
+# Кошелек и финансы
+msgid "My Wallet"
+msgstr "Менің әмияным"
+
+msgid "Overview"
+msgstr "Шолу"
+
+msgid "Transactions"
+msgstr "Транзакциялар"
+
+msgid "Payment Methods"
+msgstr "Төлем әдістері"
+
+msgid "Withdraw Funds"
+msgstr "Қаражатты шығару"
+
+msgid "Add Funds"
+msgstr "Қаражат қосу"
+
+msgid "Stats"
+msgstr "Статистика"
+
+msgid "Total Earned"
+msgstr "Жалпы табыс"
+
+msgid "Pending Payment"
+msgstr "Күтілетін төлем"
+
+msgid "This Month"
+msgstr "Осы айда"
+
+msgid "Total Spent"
+msgstr "Жалпы шығындар"
+
+msgid "Active Projects Value"
+msgstr "Белсенді жобалар құны"
+
+msgid "Deposit Funds"
+msgstr "Қаражат салу"
+
+msgid "Current Balance"
+msgstr "Ағымдағы баланс"
+
+msgid "Your Payment Methods"
+msgstr "Сіздің төлем әдістеріңіз"
+
+msgid "Card"
+msgstr "Карта"
+
+msgid "Bank Account"
+msgstr "Банк шоты"
+
+msgid "Default"
+msgstr "Әдепкі"
+
+msgid "Manage Payment Methods"
+msgstr "Төлем әдістерін басқару"
+
+msgid "You don't have any payment methods yet."
+msgstr "Сізде әлі төлем әдістері жоқ."
+
+msgid "Add Payment Method"
+msgstr "Төлем әдісін қосу"
+
+msgid "Deposit Form"
+msgstr "Депозит формасы"
+
+msgid "Funds will be added to your account after payment is confirmed."
+msgstr "Төлем расталғаннан кейін қаражат шотыңызға қосылады."
+
+msgid "Your payment information is secured using industry-standard encryption."
+msgstr "Сіздің төлем ақпаратыңыз индустриялық стандартты шифрлеуді қолдану арқылы қорғалған."
+
+msgid "Rating Details"
+msgstr "Рейтинг мәліметтері"
+
+msgid "Work Quality"
+msgstr "Жұмыс сапасы"
+
+msgid "Communication"
+msgstr "Байланыс"
+
+msgid "Deadline Adherence"
+msgstr "Мерзімді сақтау"
+
+msgid "Value for Money"
+msgstr "Ақшаға сай құндылық"
+
+msgid "How satisfied are you with the quality of work delivered?"
+msgstr "Орындалған жұмыстың сапасына қаншалықты қанағаттанасыз?"
+
+msgid "How well did the freelancer communicate throughout the project?"
+msgstr "Фрилансер жоба барысында қаншалықты жақсы байланыста болды?"
+
+msgid "Did the freelancer deliver on time?"
+msgstr "Фрилансер жұмысты уақытында орындады ма?"
+
+msgid "Was the work worth what you paid?"
+msgstr "Жұмыс төленген ақшаға тұрды ма?"
+
+msgid "Overall Rating"
+msgstr "Жалпы рейтинг"
+
+msgid "Your Review"
+msgstr "Сіздің пікіріңіз"
+
+msgid "Share your experience working with this freelancer"
+msgstr "Осы фрилансермен жұмыс істеу тәжірибеңізбен бөлісіңіз"
+
+msgid "Top Rated Freelancers"
+msgstr "Үздік фрилансерлер"
+
+msgid "View Profile"
+msgstr "Профильді қарау"
+
+msgid "No top freelancers found."
+msgstr "Үздік фрилансерлер табылмады."
+
+msgid "View All Freelancers"
+msgstr "Барлық фрилансерлерді қарау"
+
+msgid "Contact Information"
+msgstr "Байланыс ақпараты"
+
+msgid "Skills & Languages"
+msgstr "Дағдылар және тілдер"
+
+msgid "Education & Certifications"
+msgstr "Білім және сертификаттар"
+
+msgid "No portfolio projects yet."
+msgstr "Әлі портфолио жобалары жоқ."
+
+msgid "No portfolio projects yet"
+msgstr "Әлі портфолио жобалары жоқ"
+
+msgid "Reviews"
+msgstr "Пікірлер"
+
+msgid "Freelancers"
+msgstr "Фрилансерлер"
+
+msgid "Contact"
+msgstr "Байланысу"
+
+msgid "Location:"
+msgstr "Орналасуы:"
+
+msgid "Experience:"
+msgstr "Тәжірибе:"
+
+msgid "Languages:"
+msgstr "Тілдер:"
+
+msgid "Hourly Rate:"
+msgstr "Сағаттық мөлшерлеме:"
+
+msgid "Education:"
+msgstr "Білім:"
+
+msgid "Website:"
+msgstr "Веб-сайт:"
+
+msgid "Skills:"
+msgstr "Дағдылар:"
+
+msgid "Statistics"
+msgstr "Статистика"
+
+msgid "Completed Projects"
+msgstr "Аяқталған жобалар"
+
+msgid "Success Rate"
+msgstr "Сәттілік деңгейі"
+
+msgid "On-Time Delivery"
+msgstr "Уақытында жеткізу"
+
+msgid "On-Budget"
+msgstr "Бюджет аясында"
+
+msgid "out of 5"
+msgstr "5-тен"
+
+msgid "reviews"
+msgstr "пікірлер"
+
+msgid "Available for Hire"
+msgstr "Жұмысқа қол жетімді"
+
+msgid "Not Available"
+msgstr "Қол жетімді емес"
+
+msgid "Not specified"
+msgstr "Көрсетілмеген"
+
+msgid "years"
+msgstr "жыл"
+
+msgid "No reviews yet"
+msgstr "Әлі пікірлер жоқ"
+
+msgid "This freelancer hasn't received any reviews yet."
+msgstr "Бұл фрилансер әлі пікір алған жоқ."
+
+msgid "Write a Review"
+msgstr "Пікір қалдыру"
+
+msgid "Project:"
+msgstr "Жоба:"
+
+msgid "Years of Experience"
+msgstr "Тәжірибе жылдары" 

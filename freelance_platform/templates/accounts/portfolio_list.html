@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Portfolio Projects" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{% trans "Your Portfolio Projects" %}</h4>
+                    {% if projects %}
+                    <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-sm btn-light">
+                        <i class="bi bi-plus-circle"></i> {% trans "Add New Project" %}
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <div class="row">
+                            {% for project in projects %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card h-100">
+                                        {% if project.images.all.0 %}
+                                            <img src="{{ project.images.all.0.image.url }}" class="card-img-top" alt="{{ project.title }}" style="height: 200px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light text-center py-5">
+                                                <i class="bi bi-image" style="font-size: 2rem; color: #aaa;"></i>
+                                                <p class="small text-muted mt-2">{% trans "No image" %}</p>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ project.title }}</h5>
+                                            <p class="card-text small">{{ project.description|truncatechars:100 }}</p>
+                                            
+                                            {% if project.categories.all %}
+                                                <div class="mb-2">
+                                                    {% for category in project.categories.all %}
+                                                        <span class="badge bg-secondary me-1">{{ category.name }}</span>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            
+                                            <div class="d-flex justify-content-between">
+                                                <small class="text-muted">
+                                                    <i class="bi bi-calendar"></i>
+                                                    {% if project.completed_date %}
+                                                        {{ project.completed_date|date:"M Y" }}
+                                                    {% else %}
+                                                        {% trans "N/A" %}
+                                                    {% endif %}
+                                                </small>
+                                                <div>
+                                                    <a href="{% url 'accounts:portfolio_edit' project.pk %}" class="btn btn-sm btn-outline-primary me-1">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <a href="{% url 'accounts:portfolio_delete' project.pk %}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="bi bi-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer">
+                                            <a href="{% url 'accounts:portfolio_detail' project.pk %}" class="btn btn-sm btn-outline-primary w-100">
+                                                {% trans "View Details" %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <!-- Табы для пустого профиля -->
+                                <ul class="nav nav-pills mb-4 justify-content-center" id="portfolio-tabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="empty-tab" data-bs-toggle="tab" data-bs-target="#empty-portfolio" type="button" role="tab" aria-controls="empty-portfolio" aria-selected="true">
+                                            {% trans "Portfolio" %}
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="examples-tab" data-bs-toggle="tab" data-bs-target="#examples" type="button" role="tab" aria-controls="examples" aria-selected="false">
+                                            {% trans "Examples" %}
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="tips-tab" data-bs-toggle="tab" data-bs-target="#tips" type="button" role="tab" aria-controls="tips" aria-selected="false">
+                                            {% trans "Tips" %}
+                                        </button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content" id="portfolioTabContent">
+                                    <!-- Пустое портфолио -->
+                                    <div class="tab-pane fade show active" id="empty-portfolio" role="tabpanel" aria-labelledby="empty-tab">
+                                        <div class="text-center py-4">
+                                            <!-- Улучшенная иконка портфолио -->
+                                            <div class="mb-4 portfolio-empty-icon">
+                                                <img src="{% static 'img/portfolio-empty.svg' %}" alt="Empty Portfolio" class="img-fluid" style="max-height: 120px;">
+                                            </div>
+                                            <h5 class="mb-3">{% trans "Build Your Professional Portfolio" %}</h5>
+                                            
+                                            <!-- Мотивационный текст со статистикой -->
+                            <div class="mb-4">
+                                                <p class="text-muted mb-2">{% trans "Showcase your best work to attract clients" %}</p>
+                                                <div class="stats-row d-flex justify-content-center gap-4 my-3">
+                                                    <div class="stat-item text-center">
+                                                        <div class="stat-value text-primary">3x</div>
+                                                        <div class="stat-label">{% trans "higher chance of getting hired" %}</div>
+                                                    </div>
+                                                    <div class="stat-item text-center">
+                                                        <div class="stat-value text-primary">+50%</div>
+                                                        <div class="stat-label">{% trans "higher project rates" %}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Единственная заметная кнопка -->
+                                            <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-primary btn-lg mt-2">
+                                                <i class="bi bi-plus-circle"></i> {% trans "Add Your First Project" %}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Примеры успешных портфолио -->
+                                    <div class="tab-pane fade" id="examples" role="tabpanel" aria-labelledby="examples-tab">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card example-card">
+                                                    <div class="card-body">
+                                                        <h5>{% trans "Web Developer Portfolio" %}</h5>
+                                                        <div class="example-preview p-3 bg-light rounded mb-3">
+                                                            <div class="example-project rounded border p-2 mb-2">
+                                                                <div class="row g-0">
+                                                                    <div class="col-4 bg-dark rounded-start" style="height: 60px;"></div>
+                                                                    <div class="col-8 p-2">
+                                                                        <div class="small fw-bold">E-commerce Website</div>
+                                                                        <div class="small text-muted">React, Node.js</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="example-project rounded border p-2">
+                                                                <div class="row g-0">
+                                                                    <div class="col-4 bg-dark rounded-start" style="height: 60px;"></div>
+                                                                    <div class="col-8 p-2">
+                                                                        <div class="small fw-bold">Mobile App</div>
+                                                                        <div class="small text-muted">Flutter, Firebase</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-4">
+                                                <div class="card example-card">
+                                                    <div class="card-body">
+                                                        <h5>{% trans "Designer Portfolio" %}</h5>
+                                                        <div class="example-preview p-3 bg-light rounded mb-3">
+                                                            <div class="example-project rounded border p-2 mb-2">
+                                                                <div class="row g-0">
+                                                                    <div class="col-4 bg-dark rounded-start" style="height: 60px;"></div>
+                                                                    <div class="col-8 p-2">
+                                                                        <div class="small fw-bold">Brand Identity</div>
+                                                                        <div class="small text-muted">Logo, Guidelines</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="example-project rounded border p-2">
+                                                                <div class="row g-0">
+                                                                    <div class="col-4 bg-dark rounded-start" style="height: 60px;"></div>
+                                                                    <div class="col-8 p-2">
+                                                                        <div class="small fw-bold">UI/UX Design</div>
+                                                                        <div class="small text-muted">Figma, Prototype</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Советы по созданию хорошего портфолио -->
+                                    <div class="tab-pane fade" id="tips" role="tabpanel" aria-labelledby="tips-tab">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h5 class="mb-3">{% trans "Tips for an Effective Portfolio" %}</h5>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Include high-quality images of your work" %}</li>
+                                                            <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Show your process, not just final results" %}</li>
+                                                            <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Provide detailed project descriptions" %}</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <ul class="list-group list-group-flush">
+                                                            <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Highlight client testimonials if available" %}</li>
+                                                            <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Update your portfolio regularly" %}</li>
+                                                            <li class="list-group-item bg-transparent"><i class="bi bi-check-circle-fill text-success me-2"></i>{% trans "Choose your best work over quantity" %}</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                                <div class="text-center mt-4">
+                                                    <a href="{% url 'accounts:portfolio_create' %}" class="btn btn-primary">
+                                                        <i class="bi bi-plus-circle"></i> {% trans "Start Building Now" %}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .portfolio-empty-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    .stat-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    
+    .example-card {
+        transition: all 0.3s ease;
+    }
+    
+    .example-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .example-project {
+        transition: all 0.3s ease;
+    }
+    
+    .example-project:hover {
+        transform: scale(1.02);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .nav-pills .nav-link {
+        color: var(--text-color);
+        background-color: transparent;
+        border: 1px solid var(--border-color);
+        margin: 0 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+    
+    .nav-pills .nav-link:hover:not(.active) {
+        background-color: var(--hover-color);
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Анимация появления для элементов
+        const emptyPortfolioElements = document.querySelectorAll('#empty-portfolio > div > *');
+        emptyPortfolioElements.forEach((el, index) => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                el.style.transition = 'all 0.5s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            }, 100 + (index * 150));
+        });
+        
+        // Обработчик для табов
+        const portfolioTabs = document.querySelectorAll('#portfolio-tabs button');
+        portfolioTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                const targetPane = document.querySelector(this.dataset.bsTarget);
+                
+                // Анимация для активного таба
+                const elements = targetPane.querySelectorAll('.card, .list-group-item, .example-project');
+                elements.forEach((el, index) => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        el.style.transition = 'all 0.5s ease';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, 100 + (index * 100));
+                });
+            });
+        });
+    });
+</script>
+{% endblock %} 

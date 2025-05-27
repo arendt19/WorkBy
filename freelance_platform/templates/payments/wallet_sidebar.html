@@ -1,0 +1,60 @@
+{% load i18n %}
+
+<div class="card shadow-sm mb-4 bg-dark text-light">
+    <div class="card-header bg-dark text-white">
+        <h5 class="card-title mb-0">{% trans "Wallet" %}</h5>
+    </div>
+    <div class="list-group list-group-flush">
+        <a href="{% url 'payments:wallet' %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary {% if request.resolver_match.url_name == 'wallet' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt me-2"></i> {% trans "Wallet" %}
+        </a>
+        <a href="{% url 'payments:deposit' %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary {% if request.resolver_match.url_name == 'deposit' %}active{% endif %}">
+            <i class="fas fa-arrow-circle-down me-2"></i> {% trans "Deposit Funds" %}
+        </a>
+        <a href="{% url 'payments:withdraw' %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary {% if request.resolver_match.url_name == 'withdraw' %}active{% endif %}">
+            <i class="fas fa-arrow-circle-up me-2"></i> {% trans "Withdraw Funds" %}
+        </a>
+        <a href="{% url 'payments:transaction_list' %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}">
+            <i class="fas fa-history me-2"></i> {% trans "Transactions" %}
+        </a>
+        <a href="{% url 'payments:payment_methods' %}" class="list-group-item list-group-item-action bg-dark text-light border-secondary {% if request.resolver_match.url_name == 'payment_methods' %}active{% endif %}">
+            <i class="fas fa-credit-card me-2"></i> {% trans "Payment Methods" %}
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+<div class="card shadow-sm mb-4 bg-dark text-light">
+    <div class="card-body p-0">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-0 rounded-0">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Стили для боковой панели -->
+<style>
+    .balance-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: rgba(var(--bs-primary-rgb), 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .list-group-item.active {
+        background-color: var(--bs-primary) !important;
+        border-color: var(--bs-primary) !important;
+    }
+    
+    @media (max-width: 991px) {
+        .wallet-sidebar {
+            margin-bottom: 2rem;
+        }
+    }
+</style> 

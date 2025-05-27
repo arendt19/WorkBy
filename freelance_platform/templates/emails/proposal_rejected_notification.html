@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Обновление по вашему предложению</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #6c757d;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #8B0000;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .feedback {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Обновление по вашему предложению</h1>
+        </div>
+        <div class="content">
+            <p>Здравствуйте, {{ freelancer_name }}!</p>
+            
+            <p>К сожалению, ваше предложение на проект <strong>"{{ project_title }}"</strong> не было выбрано заказчиком <strong>{{ client_name }}</strong>.</p>
+            
+            {% if rejection_reason %}
+                <div class="feedback">
+                    <p><strong>Комментарий от заказчика:</strong></p>
+                    <p>{{ rejection_reason }}</p>
+                </div>
+            {% endif %}
+            
+            <p>Не расстраивайтесь - на нашей платформе много других проектов, которые могут подойти вашим навыкам и опыту. Продолжайте искать подходящие проекты и отправлять предложения.</p>
+            
+            <p>Вы можете просмотреть текущие открытые проекты, нажав на кнопку ниже:</p>
+            
+            <a href="{{ project_url }}" class="button">Найти проекты</a>
+        </div>
+        <div class="footer">
+            <p>С уважением, команда WorkBy</p>
+            <p>Это автоматическое уведомление, пожалуйста, не отвечайте на это письмо.</p>
+        </div>
+    </div>
+</body>
+</html> 

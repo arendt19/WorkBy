@@ -1,0 +1,419 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Create Escrow Payment" %} | WorkBy{% endblock %}
+
+{% block extra_css %}
+<style>
+    .escrow-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.4s ease;
+        overflow: hidden;
+        transform: translateY(0);
+    }
+    
+    .escrow-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    
+    .escrow-header {
+        background-color: #1a1a1a;
+        padding: 20px;
+        border-bottom: 1px solid #333;
+    }
+    
+    .escrow-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: rgba(139, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #8B0000;
+        font-size: 24px;
+        transition: all 0.3s ease;
+    }
+    
+    .escrow-card:hover .escrow-icon {
+        transform: scale(1.1) rotate(10deg);
+        background-color: rgba(139, 0, 0, 0.25);
+    }
+    
+    .action-btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+        transform: translateY(0);
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .action-btn:active {
+        transform: translateY(0);
+    }
+    
+    .action-btn::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 5px;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        opacity: 0;
+        border-radius: 100%;
+        transform: scale(1, 1) translate(-50%);
+        transform-origin: 50% 50%;
+    }
+    
+    .action-btn:hover::after {
+        animation: ripple 1s ease-out;
+    }
+    
+    @keyframes ripple {
+        0% {
+            transform: scale(0, 0);
+            opacity: 0.5;
+        }
+        20% {
+            transform: scale(25, 25);
+            opacity: 0.3;
+        }
+        100% {
+            opacity: 0;
+            transform: scale(40, 40);
+        }
+    }
+    
+    .info-block {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: rgba(139, 0, 0, 0.1);
+        margin-bottom: 20px;
+        border-left: 4px solid #8B0000;
+        transition: all 0.3s ease;
+    }
+    
+    .info-block:hover {
+        background-color: rgba(139, 0, 0, 0.15);
+        transform: translateX(5px);
+    }
+    
+    .milestone-block {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #1e1e1e;
+        margin-bottom: 20px;
+        border: 1px solid #333;
+        transition: all 0.3s ease;
+    }
+    
+    .milestone-block:hover {
+        background-color: #252525;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .escrow-steps {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .escrow-steps::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 12px;
+        width: 2px;
+        background-color: #333;
+        z-index: 0;
+    }
+    
+    .step-item {
+        position: relative;
+        padding-bottom: 20px;
+    }
+    
+    .step-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .step-number {
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 26px;
+        height: 26px;
+        background-color: #8B0000;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        z-index: 1;
+        transition: all 0.3s ease;
+    }
+    
+    .step-item:hover .step-number {
+        transform: scale(1.2);
+        box-shadow: 0 0 10px rgba(139, 0, 0, 0.5);
+    }
+    
+    .step-content {
+        transition: all 0.3s ease;
+    }
+    
+    .step-item:hover .step-content {
+        transform: translateX(5px);
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #8B0000;
+        box-shadow: 0 0 0 0.25rem rgba(139, 0, 0, 0.25);
+    }
+    
+    .form-label {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus + .form-label,
+    .form-select:focus + .form-label {
+        color: #8B0000;
+    }
+    
+    .form-control, .form-select {
+        background-color: #2a2a2a;
+        border: 1px solid #444;
+        color: #fff;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:hover, .form-select:hover {
+        border-color: #666;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .fade-in-up {
+        animation: fadeInUp 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4 fade-in-up">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="escrow-card bg-dark text-light mb-4">
+                <div class="escrow-header d-flex align-items-center">
+                    <div class="escrow-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">{% trans "Create Escrow Payment" %}</h4>
+                        <p class="text-muted mb-0">{% trans "Secure payment for milestone" %}: {{ milestone.title }}</p>
+                    </div>
+                </div>
+                
+                <div class="card-body p-4">
+                    <div class="info-block mb-4">
+                        <h5><i class="fas fa-info-circle me-2"></i> {% trans "What is Escrow?" %}</h5>
+                        <p class="mb-0">{% trans "Escrow is a secure payment method that holds funds until work is completed. The client funds the escrow, and the freelancer receives payment only after the client approves the work." %}</p>
+                    </div>
+                    
+                    <div class="milestone-block">
+                        <h5 class="mb-3">{% trans "Milestone Details" %}</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Project" %}</p>
+                                <p class="fw-bold">{{ milestone.contract.project.title }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Client" %}</p>
+                                <p class="fw-bold">{{ milestone.contract.client.get_full_name }}</p>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Freelancer" %}</p>
+                                <p class="fw-bold">{{ milestone.contract.freelancer.get_full_name }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-muted mb-1">{% trans "Amount" %}</p>
+                                <p class="fw-bold text-primary">{{ milestone.amount }} ₸</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <p class="text-muted mb-1">{% trans "Description" %}</p>
+                                <p>{{ milestone.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3">{% trans "How Escrow Works" %}</h5>
+                        <div class="escrow-steps">
+                            <div class="step-item">
+                                <div class="step-number">1</div>
+                                <div class="step-content">
+                                    <h6>{% trans "Create Escrow" %}</h6>
+                                    <p class="text-muted">{% trans "You are here. Set up the escrow payment for this milestone." %}</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">2</div>
+                                <div class="step-content">
+                                    <h6>{% trans "Fund Escrow" %}</h6>
+                                    <p class="text-muted">{% trans "Funds will be held securely until work is complete." %}</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">3</div>
+                                <div class="step-content">
+                                    <h6>{% trans "Work Completion" %}</h6>
+                                    <p class="text-muted">{% trans "Freelancer completes the milestone tasks." %}</p>
+                                </div>
+                            </div>
+                            <div class="step-item">
+                                <div class="step-number">4</div>
+                                <div class="step-content">
+                                    <h6>{% trans "Release Funds" %}</h6>
+                                    <p class="text-muted">{% trans "You verify the work and release payment to the freelancer." %}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" id="escrowForm">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label for="title" class="form-label">{% trans "Escrow Title" %}</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ milestone.title }}" required>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="description" class="form-label">{% trans "Description" %} <small class="text-muted">({% trans "Optional" %})</small></label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ milestone.description }}</textarea>
+                        </div>
+                        
+                        <div class="form-group mb-4">
+                            <label for="amount" class="form-label">{% trans "Amount" %}</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="amount" name="amount" value="{{ milestone.amount }}" min="1" step="1" required>
+                                <span class="input-group-text">₸</span>
+                            </div>
+                            <small class="text-muted">{% trans "This amount will be held in escrow until you approve the work." %}</small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'jobs:contract_detail' milestone.contract.pk %}" class="btn btn-outline-light action-btn">
+                                <i class="fas fa-arrow-left me-1"></i> {% trans "Back to Contract" %}
+                            </a>
+                            <button type="submit" class="btn btn-primary action-btn">
+                                <i class="fas fa-shield-alt me-1"></i> {% trans "Create Escrow" %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Блок с информацией о балансе -->
+            <div class="escrow-card bg-dark text-light">
+                <div class="card-body p-4">
+                    <h5 class="mb-3"><i class="fas fa-wallet me-2"></i> {% trans "Your Wallet" %}</h5>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <p class="text-muted mb-1">{% trans "Current Balance" %}</p>
+                            <h3 class="text-danger mb-0">{{ user_balance }} ₸</h3>
+                        </div>
+                        
+                        <a href="{% url 'payments:deposit' %}" class="btn btn-outline-primary action-btn">
+                            <i class="fas fa-plus-circle me-1"></i> {% trans "Add Funds" %}
+                        </a>
+                    </div>
+                    
+                    {% if user_balance < milestone.amount %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {% trans "Your current balance is not sufficient to fund this escrow. Please add funds to your account." %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            {% trans "Your balance is sufficient to fund this escrow." %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const escrowForm = document.getElementById('escrowForm');
+        const amountInput = document.getElementById('amount');
+        const userBalance = {{ user_balance|default:0 }};
+        
+        // Инициализация всех тултипов и поповеров
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+        
+        // Проверка достаточности баланса при изменении суммы
+        amountInput.addEventListener('input', function() {
+            const amount = parseFloat(this.value);
+            if (amount > userBalance) {
+                WorkBy.showToast("{% trans 'Warning: Your balance is insufficient for this amount' %}", 'warning');
+            }
+        });
+        
+        // Валидация формы перед отправкой
+        escrowForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(amountInput.value);
+            
+            if (isNaN(amount) || amount <= 0) {
+                WorkBy.showToast("{% trans 'Please enter a valid amount' %}", 'error');
+                return;
+            }
+            
+            if (amount > userBalance) {
+                WorkBy.showToast("{% trans 'Your balance is insufficient. Please add funds to your account.' %}", 'error');
+                return;
+            }
+            
+            // Все проверки пройдены, отправляем форму
+            this.submit();
+        });
+    });
+</script>
+{% endblock %} 
