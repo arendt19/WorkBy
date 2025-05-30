@@ -9,7 +9,7 @@ import uuid
 
 class Category(models.Model):
     """
-    Категории проектов
+    Project categories
     """
     name = models.CharField(_('Name'), max_length=100)
     name_en = models.CharField(_('Name (English)'), max_length=100, blank=True)
@@ -35,28 +35,22 @@ class Category(models.Model):
         return reverse('jobs:category_detail', args=[self.slug])
     
     def get_translated_name(self):
-        """
-        Возвращает переведенное название категории в зависимости от текущего языка
-        """
+        """Returns translated category name based on current language"""
         current_lang = get_language()
         
-        # Если текущий язык английский, используем name_en или основное name (для поддержки английской версии)
         if current_lang == 'en':
             return self.name_en if self.name_en else self.name
-        
-        # Для других языков пытаемся получить перевод
+            
         translated_field = f"name_{current_lang}"
         
-        # Проверяем, есть ли соответствующее поле и заполнено ли оно
         if hasattr(self, translated_field) and getattr(self, translated_field):
             return getattr(self, translated_field)
-        
-        # Если перевода нет, возвращаем english или основное name
+            
         return self.name_en if self.name_en else self.name
 
 class Tag(models.Model):
     """
-    Теги для проектов
+    Project tags
     """
     name = models.CharField(_('Name'), max_length=50, unique=True)
     name_en = models.CharField(_('Name (English)'), max_length=50, blank=True)
@@ -78,28 +72,22 @@ class Tag(models.Model):
         super().save(*args, **kwargs)
     
     def get_translated_name(self):
-        """
-        Возвращает переведенное название тега в зависимости от текущего языка
-        """
+        """Returns translated tag name"""
         current_lang = get_language()
         
-        # Если текущий язык английский, используем name_en или основное name
         if current_lang == 'en':
             return self.name_en if self.name_en else self.name
-        
-        # Для других языков пытаемся получить перевод
+            
         translated_field = f"name_{current_lang}"
         
-        # Проверяем, есть ли соответствующее поле и заполнено ли оно
         if hasattr(self, translated_field) and getattr(self, translated_field):
             return getattr(self, translated_field)
-        
-        # Если перевода нет, возвращаем english или основное name
+            
         return self.name_en if self.name_en else self.name
 
 class Project(models.Model):
     """
-    Проектная работа, размещаемая клиентами
+    Project work posted by clients
     """
     STATUS_CHOICES = (
         ('draft', _('Draft')),
@@ -188,21 +176,19 @@ class Project(models.Model):
         return False
     
     def get_status_class(self):
-        """
-        Возвращает CSS-класс для отображения статуса проекта
-        """
+        """Returns CSS class for project status"""
         status_classes = {
-            'draft': 'secondary',
-            'open': 'success',
-            'in_progress': 'info',
-            'completed': 'primary',
-            'cancelled': 'danger'
+            'draft': 'badge-secondary',
+            'open': 'badge-success',
+            'in_progress': 'badge-primary',
+            'completed': 'badge-info',
+            'cancelled': 'badge-danger',
         }
-        return status_classes.get(self.status, 'secondary')
+        return status_classes.get(self.status, 'badge-secondary')
 
 class Proposal(models.Model):
     """
-    Предложение от фрилансера на проект
+    Freelancer proposal for a project
     """
     STATUS_CHOICES = (
         ('pending', _('Pending')),
@@ -243,20 +229,18 @@ class Proposal(models.Model):
         return f"Proposal for {self.project.title} by {self.freelancer.username}"
     
     def get_status_class(self):
-        """
-        Возвращает CSS-класс для отображения статуса предложения
-        """
+        """Returns CSS class for proposal status"""
         status_classes = {
-            'pending': 'warning',
-            'accepted': 'success',
-            'rejected': 'danger',
-            'withdrawn': 'secondary'
+            'pending': 'badge-warning',
+            'accepted': 'badge-success',
+            'rejected': 'badge-danger',
+            'withdrawn': 'badge-secondary',
         }
-        return status_classes.get(self.status, 'secondary')
+        return status_classes.get(self.status, 'badge-secondary')
 
 class Contract(models.Model):
     """
-    Модель контракта между клиентом и фрилансером
+    Contract model between client and freelancer
     """
     STATUS_CHOICES = (
         ('active', _('Active')),
@@ -296,15 +280,11 @@ class Contract(models.Model):
         return f"{self.contract_id} - {self.title}"
     
     def save(self, *args, **kwargs):
-        # Генерируем уникальный ID контракта, если его нет
+        # Generate unique ID for contract if it doesn't exist
         if not self.contract_id:
             uid = str(uuid.uuid4()).replace('-', '')[:8]
             self.contract_id = f"CT-{uid}"
         super().save(*args, **kwargs)
-    
-    @property
-    def is_active(self):
-        return self.status == 'active'
     
     @property
     def is_completed(self):
@@ -312,19 +292,16 @@ class Contract(models.Model):
         
     @property
     def review(self):
-        """
-        Возвращает отзыв, связанный с контрактом (если есть)
-        """
+        """Returns review associated with this contract"""
         from accounts.models import Review
-        return Review.objects.filter(
-            project=self.project,
-            client=self.client,
-            freelancer=self.freelancer
-        ).first()
+        try:
+            return Review.objects.get(contract=self)
+        except Review.DoesNotExist:
+            return None
 
 class Milestone(models.Model):
     """
-    Этапы в контракте
+    Contract milestones
     """
     STATUS_CHOICES = (
         ('pending', _('Pending')),
@@ -376,8 +353,12 @@ class Milestone(models.Model):
     
     @property
     def is_escrow_funded(self):
-        """Проверяет, имеет ли веха пополненный эскроу-платеж"""
+        # Checks if milestone has funded escrow payment
         try:
-            return hasattr(self, 'escrow_payment') and self.escrow_payment.status == 'funded'
-        except:
+            from payments.models import EscrowPayment
+            return EscrowPayment.objects.filter(
+                milestone=self,
+                status='funded'
+            ).exists()
+        except ImportError:
             return False

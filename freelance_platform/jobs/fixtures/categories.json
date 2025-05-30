@@ -4,8 +4,7 @@
     "pk": 1,
     "fields": {
       "name": "Web Development",
-      "description": "Design and development of websites and web applications",
-
+      "description": "Creation and maintenance of websites, CMS, e-commerce, corporate portals",
       "slug": "web-development"
     }
   },
@@ -13,40 +12,99 @@
     "model": "jobs.category",
     "pk": 2,
     "fields": {
-      "name": "Mobile App Development",
-      "description": "Design and development of mobile applications for iOS and Android",
-
-      "slug": "mobile-app-development"
+      "name": "Mobile Development",
+      "description": "iOS/Android applications, cross-platform frameworks (Flutter, React Native)",
+      "slug": "mobile-development"
     }
   },
   {
     "model": "jobs.category",
     "pk": 3,
     "fields": {
-      "name": "Graphic Design",
-      "description": "Creation of visual content to communicate messages",
-
-      "slug": "graphic-design"
+      "name": "Design & UX/UI",
+      "description": "Logos, brand identity, web and mobile interfaces, prototyping",
+      "slug": "design-ux-ui"
     }
   },
   {
     "model": "jobs.category",
     "pk": 4,
     "fields": {
-      "name": "Content Writing",
-      "description": "Writing, editing, and publishing content",
-
-      "slug": "content-writing"
+      "name": "Copywriting & Content",
+      "description": "SEO articles, blog posts, scripts, landing page texts, technical documentation",
+      "slug": "copywriting-content"
     }
   },
   {
     "model": "jobs.category",
     "pk": 5,
     "fields": {
+      "name": "Translation & Localization",
+      "description": "Translations to any language, content adaptation for local markets",
+      "slug": "translation-localization"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 6,
+    "fields": {
       "name": "Digital Marketing",
-      "description": "Marketing of products and services using digital technologies",
-
+      "description": "SMM, email marketing, contextual and targeted advertising, social media promotion",
       "slug": "digital-marketing"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 7,
+    "fields": {
+      "name": "SEO & SEM",
+      "description": "Audit, website optimization, Google Ads setup, semantic core development",
+      "slug": "seo-sem"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 8,
+    "fields": {
+      "name": "Audio & Video",
+      "description": "Video editing, sound engineering, voiceovers, animation, commercial production",
+      "slug": "audio-video"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 9,
+    "fields": {
+      "name": "Data Science & Analytics",
+      "description": "Data analysis, BI dashboards, machine learning, forecasting",
+      "slug": "data-science-analytics"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 10,
+    "fields": {
+      "name": "Finance & Accounting",
+      "description": "Business analytics, tax reporting, financial modeling",
+      "slug": "finance-accounting"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 11,
+    "fields": {
+      "name": "Legal Services",
+      "description": "Contract preparation, consultations, patent law, GDPR compliance",
+      "slug": "legal-services"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 12,
+    "fields": {
+      "name": "Virtual Assistance & Admin Support",
+      "description": "Email management, meeting organization, calendar management, data entry",
+      "slug": "virtual-assistance"
     }
   }
 ]
