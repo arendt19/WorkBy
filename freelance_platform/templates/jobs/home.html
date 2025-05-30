@@ -50,8 +50,79 @@
     .howto-icon {
         height: 120px;
     }
+    .how-it-works-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 20px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background-color: #8B0000;
+        color: white;
+    }
+    .how-it-works-icon i {
+        font-size: 3rem;
+    }
+    .how-it-works-card {
+        transition: all 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .how-it-works-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
     .cta-section {
         background-color: #8B0000;
+        color: white;
+    }
+    .category-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: #212529;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+        border-color: #0d6efd;
+    }
+    .category-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 15px;
+        height: 90px;
+        width: 100%;
+        background-color: #8B0000;
+        border-radius: 8px;
+        padding: 15px;
+    }
+    .category-card .card-body {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+    .category-card h5 {
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #fff;
+    }
+    .category-card .text-muted {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    .category-link {
+        display: block;
+        height: 100%;
+    }
+    .category-icon i {
+        font-size: 2.5rem;
         color: white;
     }
 </style>
@@ -139,33 +210,41 @@
 </section>
 
 <!-- Popular Categories -->
-<section class="py-5">
+<section class="py-5" style="background-color: #151515;">
     <div class="container">
-        <h2 class="text-center mb-5">{% trans "Popular Categories" %}</h2>
+        <h2 class="text-center mb-5 text-white">{% trans "Popular Categories" %}</h2>
         
-        <div class="row">
+        <div class="row justify-content-center">
             {% for category in categories|slice:":8" %}
-                <div class="col-md-3 col-sm-6 mb-4">
+                <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                     <a href="{% url 'jobs:category_detail' category.slug %}" class="text-decoration-none category-link">
                         <div class="card category-card h-100">
-                            <div class="card-body text-center">
+                            <div class="card-body">
                                 <div class="category-icon">
                                     {% if category.name == 'Web Development' %}
                                         <i class="fas fa-laptop-code"></i>
-                                    {% elif category.name == 'Mobile App Development' %}
+                                    {% elif category.name == 'Mobile App Development' or category.name == 'Mobile Development' %}
                                         <i class="fas fa-mobile-alt"></i>
-                                    {% elif category.name == 'Graphic Design' %}
+                                    {% elif category.name == 'Graphic Design' or category.name == 'Design & UX/UI' %}
                                         <i class="fas fa-palette"></i>
-                                    {% elif category.name == 'Content Writing' %}
+                                    {% elif category.name == 'Content Writing' or category.name == 'Copywriting & Content' %}
                                         <i class="fas fa-pen-fancy"></i>
                                     {% elif category.name == 'Digital Marketing' %}
                                         <i class="fas fa-chart-line"></i>
-                                    {% elif category.name == 'Video Production' %}
+                                    {% elif category.name == 'Video Production' or category.name == 'Audio & Video' %}
                                         <i class="fas fa-video"></i>
-                                    {% elif category.name == 'Translation' %}
+                                    {% elif category.name == 'Translation' or category.name == 'Translation & Localization' %}
                                         <i class="fas fa-language"></i>
-                                    {% elif category.name == 'Data Science' %}
+                                    {% elif category.name == 'Data Science' or category.name == 'Data Science & Analytics' %}
                                         <i class="fas fa-database"></i>
+                                    {% elif category.name == 'SEO & SEM' %}
+                                        <i class="fas fa-search-dollar"></i>
+                                    {% elif category.name == 'Finance & Accounting' %}
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    {% elif category.name == 'Legal Services' %}
+                                        <i class="fas fa-balance-scale"></i>
+                                    {% elif category.name == 'Virtual Assistance' %}
+                                        <i class="fas fa-headset"></i>
                                     {% else %}
                                         <i class="fas fa-briefcase"></i>
                                     {% endif %}
@@ -178,14 +257,14 @@
                 </div>
             {% empty %}
                 <div class="col-12 text-center">
-                    <p>{% trans "No categories found." %}</p>
+                    <p class="text-white">{% trans "No categories found." %}</p>
                 </div>
             {% endfor %}
         </div>
         
-        <div class="text-center mt-4">
-            <a href="{% url 'jobs:categories' %}" class="btn btn-outline-primary">
-                <i class="fas fa-th-large me-1"></i> {% trans "View All Categories" %}
+        <div class="text-center mt-5">
+            <a href="{% url 'jobs:categories' %}" class="btn btn-primary btn-lg px-4 py-2">
+                <i class="fas fa-th-large me-2"></i> {% trans "View All Categories" %}
             </a>
         </div>
     </div>
@@ -325,16 +404,16 @@
 </section>
 
 <!-- How It Works -->
-<section class="py-5 bg-light">
+<section class="py-5" style="background-color: #151515;">
     <div class="container">
-        <h2 class="text-center mb-5">{% trans "How It Works" %}</h2>
+        <h2 class="text-center mb-5 text-white">{% trans "How It Works" %}</h2>
         
-        <div class="row">
+        <div class="row justify-content-center">
             <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-4">
-                            <img src="{% static 'img/how_it_works/step1_register.png' %}" alt="{{ _('Register') }}" class="img-fluid howto-icon">
+                        <div class="how-it-works-icon">
+                            <i class="fas fa-user-plus"></i>
                         </div>
                         <h4 class="mb-2">{% trans "1. Register" %}</h4>
                         <p class="text-muted small mb-0">
@@ -347,8 +426,8 @@
             <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-4">
-                            <img src="{% static 'img/how_it_works/step2_find.png' %}" alt="{{ _('Find') }}" class="img-fluid howto-icon">
+                        <div class="how-it-works-icon">
+                            <i class="fas fa-search"></i>
                         </div>
                         <h4 class="mb-2">{% trans "2. Find" %}</h4>
                         <p class="text-muted small mb-0">
@@ -361,8 +440,8 @@
             <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-4">
-                            <img src="{% static 'img/how_it_works/step3_work.png' %}" alt="{{ _('Work') }}" class="img-fluid howto-icon">
+                        <div class="how-it-works-icon">
+                            <i class="fas fa-tasks"></i>
                         </div>
                         <h4 class="mb-2">{% trans "3. Work" %}</h4>
                         <p class="text-muted small mb-0">
@@ -375,8 +454,8 @@
             <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-4">
-                            <img src="{% static 'img/how_it_works/step4_payment.png' %}" alt="{{ _('Pay') }}" class="img-fluid howto-icon">
+                        <div class="how-it-works-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
                         </div>
                         <h4 class="mb-2">{% trans "4. Get Paid" %}</h4>
                         <p class="text-muted small mb-0">
@@ -399,7 +478,7 @@
             <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg me-3">
                 <i class="fas fa-user-plus me-2"></i> {% trans "Sign Up" %}
             </a>
-            <a href="{% url 'jobs:how_it_works' %}" class="btn btn-outline-light btn-lg">
+            <a href="{% url 'jobs:about' %}" class="btn btn-outline-light btn-lg">
                 <i class="fas fa-info-circle me-2"></i> {% trans "Learn More" %}
             </a>
         </div>

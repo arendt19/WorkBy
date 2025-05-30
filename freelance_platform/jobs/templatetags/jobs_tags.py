@@ -1,4 +1,5 @@
 from django import template
+from decimal import Decimal
 
 register = template.Library()
 
@@ -58,4 +59,22 @@ def jobs_add_class(field, css_class):
     """Добавляет CSS класс к виджету поля формы (Jobs app версия)"""
     return field.as_widget(attrs={
         "class": " ".join((field.field.widget.attrs.get('class', ''), css_class))
-    }) 
+    })
+
+@register.filter(name='currency')
+def currency(value):
+    """
+    Форматирует число как денежную сумму
+    Например: 1234.56 -> 1,234.56 ₸
+    """
+    if value is None:
+        return "0 ₸"
+    
+    try:
+        value = float(value)
+        formatted = "{:,.2f}".format(value)
+        # Заменяем запятую на пробел для лучшего отображения в русском/казахском формате
+        formatted = formatted.replace(',', ' ')
+        return f"{formatted} ₸"
+    except (ValueError, TypeError):
+        return f"0 ₸"
