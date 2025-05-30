@@ -1,0 +1,82 @@
+[
+  {
+    "model": "jobs.tag",
+    "pk": 1,
+    "fields": {
+      "name": "HTML",
+      "slug": "html"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 2,
+    "fields": {
+      "name": "CSS",
+      "slug": "css"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 3,
+    "fields": {
+      "name": "JavaScript",
+      "slug": "javascript"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 4,
+    "fields": {
+      "name": "Python",
+      "slug": "python"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 5,
+    "fields": {
+      "name": "Django",
+      "slug": "django"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 6,
+    "fields": {
+      "name": "React",
+      "slug": "react"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 7,
+    "fields": {
+      "name": "Angular",
+      "slug": "angular"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 8,
+    "fields": {
+      "name": "Node.js",
+      "slug": "nodejs"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 9,
+    "fields": {
+      "name": "iOS",
+      "slug": "ios"
+    }
+  },
+  {
+    "model": "jobs.tag",
+    "pk": 10,
+    "fields": {
+      "name": "Android",
+      "slug": "android"
+    }
+  }
+]

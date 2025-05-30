@@ -148,22 +148,27 @@ ASGI_APPLICATION = 'freelance_core.asgi.application'  # Для Channels
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# Используем PostgreSQL
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'freelance_db',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
+        'CONN_MAX_AGE': 600,
+        'OPTIONS': {
+            'client_encoding': 'UTF8',
+        },
     }
 }
 
-# Раскомментируйте для использования PostgreSQL
+# SQLite конфигурация (закомментирована)
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'freelance_db',
-#         'USER': 'postgres',
-#         'PASSWORD': 'postgres',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
 

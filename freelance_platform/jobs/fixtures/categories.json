@@ -1,0 +1,52 @@
+[
+  {
+    "model": "jobs.category",
+    "pk": 1,
+    "fields": {
+      "name": "Web Development",
+      "description": "Design and development of websites and web applications",
+
+      "slug": "web-development"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 2,
+    "fields": {
+      "name": "Mobile App Development",
+      "description": "Design and development of mobile applications for iOS and Android",
+
+      "slug": "mobile-app-development"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 3,
+    "fields": {
+      "name": "Graphic Design",
+      "description": "Creation of visual content to communicate messages",
+
+      "slug": "graphic-design"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 4,
+    "fields": {
+      "name": "Content Writing",
+      "description": "Writing, editing, and publishing content",
+
+      "slug": "content-writing"
+    }
+  },
+  {
+    "model": "jobs.category",
+    "pk": 5,
+    "fields": {
+      "name": "Digital Marketing",
+      "description": "Marketing of products and services using digital technologies",
+
+      "slug": "digital-marketing"
+    }
+  }
+]
