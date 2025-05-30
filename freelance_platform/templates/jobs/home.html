@@ -7,10 +7,11 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section mb-5">
+<section class="hero-section mb-5" style="background-image: url('{% static 'img/hero_bg.jpg' %}'); background-repeat: no-repeat; background-position: center center; background-size: cover; padding: 80px 0; position: relative; border-radius: 10px; overflow: hidden;">
+    <div class="hero-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); z-index: 1;"></div>
     <div class="container">
         <div class="row">
-            <div class="col-md-8 offset-md-2">
+            <div class="col-md-8 offset-md-2" style="background-color: rgba(0, 0, 0, 0.5); padding: 30px; border-radius: 15px;">
                 {% if user.is_authenticated and user.is_freelancer %}
                     <h1 class="hero-title">{% trans "Find the perfect projects for your skills" %}</h1>
                     <p class="hero-subtitle">{% trans "Browse projects that match your expertise and start earning" %}</p>
@@ -269,43 +270,57 @@
         <h2 class="text-center mb-5">{% trans "How It Works" %}</h2>
         
         <div class="row">
-            <div class="col-md-4 mb-4">
+            <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-3 icon-circle mx-auto">
-                            <i class="fas fa-file-alt"></i>
+                        <div class="mb-4">
+                            <img src="{% static 'img/how_it_works/step1_register.png' %}" alt="{% trans 'Register' %}" class="img-fluid" style="height: 120px;">
                         </div>
-                        <h4 class="mb-2">{% trans "1. Post" %}</h4>
+                        <h4 class="mb-2">{% trans "1. Register" %}</h4>
                         <p class="text-muted small mb-0">
-                            {% trans "Describe your project, set budget and deadline" %}
+                            {% trans "Create your account and complete your profile" %}
                         </p>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-4 mb-4">
+            <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-3 icon-circle mx-auto">
-                            <i class="fas fa-users"></i>
+                        <div class="mb-4">
+                            <img src="{% static 'img/how_it_works/step2_find.png' %}" alt="{% trans 'Find' %}" class="img-fluid" style="height: 120px;">
                         </div>
-                        <h4 class="mb-2">{% trans "2. Review" %}</h4>
+                        <h4 class="mb-2">{% trans "2. Find" %}</h4>
                         <p class="text-muted small mb-0">
-                            {% trans "Review proposals from qualified freelancers" %}
+                            {% trans "Post projects or find freelancers for your tasks" %}
                         </p>
                     </div>
                 </div>
             </div>
             
-            <div class="col-md-4 mb-4">
+            <div class="col-md-3 mb-4">
                 <div class="card how-it-works-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <div class="mb-3 icon-circle mx-auto">
-                            <i class="fas fa-check-circle"></i>
+                        <div class="mb-4">
+                            <img src="{% static 'img/how_it_works/step3_work.png' %}" alt="{% trans 'Work' %}" class="img-fluid" style="height: 120px;">
                         </div>
-                        <h4 class="mb-2">{% trans "3. Complete" %}</h4>
+                        <h4 class="mb-2">{% trans "3. Work" %}</h4>
                         <p class="text-muted small mb-0">
-                            {% trans "Choose the best freelancer and get work done" %}
+                            {% trans "Collaborate and communicate through our platform" %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-4">
+                <div class="card how-it-works-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="mb-4">
+                            <img src="{% static 'img/how_it_works/step4_payment.png' %}" alt="{% trans 'Payment' %}" class="img-fluid" style="height: 120px;">
+                        </div>
+                        <h4 class="mb-2">{% trans "4. Get Paid" %}</h4>
+                        <p class="text-muted small mb-0">
+                            {% trans "Secure payments through our escrow system" %}
                         </p>
                     </div>
                 </div>

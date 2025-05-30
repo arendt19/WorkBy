@@ -119,7 +119,7 @@
                                                                 {% endif %}
                                                             {% endfor %}
                                                         </div>
-                                                        <span class="d-block small fw-bold text-center mt-1" style="color: {% if rating >= 4.5 %}#28a745{% elif rating >= 3.5 %}#ffc107{% elif rating > 0 %}#6c757d{% else %}#6c757d{% endif %};">
+                                                        <span class="d-block small fw-bold text-center mt-1{% if rating >= 4.5 %} text-success{% elif rating >= 3.5 %} text-warning{% elif rating > 0 %} text-secondary{% else %} text-secondary{% endif %}">
                                                             {% if rating > 0 %}
                                                                 {{ rating|floatformat:1 }}
                                                             {% else %}

@@ -308,17 +308,28 @@
 {% endblock %}
 
 {% block extra_js %}
-{% include "payments/transaction_datepicker.html" %}
+<!-- Удаляем включение transaction_datepicker.html, так как он может конфликтовать -->
+<!-- Используем один прямой скрипт для управления календарем -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+
 <script>
-    $(document).ready(function() {
-        // Инициализация датапикеров
-        flatpickr('.datepicker', {
+    // Дожидаемся полной загрузки документа
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, что flatpickr загружен
+        if (typeof flatpickr === 'undefined') {
+            console.error('Flatpickr не загружен!');
+            return;
+        }
+        
+        // Настраиваем конфигурацию календаря
+        const flatpickrConfig = {
             dateFormat: 'Y-m-d',
             locale: 'ru',
             theme: 'dark',
-            allowInput: true,
+            allowInput: false, // Отключаем ручной ввод, чтобы избежать проблем
             disableMobile: true,
             monthSelectorType: 'static',
             appendTo: document.body,
@@ -327,43 +338,55 @@
             animate: true,
             altInput: true,
             altFormat: 'd.m.Y'
-        });
+        };
         
-        // Добавляем обработчики кликов на иконки календаря
-        $('.datepicker').each(function(index) {
-            const $input = $(this);
-            const instance = $input[0]._flatpickr;
+        // Находим элементы полей ввода даты
+        const fromDateInput = document.getElementById('id_date_from');
+        const toDateInput = document.getElementById('id_date_to');
+        
+        // Инициализируем календари для полей даты
+        if (fromDateInput && toDateInput) {
+            // Инициализируем календарь для поля 'от'
+            const fromDatePicker = flatpickr(fromDateInput, {
+                ...flatpickrConfig,
+                onChange: function(selectedDates) {
+                    if (selectedDates[0] && toDatePicker) {
+                        toDatePicker.set('minDate', selectedDates[0]);
+                    }
+                }
+            });
             
-            if (instance) {
-                // Добавляем обработчик клика на иконку календаря
-                $input.parent().find('.input-group-text').on('click', function() {
-                    instance.open();
-                });
-                
-                // Добавляем обработчик клика на поле ввода даты
-                $input.on('click', function() {
-                    instance.open();
+            // Инициализируем календарь для поля 'до'
+            const toDatePicker = flatpickr(toDateInput, {
+                ...flatpickrConfig,
+                onChange: function(selectedDates) {
+                    if (selectedDates[0] && fromDatePicker) {
+                        fromDatePicker.set('maxDate', selectedDates[0]);
+                    }
+                }
+            });
+            
+            // Добавляем обработчики клика на иконки календаря
+            const fromDateIcon = fromDateInput.parentElement.querySelector('.input-group-text');
+            const toDateIcon = toDateInput.parentElement.querySelector('.input-group-text');
+            
+            if (fromDateIcon) {
+                fromDateIcon.addEventListener('click', function() {
+                    fromDatePicker.open();
                 });
             }
-        });
-        
-        // Синхронизируем датапикеры для выбора диапазона дат
-        const fromPicker = $('#id_date_from')[0]._flatpickr;
-        const toPicker = $('#id_date_to')[0]._flatpickr;
-        
-        if (fromPicker && toPicker) {
-            fromPicker.config.onChange.push(function(selectedDates) {
-                if (selectedDates[0]) {
-                    toPicker.set('minDate', selectedDates[0]);
-                }
-            });
             
-            toPicker.config.onChange.push(function(selectedDates) {
-                if (selectedDates[0]) {
-                    fromPicker.set('maxDate', selectedDates[0]);
-                }
-            });
+            if (toDateIcon) {
+                toDateIcon.addEventListener('click', function() {
+                    toDatePicker.open();
+                });
+            }
+            
+            console.log('Календари успешно инициализированы');
+        } else {
+            console.error('Не найдены поля для ввода даты!');
         }
+
         
         // Предварительно заполненные даты
         const dateRanges = {
@@ -376,27 +399,60 @@
         };
         
         // Быстрый выбор периода
-        $('.date-range-btn').on('click', function(e) {
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.date-range-btn');
+            if (!target) return;
+                
             e.preventDefault();
-            const range = $(this).data('range');
+            const range = target.dataset.range;
             const dates = dateRanges[range];
             
-            $('#id_date_from').val(dates.start);
-            $('#id_date_to').val(dates.end);
+            if (!dates) return;
+            
+            // Получаем элементы полей ввода даты и их flatpickr
+            const fromInput = document.getElementById('id_date_from');
+            const toInput = document.getElementById('id_date_to');
+            
+            if (fromInput && fromInput._flatpickr) {
+                fromInput._flatpickr.setDate(dates.start);
+            } else {
+                fromInput.value = dates.start;
+            }
+            
+            if (toInput && toInput._flatpickr) {
+                toInput._flatpickr.setDate(dates.end);
+            } else {
+                toInput.value = dates.end;
+            }
             
             // Добавляем скрытый input с выбранным диапазоном
-            $('form').append(`<input type="hidden" name="date_range" value="${range}">`);
+            const form = fromInput.closest('form');
             
-            $('form').submit();
+            // Удаляем старые скрытые input
+            const oldHiddenInputs = form.querySelectorAll('input[name="date_range"]');
+            oldHiddenInputs.forEach(input => input.remove());
+            
+            // Добавляем новое скрытое input
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = 'date_range';
+            hiddenInput.value = range;
+            form.appendChild(hiddenInput);
+            
+            // Отправляем форму
+            form.submit();
         });
         
         // Клик по строке для перехода к деталям транзакции
-        $('.transaction-row').on('click', function(e) {
-            if (!$(e.target).is('a')) {
-                const transactionId = $(this).data('transaction-id');
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('.transaction-row');
+            if (!target || e.target.closest('a')) return;
+            
+            const transactionId = target.dataset.transactionId;
+            if (transactionId) {
                 window.location.href = `/payments/transaction/${transactionId}/`;
             }
         });
     });
 </script>
-{% endblock %} 
+{% endblock %}

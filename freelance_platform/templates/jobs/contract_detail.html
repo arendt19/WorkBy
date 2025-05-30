@@ -418,7 +418,7 @@
                         <h5 class="card-title mb-0 fw-bold">{% trans "Contract Details" %}</h5>
                     </div>
                     <span class="badge bg-{{ contract.get_status_class }}" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; border-radius: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-                        <i class="fas fa-circle me-1" style="font-size: 0.6rem; color: {% if contract.status == 'active' %}#28a745{% elif contract.status == 'completed' %}#007bff{% elif contract.status == 'cancelled' %}#6c757d{% else %}inherit{% endif %};"></i>
+                        <i class="fas fa-circle me-1{% if contract.status == 'active' %} text-success{% elif contract.status == 'completed' %} text-primary{% elif contract.status == 'cancelled' %} text-secondary{% endif %}" style="font-size: 0.6rem;"></i>
                         {{ contract.get_status_display }}
                     </span>
                 </div>
@@ -507,7 +507,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <div class="p-3 rounded h-100" style="background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid {% if contract.deadline < now %}rgba(220, 53, 69, 0.7){% else %}rgba(255, 255, 255, 0.1){% endif %};">
+                                    <div class="p-3 rounded h-100{% if contract.deadline < now %} border-danger{% else %} border-light-subtle{% endif %}" style="background-color: rgba(255, 255, 255, 0.03); border-left: 3px solid;">
                                         <div class="d-flex align-items-center">
                                             <div class="d-flex justify-content-center align-items-center rounded-circle" style="width: 30px; height: 30px; min-width: 30px; background-color: rgba(139, 0, 0, 0.2); border: 1px solid rgba(139, 0, 0, 0.3);">
                                                 <i class="fas fa-calendar-day" style="color: #8B0000; font-size: 0.8rem;"></i>

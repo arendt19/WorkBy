@@ -173,7 +173,7 @@
                                 <span class="fw-bold">{{ profile.quality_rating|floatformat:1 }} / 5</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ profile.quality_rating|floatformat:1|multiply:20 }}%;" aria-valuenow="{{ profile.quality_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
+                                <div class="progress-bar bg-primary rating-bar" role="progressbar" data-width="{{ profile.quality_rating|floatformat:1|multiply:20 }}" aria-valuenow="{{ profile.quality_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -182,7 +182,7 @@
                                 <span class="fw-bold">{{ profile.communication_rating|floatformat:1 }} / 5</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ profile.communication_rating|floatformat:1|multiply:20 }}%;" aria-valuenow="{{ profile.communication_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
+                                <div class="progress-bar bg-success rating-bar" role="progressbar" data-width="{{ profile.communication_rating|floatformat:1|multiply:20 }}" aria-valuenow="{{ profile.communication_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -191,7 +191,7 @@
                                 <span class="fw-bold">{{ profile.deadline_rating|floatformat:1 }} / 5</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-info" role="progressbar" style="width: {{ profile.deadline_rating|floatformat:1|multiply:20 }}%;" aria-valuenow="{{ profile.deadline_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
+                                <div class="progress-bar bg-info rating-bar" role="progressbar" data-width="{{ profile.deadline_rating|floatformat:1|multiply:20 }}" aria-valuenow="{{ profile.deadline_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -200,7 +200,7 @@
                                 <span class="fw-bold">{{ profile.cost_rating|floatformat:1 }} / 5</span>
                             </div>
                             <div class="progress" style="height: 10px;">
-                                <div class="progress-bar bg-warning" role="progressbar" style="width: {{ profile.cost_rating|floatformat:1|multiply:20 }}%;" aria-valuenow="{{ profile.cost_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
+                                <div class="progress-bar bg-warning rating-bar" role="progressbar" data-width="{{ profile.cost_rating|floatformat:1|multiply:20 }}" aria-valuenow="{{ profile.cost_rating|floatformat:1 }}" aria-valuemin="0" aria-valuemax="5"></div>
                             </div>
                         </div>
                     </div>
@@ -347,20 +347,25 @@
 <script>
 // Инициализация графиков рейтингов при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-    // Данные для круговой диаграммы рейтингов
+    // Данные для круговой диаграммы
+    var qualityRating = parseFloat('{{ profile.quality_rating|floatformat:1 }}');
+    var communicationRating = parseFloat('{{ profile.communication_rating|floatformat:1 }}');
+    var deadlineRating = parseFloat('{{ profile.deadline_rating|floatformat:1 }}');
+    var costRating = parseFloat('{{ profile.cost_rating|floatformat:1 }}');
+    
     var ratingData = {
         labels: [
-            '{% trans "Work Quality" %}',
+            '{% trans "Quality of Work" %}',
             '{% trans "Communication" %}',
-            '{% trans "Deadline Adherence" %}',
+            '{% trans "Meeting Deadlines" %}',
             '{% trans "Value for Money" %}'
         ],
         datasets: [{
             data: [
-                {{ profile.quality_rating|floatformat:1 }},
-                {{ profile.communication_rating|floatformat:1 }},
-                {{ profile.deadline_rating|floatformat:1 }},
-                {{ profile.cost_rating|floatformat:1 }}
+                qualityRating,
+                communicationRating,
+                deadlineRating,
+                costRating
             ],
             backgroundColor: [
                 '#8B0000',  // primary color
@@ -395,11 +400,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Создание круговой диаграммы
+    // Создаем и отображаем круговую диаграмму
     var ratingChart = new Chart(
         document.getElementById('ratingChart'),
         ratingConfig
     );
 });
+
+// Устанавливаем ширину прогресс-баров на основе data-атрибутов
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.rating-bar').forEach(function(bar) {
+        var width = bar.getAttribute('data-width');
+        if (width) {
+            bar.style.width = width + '%';
+        }
+    });
+});
 </script>
-{% endblock %} 
+{% endblock %}
