@@ -6,6 +6,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import get_language
 import uuid
+from django.db.models import Count, Q, F
 
 class Category(models.Model):
     """
@@ -362,3 +363,56 @@ class Milestone(models.Model):
             ).exists()
         except ImportError:
             return False
+
+
+class ProjectView(models.Model):
+    """
+    Модель для отслеживания просмотров проектов пользователями.
+    Используется для аналитики и рекомендаций проектов.
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='project_views'
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='views'
+    )
+    timestamp = models.DateTimeField(_('Timestamp'), auto_now_add=True)
+    view_duration = models.PositiveIntegerField(_('View Duration (seconds)'), default=0)
+    
+    class Meta:
+        verbose_name = _('Project View')
+        verbose_name_plural = _('Project Views')
+        ordering = ['-timestamp']
+        # Уникальность по пользователю и проекту
+        unique_together = ['user', 'project']
+    
+    def __str__(self):
+        return f"{self.user.username} просмотрел {self.project.title} в {self.timestamp.strftime('%Y-%m-%d')}"
+
+    @classmethod
+    def record_view(cls, user, project, duration=None):
+        """
+        Записывает просмотр проекта пользователем.
+        Если просмотр уже существует, обновляет длительность просмотра.
+        """
+        if not user.is_authenticated or user == project.client:
+            return None
+            
+        view, created = cls.objects.get_or_create(
+            user=user,
+            project=project,
+            defaults={'timestamp': timezone.now()}
+        )
+        
+        if not created and duration:
+            view.view_duration += duration
+            view.save()
+        elif created and duration:
+            view.view_duration = duration
+            view.save()
+            
+        return view

@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Рекомендованные проекты" %} | WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-center mb-3">{% trans "Рекомендованные проекты" %}</h1>
+            <p class="text-center text-muted">
+                {% trans "Проекты, подобранные специально для вас на основе ваших навыков, опыта и интересов" %}
+            </p>
+        </div>
+    </div>
+    
+    {% if no_recommendations %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert {% if recommendation_error %}alert-warning{% else %}alert-info{% endif %}">
+                    <h4 class="alert-heading">
+                        {% if recommendation_error %}
+                            {% trans "Возникла проблема при получении рекомендаций" %}
+                        {% else %}
+                            {% trans "Персональные рекомендации пока недоступны" %}
+                        {% endif %}
+                    </h4>
+                    
+                    {% if recommendation_error %}
+                        <p>
+                            {% trans "Не удалось загрузить персональные рекомендации. Мы уже работаем над решением проблемы." %}
+                        </p>
+                        <p>
+                            {% trans "Пока вы можете просмотреть популярные проекты ниже или воспользоваться общим поиском проектов." %}
+                        </p>
+                    {% else %}
+                        <p>
+                            {% trans "Мы пока не можем предоставить персональные рекомендации. Это может быть по следующим причинам:" %}
+                        </p>
+                        <ul>
+                            <li>{% trans "Вы новый пользователь и у нас недостаточно данных о ваших предпочтениях" %}</li>
+                            <li>{% trans "Вы еще не заполнили свой профиль и навыки" %}</li>
+                            <li>{% trans "Вы не просматривали проекты или не отправляли предложения" %}</li>
+                        </ul>
+                        <p>
+                            {% trans "Чтобы получать точные рекомендации, заполните свой профиль, добавьте навыки и начните просматривать проекты." %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mb-4">
+            <div class="col-12">
+                <h3>{% trans "Популярные проекты" %}</h3>
+                <p class="text-muted">{% trans "Пока вы можете изучить самые популярные проекты на платформе" %}</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            {% for project in popular_projects %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 project-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">
+                                    <a href="{% url 'jobs:project_detail' project.id %}" class="stretched-link text-decoration-none">
+                                        {{ project.title }}
+                                    </a>
+                                </h5>
+                                <span class="badge badge-{{ project.get_status_class }}">{{ project.get_status_display }}</span>
+                            </div>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="fas fa-folder me-1"></i> {{ project.category.get_translated_name }}
+                            </p>
+                            <p class="card-text">{{ project.description|truncatewords:30 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-primary fw-bold">
+                                        {% if project.budget_type == 'fixed' %}
+                                            {{ project.budget_min }} - {{ project.budget_max }} $
+                                        {% else %}
+                                            {{ project.budget_min }} - {{ project.budget_max }} $/{% trans "час" %}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i> {{ project.created_at|date:"d.m.Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        {% trans "Проекты не найдены" %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="row">
+            {% for recommendation in recommended_projects %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 project-card">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                            <span class="badge bg-success p-2">
+                                <i class="fas fa-check-circle me-1"></i>
+                                {% trans "Совпадение" %}: {{ recommendation.match_percentage }}%
+                            </span>
+                            <span class="badge badge-{{ recommendation.project.get_status_class }}">
+                                {{ recommendation.project.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title mb-2">
+                                <a href="{% url 'jobs:project_detail' recommendation.project.id %}" class="stretched-link text-decoration-none">
+                                    {{ recommendation.project.title }}
+                                </a>
+                            </h5>
+                            <p class="card-text text-muted small mb-2">
+                                <i class="fas fa-folder me-1"></i> {{ recommendation.project.category.get_translated_name }}
+                            </p>
+                            <p class="card-text">{{ recommendation.project.description|truncatewords:30 }}</p>
+                            
+                            {% if recommendation.match_percentage >= 80 %}
+                                <div class="alert alert-success p-2 my-2">
+                                    <small>
+                                        <i class="fas fa-star me-1"></i>
+                                        {% trans "Отличное совпадение с вашими навыками и опытом!" %}
+                                    </small>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-primary fw-bold">
+                                        {% if recommendation.project.budget_type == 'fixed' %}
+                                            {{ recommendation.project.budget_min }} - {{ recommendation.project.budget_max }} $
+                                        {% else %}
+                                            {{ recommendation.project.budget_min }} - {{ recommendation.project.budget_max }} $/{% trans "час" %}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="far fa-clock me-1"></i> {{ recommendation.project.created_at|date:"d.m.Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        {% trans "Рекомендации не найдены" %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <h3>{% trans "Как работают рекомендации?" %}</h3>
+            <div class="row mt-4">
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-code fa-lg"></i>
+                            </div>
+                            <h5>{% trans "Анализ навыков" %}</h5>
+                            <p class="text-muted">
+                                {% trans "Мы сопоставляем ваши навыки с требованиями проектов для выявления наилучших совпадений" %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-history fa-lg"></i>
+                            </div>
+                            <h5>{% trans "История работы" %}</h5>
+                            <p class="text-muted">
+                                {% trans "Мы учитываем вашу историю успешно выполненных проектов и предыдущие контракты" %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                                <i class="fas fa-user-friends fa-lg"></i>
+                            </div>
+                            <h5>{% trans "Поведение похожих фрилансеров" %}</h5>
+                            <p class="text-muted">
+                                {% trans "Мы анализируем, какие проекты выбирают фрилансеры с похожими навыками и опытом" %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript для записи просмотров проектов -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const projectLinks = document.querySelectorAll('a[href^="{% url 'jobs:project_detail' 0 %}'.replace('/0/', '/')]');
+        let startTime = Date.now();
+        
+        // Запись времени начала просмотра страницы
+        projectLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const projectId = this.getAttribute('href').split('/').filter(part => part !== '')[2];
+                const viewDuration = Math.floor((Date.now() - startTime) / 1000);
+                
+                // Асинхронная запись просмотра
+                fetch(`/jobs/record-view/${projectId}/?duration=${viewDuration}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                }).catch(error => console.error('Error recording view:', error));
+            });
+        });
+    });
+</script>
+{% endblock %}

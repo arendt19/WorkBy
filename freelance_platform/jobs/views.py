@@ -15,7 +15,8 @@ from django.utils.safestring import mark_safe
 from accounts.models import Review
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
-from .models import Project, Category, Proposal, Contract, Milestone, Tag
+from .models import Project, Category, Proposal, Contract, Milestone, Tag, ProjectView
+from .recommendations import ProjectRecommendation
 from .forms import (
     ProjectForm, ProposalForm, ContractForm, MilestoneForm, 
     MilestoneFormSet, ProjectSearchForm
@@ -1506,9 +1507,86 @@ def api_project_proposals_count(request, pk):
         'project_id': project.id
     })
 
+@login_required
+def recommended_projects_view(request):
+    """
+    Отображение рекомендованных проектов для фрилансера
+    на основе его навыков, истории и активности
+    """
+    user = request.user
+    
+    # Проверяем, что пользователь является фрилансером
+    if not hasattr(user, 'freelancer_profile'):
+        messages.error(request, _('Эта страница доступна только для фрилансеров'))
+        return redirect('jobs:home')
+    
+    try:
+        # Получаем рекомендации для пользователя
+        recommender = ProjectRecommendation(user)
+        recommended_projects = recommender.get_recommendations(limit=20)
+        
+        # Если нет рекомендаций, отображаем общие популярные проекты
+        if not recommended_projects:
+            popular_projects = Project.objects.filter(status='open').order_by('-views__count')[:10]
+            context = {
+                'recommended_projects': [],
+                'popular_projects': popular_projects,
+                'no_recommendations': True
+            }
+        else:
+            context = {
+                'recommended_projects': recommended_projects,
+                'no_recommendations': False
+            }
+            
+        return render(request, 'jobs/recommended_projects.html', context)
+    
+    except Exception as e:
+        messages.warning(request, _(f'Произошла ошибка при получении рекомендаций: {str(e)}'))
+        # Вместо перенаправления, показываем популярные проекты с информацией об ошибке
+        popular_projects = Project.objects.filter(status='open').order_by('-views__count')[:10]
+        context = {
+            'recommended_projects': [],
+            'popular_projects': popular_projects,
+            'no_recommendations': True,
+            'recommendation_error': True
+        }
+        return render(request, 'jobs/recommended_projects.html', context)
+
+
+def record_project_view(request, project_id):
+    """
+    API-представление для записи просмотра проекта
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required'}, status=401)
+        
+    try:
+        project = get_object_or_404(Project, id=project_id)
+        duration = request.GET.get('duration', 0)
+        
+        try:
+            duration = int(duration)
+        except ValueError:
+            duration = 0
+            
+        view = ProjectView.record_view(request.user, project, duration)
+        
+        return JsonResponse({
+            'status': 'success', 
+            'message': 'View recorded'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error', 
+            'message': str(e)
+        }, status=400)
+
+
 # Применяем декоратор к представлениям, которые используют базовый шаблон
 home_view = check_pending_reviews(home_view)
 project_list_view = check_pending_reviews(project_list_view)
 project_detail_view = check_pending_reviews(project_detail_view)
+recommended_projects_view = check_pending_reviews(recommended_projects_view)
 contract_detail_view = check_pending_reviews(contract_detail_view)
 contract_list_view = check_pending_reviews(contract_list_view)

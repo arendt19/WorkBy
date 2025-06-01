@@ -1,6 +1,10 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ValidationError
+from django.utils.text import slugify
+from django.contrib.auth.validators import UnicodeUsernameValidator
+
 from .models import User, FreelancerProfile, ClientProfile, Review, PortfolioProject, PortfolioImage
 
 class UserProfileForm(forms.ModelForm):
@@ -108,7 +112,7 @@ PortfolioImageFormSet = forms.inlineformset_factory(
 
 class UserRegistrationForm(UserCreationForm):
     """
-    Форма для регистрации новых пользователей
+    Форма для регистрации новых пользователей с дружелюбными сообщениями
     """
     USER_TYPE_CHOICES = [
         ('freelancer', _('Freelancer')),
@@ -121,13 +125,39 @@ class UserRegistrationForm(UserCreationForm):
         widget=forms.RadioSelect
     )
     
-    email = forms.EmailField(required=True)
-    first_name = forms.CharField(required=True)
-    last_name = forms.CharField(required=True)
+    email = forms.EmailField(
+        required=True,
+        help_text=_('Укажите действующий email для получения уведомлений и возможности восстановления доступа')
+    )
+    first_name = forms.CharField(
+        required=True,
+        help_text=_('Заполните ваше имя для более персонализированного опыта')
+    )
+    last_name = forms.CharField(
+        required=True,
+        help_text=_('Укажите вашу фамилию для увеличения доверия на платформе')
+    )
+    
+    # Переопределяем поле username для добавления дружелюбных подсказок
+    username = forms.CharField(
+        help_text=_('Выберите уникальное имя пользователя. Рекомендуем использовать профессиональный никнейм, чтобы выделиться на платформе.'),
+        max_length=150,
+        required=True,
+        validators=[UnicodeUsernameValidator()],
+        error_messages={
+            'unique': _('Это имя пользователя уже занято. Попробуйте добавить цифры или другие символы.'),
+        },
+        widget=forms.TextInput(attrs={'autofocus': True})
+    )
     
     class Meta:
         model = User
         fields = ['username', 'email', 'first_name', 'last_name', 'user_type', 'password1', 'password2']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Добавляем более дружелюбные сообщения для пароля
+        self.fields['password1'].help_text = _('Создайте надежный пароль: минимум 8 символов, включая буквы и цифры')
     
     def save(self, commit=True):
         user = super().save(commit=False)

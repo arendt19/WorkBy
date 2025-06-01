@@ -51,6 +51,10 @@ urlpatterns = [
     # Фрилансеры
     path('freelancers/', views.freelancer_list_view, name='freelancer_list'),
     
+    # Рекомендации проектов
+    path('recommended-projects/', views.recommended_projects_view, name='recommended_projects'),
+    path('record-view/<int:project_id>/', views.record_project_view, name='record_project_view'),
+    
     # URL для обратной совместимости (единственное число)
     path('project/<int:pk>/propose/', views.proposal_create_view, name='proposal_create_singular'),
     

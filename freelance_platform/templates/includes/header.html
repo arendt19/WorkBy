@@ -37,8 +37,16 @@
                     {% endif %}
                     
                     <!-- Общие пункты меню для всех авторизованных пользователей -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'jobs:project_list' %}"><i class="fas fa-search me-1"></i> {% trans "Find Projects" %}</a>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="projectsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-search me-1"></i> {% trans "Projects" %}
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="projectsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'jobs:project_list' %}">{% trans "All Projects" %}</a></li>
+                            {% if not user.is_client and user.freelancer_profile %}
+                            <li><a class="dropdown-item" href="{% url 'jobs:recommended_projects' %}">{% trans "Recommended For You" %}</a></li>
+                            {% endif %}
+                        </ul>
                     </li>
                     
                     <li class="nav-item">
@@ -73,7 +81,7 @@
             </ul>
             
             <!-- Правое меню -->
-            <ul class="navbar-nav ml-auto align-items-center">
+            <ul class="navbar-nav ms-auto align-items-center">
                 {% if user.is_authenticated and user_balance is not None %}
                 <!-- Баланс кошелька -->
                 <li class="nav-item me-3">
