@@ -8,7 +8,9 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-8 text-center">
-            <img src="{% static 'img/error-404.svg' %}" alt="404 Error" class="img-fluid mb-4" style="max-height: 250px;">
+            <div class="text-center p-5 mb-4" style="background-color: #8B0000; border-radius: 15px; width: 200px; height: 200px; margin: 0 auto; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-map-signs fa-6x text-white"></i>
+            </div>
             <h1 class="display-4 mb-4 text-danger">{% trans "404" %}</h1>
             <h2 class="mb-4">{% trans "Page Not Found" %}</h2>
             <p class="lead mb-5">{% trans "The page you are looking for does not exist or has been moved." %}</p>
