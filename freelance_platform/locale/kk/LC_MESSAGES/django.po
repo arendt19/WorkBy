@@ -82,6 +82,9 @@ msgstr "Кіру"
 msgid "Sign Up"
 msgstr "Тіркелу"
 
+msgid "Learn More"
+msgstr "Көбірек білу"
+
 msgid "The leading freelance platform in Kazakhstan"
 msgstr "Қазақстандағы жетекші фриланс платформасы"
 
@@ -206,8 +209,7 @@ msgstr "Қызметтерді іздеу..."
 msgid "Search"
 msgstr "Іздеу"
 
-msgid "Projects Posted"
-msgstr "Жарияланған жобалар"
+
 
 msgid "Professional Freelancers"
 msgstr "Кәсіби фрилансерлер"
@@ -487,6 +489,8 @@ msgstr "Сағаттық мөлшерлеме:"
 msgid "Education:"
 msgstr "Білім:"
 
+
+
 msgid "Website:"
 msgstr "Веб-сайт:"
 
@@ -539,4 +543,60 @@ msgid "Project:"
 msgstr "Жоба:"
 
 msgid "Years of Experience"
-msgstr "Тәжірибе жылдары" 
+msgstr "Тәжірибе жылдары"
+
+msgid "Find the perfect projects for your skills"
+msgstr "Өз дағдыларыңызға сәйкес келетін жобаларды табыңыз"
+
+msgid "Browse projects that match your expertise and start earning"
+msgstr "Тәжірибеңізге сәйкес келетін жобаларды шолып, табыс таба бастаңыз"
+
+msgid "Search for projects..."
+msgstr "Жобаларды іздеу..."
+
+
+
+
+msgid "1. Register"
+msgstr "1. Тіркелу"
+
+msgid "2. Find"
+msgstr "2. Іздеу"
+
+msgid "3. Work"
+msgstr "3. Жұмыс"
+
+msgid "4. Get Paid"
+msgstr "4. Төлем алу"
+
+msgid "Create your account and complete your profile"
+msgstr "Тіркелгіңіз және профиліңізді толтырыңыз"
+
+msgid "Find projects or hire talented freelancers"
+msgstr "Жобаларды табыңыз немесе талантты фрилансерлерді жалдаңыз"
+
+msgid "Collaborate efficiently through our platform"
+msgstr "Біздің платформа арқылы тиімді ынтымақтасыңыз"
+
+msgid "Secure payments with our escrow system"
+msgstr "Эскроу жүйесі арқылы қауіпсіз төлемдер"
+
+msgid "Active Clients"
+msgstr "Белсенді клиенттер"
+
+msgid "Businesses looking for talent"
+msgstr "Таланттарды іздейтін компаниялар"
+
+
+
+msgid "In the last 30 days"
+msgstr "Соңғы 30 күнде"
+
+msgid "Skilled Freelancers"
+msgstr "Білікті фрилансерлер"
+
+msgid "Ready to work"
+msgstr "Жұмысқа дайын"
+
+
+

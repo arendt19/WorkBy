@@ -49,7 +49,7 @@ msgid "View Details"
 msgstr "Подробнее"
 
 msgid "No projects found in this category."
-msgstr "В этой категории нет проектов."
+msgstr "В этой категории проекты не найдены."
 
 msgid "Post a Project"
 msgstr "Разместить проект"
@@ -86,6 +86,9 @@ msgstr "Войти"
 
 msgid "Sign Up"
 msgstr "Регистрация"
+
+msgid "Learn More"
+msgstr "Узнать больше"
 
 msgid "The leading freelance platform in Kazakhstan"
 msgstr "Ведущая фриланс-платформа в Казахстане"
@@ -235,6 +238,21 @@ msgstr "Проекты не найдены."
 msgid "View All Projects"
 msgstr "Смотреть все проекты"
 
+msgid "Active Clients"
+msgstr "Активные клиенты"
+
+msgid "Businesses looking for talent"
+msgstr "Компании в поиске талантов"
+
+msgid "In the last 30 days"
+msgstr "За последние 30 дней"
+
+msgid "Skilled Freelancers"
+msgstr "Квалифицированные фрилансеры"
+
+msgid "Ready to work"
+msgstr "Готовы к работе"
+
 msgid "How It Works"
 msgstr "Как это работает"
 
@@ -285,6 +303,8 @@ msgstr "Отправлено"
 
 msgid "View"
 msgstr "Просмотр"
+
+
 
 msgid "Edit"
 msgstr "Редактировать"
@@ -467,4 +487,43 @@ msgid "Project:"
 msgstr "Проект:"
 
 msgid "Years of Experience"
-msgstr "Лет опыта" 
+msgstr "Лет опыта"
+
+msgid "Find the perfect projects for your skills"
+msgstr "Найдите идеальные проекты для ваших навыков"
+
+msgid "Browse projects that match your expertise and start earning"
+msgstr "Просматривайте проекты, соответствующие вашей экспертизе, и начните зарабатывать"
+
+msgid "Search for projects..."
+msgstr "Поиск проектов..."
+
+
+
+
+msgid "1. Register"
+msgstr "1. Регистрация"
+
+msgid "2. Find"
+msgstr "2. Поиск"
+
+msgid "3. Work"
+msgstr "3. Работа"
+
+msgid "4. Get Paid"
+msgstr "4. Получение оплаты"
+
+msgid "Create your account and complete your profile"
+msgstr "Создайте аккаунт и заполните профиль"
+
+msgid "Find projects or hire talented freelancers"
+msgstr "Находите проекты или нанимайте талантливых фрилансеров"
+
+msgid "Collaborate efficiently through our platform"
+msgstr "Эффективно сотрудничайте через нашу платформу"
+
+msgid "Secure payments with our escrow system"
+msgstr "Безопасные платежи через нашу систему эскроу"
+
+
+

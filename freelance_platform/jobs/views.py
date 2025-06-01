@@ -71,6 +71,27 @@ def home_view(request):
     """
     Отображение главной страницы с последними проектами
     """
+    # Активируем язык из запроса
+    from django.utils import translation
+    from django.conf import settings
+    
+    # Получаем язык из сессии, cookie или заголовка HTTP_ACCEPT_LANGUAGE
+    if hasattr(request, 'LANGUAGE_CODE') and request.LANGUAGE_CODE:
+        user_language = request.LANGUAGE_CODE
+    else:
+        # Язык из cookie
+        lang_code = request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)
+        if lang_code and lang_code in [lang[0] for lang in settings.LANGUAGES]:
+            user_language = lang_code
+        else:
+            # Используем язык по умолчанию
+            user_language = settings.LANGUAGE_CODE
+            
+    # Принудительно активируем язык
+    translation.activate(user_language)
+    request.LANGUAGE_CODE = user_language
+    # Устанавливаем язык в ответ
+    response = None
     # Получаем открытые проекты, отсортированные по дате создания
     projects = Project.objects.filter(status='open').order_by('-created_at')[:8]
     categories = Category.objects.all()
@@ -102,7 +123,23 @@ def home_view(request):
         'top_freelancers': top_freelancers,
     }
     
-    return render(request, 'jobs/home.html', context)
+    # Создаем ответ с языковыми настройками
+    response = render(request, 'jobs/home.html', context)
+    
+    # Устанавливаем cookie языка, если он отличается от того, что уже установлен
+    if response and user_language:
+        response.set_cookie(
+            settings.LANGUAGE_COOKIE_NAME, 
+            user_language,
+            max_age=settings.LANGUAGE_COOKIE_AGE,
+            path=settings.LANGUAGE_COOKIE_PATH,
+            domain=settings.LANGUAGE_COOKIE_DOMAIN,
+            secure=settings.LANGUAGE_COOKIE_SECURE,
+            httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+            samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+        )
+    
+    return response
 
 def project_list_view(request):
     """
