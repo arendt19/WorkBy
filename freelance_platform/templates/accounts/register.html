@@ -55,4 +55,64 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Находим поле имени пользователя
+        const usernameField = document.querySelector('.username-field');
+        if (!usernameField) return;
+        
+        // Создаем элемент для отображения сообщения о доступности
+        const feedbackElement = document.createElement('div');
+        feedbackElement.classList.add('username-feedback', 'mt-1');
+        usernameField.parentNode.appendChild(feedbackElement);
+        
+        // Переменная для таймера задержки проверки
+        let typingTimer;
+        const doneTypingInterval = 500; // время в мс
+        
+        // Функция для проверки доступности имени пользователя
+        function checkUsername() {
+            const username = usernameField.value.trim();
+            if (username.length < 3) {
+                feedbackElement.textContent = 'Имя пользователя должно содержать не менее 3 символов';
+                feedbackElement.className = 'username-feedback text-warning mt-1';
+                return;
+            }
+            
+            // Получаем URL для проверки из атрибута data-validate-username-url
+            const url = usernameField.getAttribute('data-validate-username-url') + '?username=' + encodeURIComponent(username);
+            
+            // Выполняем AJAX запрос
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_available) {
+                        feedbackElement.textContent = data.message;
+                        feedbackElement.className = 'username-feedback text-success mt-1';
+                    } else {
+                        feedbackElement.textContent = data.message;
+                        feedbackElement.className = 'username-feedback text-danger mt-1';
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при проверке имени пользователя:', error);
+                    feedbackElement.textContent = 'Ошибка проверки имени пользователя';
+                    feedbackElement.className = 'username-feedback text-danger mt-1';
+                });
+        }
+        
+        // Обработчики событий для поля имени пользователя
+        usernameField.addEventListener('keyup', function() {
+            clearTimeout(typingTimer);
+            if (usernameField.value) {
+                typingTimer = setTimeout(checkUsername, doneTypingInterval);
+            }
+        });
+        
+        usernameField.addEventListener('blur', checkUsername);
+    });
+</script>
+{% endblock %}

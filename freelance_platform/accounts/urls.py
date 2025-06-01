@@ -56,4 +56,7 @@ urlpatterns = [
     
     # Настройки
     path('change-language/<str:language_code>/', views.change_language_view, name='change_language'),
+    
+    # AJAX
+    path('check-username/', views.check_username_view, name='check_username'),
 ] 

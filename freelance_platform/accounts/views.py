@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.utils.translation import gettext_lazy as _
 from django.db import transaction
 from django.urls import reverse
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.db.models import Avg
 from .forms import (
     UserProfileForm, FreelancerProfileForm, FreelancerUserForm,
@@ -24,7 +24,7 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             messages.success(request, _('Your account has been created! You can now log in.'))
-            return redirect('login')
+            return redirect('accounts:login')
     else:
         form = UserRegistrationForm()
     
@@ -134,55 +134,93 @@ def freelancer_detail_view(request, username):
     """
     Просмотр профиля фрилансера другими пользователями
     """
-    freelancer = get_object_or_404(User, username=username, user_type='freelancer')
-    profile = get_object_or_404(FreelancerProfile, user=freelancer)
-    portfolio_projects = PortfolioProject.objects.filter(freelancer=freelancer)
-    reviews = Review.objects.filter(freelancer=freelancer)
-    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    try:
+        # Сначала проверяем существование пользователя
+        user = get_object_or_404(User, username=username)
+        
+        # Проверяем тип пользователя
+        if user.user_type != 'freelancer':
+            # Если это клиент, перенаправляем на страницу клиента
+            if user.user_type == 'client':
+                return redirect('accounts:client_detail', username=username)
+            else:
+                messages.error(request, _(f'Пользователь {username} не является фрилансером.'))
+                return redirect('jobs:home')
+        
+        # Если тип подходит, продолжаем
+        freelancer = user
+        profile = get_object_or_404(FreelancerProfile, user=freelancer)
+        portfolio_projects = PortfolioProject.objects.filter(freelancer=freelancer)
+        reviews = Review.objects.filter(freelancer=freelancer)
+        avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+        
+        # Убедимся, что avg_rating - это число, а не None
+        if avg_rating is None:
+            avg_rating = 0
+        
+        # Собираем статистику для фрилансера
+        completed_contracts = Contract.objects.filter(freelancer=freelancer, status='completed')
+        total_contracts = Contract.objects.filter(freelancer=freelancer).exclude(status='cancelled')
+        
+        stats = {
+            'completed_projects': completed_contracts.count(),
+            'success_rate': int(completed_contracts.count() / max(total_contracts.count(), 1) * 100),
+            'on_time': 95,  # Заглушка, в реальном проекте нужно рассчитывать
+            'on_budget': 90,  # Заглушка, в реальном проекте нужно рассчитывать
+        }
+        
+        context = {
+            'freelancer': freelancer,
+            'profile': profile,
+            'portfolio_projects': portfolio_projects,
+            'reviews': reviews,
+            'avg_rating': avg_rating,
+            'stats': stats
+        }
+        
+        return render(request, 'accounts/freelancer_detail.html', context)
     
-    # Убедимся, что avg_rating - это число, а не None
-    if avg_rating is None:
-        avg_rating = 0
-    
-    # Собираем статистику для фрилансера
-    completed_contracts = Contract.objects.filter(freelancer=freelancer, status='completed')
-    total_contracts = Contract.objects.filter(freelancer=freelancer).exclude(status='cancelled')
-    
-    stats = {
-        'completed_projects': completed_contracts.count(),
-        'success_rate': int(completed_contracts.count() / max(total_contracts.count(), 1) * 100),
-        'on_time': 95,  # Заглушка, в реальном проекте нужно рассчитывать
-        'on_budget': 90,  # Заглушка, в реальном проекте нужно рассчитывать
-    }
-    
-    context = {
-        'freelancer': freelancer,
-        'profile': profile,
-        'portfolio_projects': portfolio_projects,
-        'reviews': reviews,
-        'avg_rating': avg_rating,
-        'stats': stats
-    }
-    
-    return render(request, 'accounts/freelancer_detail.html', context)
+    except FreelancerProfile.DoesNotExist:
+        # Если профиль фрилансера не найден
+        messages.error(request, _(f'Профиль фрилансера {username} не найден или не заполнен.'))
+        return redirect('jobs:home')
 
 def client_detail_view(request, username):
     """
     Просмотр профиля клиента другими пользователями
     """
-    client = get_object_or_404(User, username=username, user_type='client')
-    profile = ClientProfile.objects.get(user=client)
+    try:
+        # Сначала проверяем существование пользователя
+        user = get_object_or_404(User, username=username)
+        
+        # Затем проверяем тип пользователя
+        if user.user_type != 'client':
+            # Если это фрилансер, перенаправляем на страницу фрилансера
+            if user.user_type == 'freelancer':
+                return redirect('accounts:freelancer_detail', username=username)
+            else:
+                messages.error(request, _(f'Пользователь {username} не является клиентом.'))
+                return redirect('jobs:home')
+        
+        # Если тип подходит, продолжаем
+        client = user
+        profile = ClientProfile.objects.get(user=client)
+        
+        # Получаем публичные проекты клиента
+        recent_projects = Project.objects.filter(client=client, is_private=False).order_by('-created_at')[:5]
+        
+        context = {
+            'client': client,
+            'profile': profile,
+            'recent_projects': recent_projects,
+        }
+        
+        return render(request, 'accounts/client_detail.html', context)
     
-    # Получаем публичные проекты клиента
-    recent_projects = Project.objects.filter(client=client, is_private=False).order_by('-created_at')[:5]
-    
-    context = {
-        'client': client,
-        'profile': profile,
-        'recent_projects': recent_projects,
-    }
-    
-    return render(request, 'accounts/client_detail.html', context)
+    except ClientProfile.DoesNotExist:
+        # Если профиль клиента не найден
+        messages.error(request, _(f'Профиль клиента {username} не найден или не заполнен.'))
+        return redirect('jobs:home')
 
 @login_required
 def change_language_view(request, language_code):
@@ -474,10 +512,32 @@ def logout_view(request):
     Пользовательское представление для выхода из системы.
     Поддерживает как GET, так и POST запросы.
     """
-    if request.method == 'POST':
+    if request.method == 'POST' or request.method == 'GET':
         logout(request)
-        messages.success(request, _('You have been successfully logged out.'))
-        return redirect('jobs:home')
+        messages.success(request, _('You have been successfully logged out'))
+        return redirect('accounts:login')
     else:
-        # Для GET-запросов отображаем страницу подтверждения выхода
-        return render(request, 'accounts/logout.html')
+        return HttpResponseForbidden(_('This method is not allowed'))
+
+def check_username_view(request):
+    """
+    Проверка доступности имени пользователя через AJAX
+    Возвращает JSON ответ с информацией о доступности имени
+    """
+    username = request.GET.get('username', '')
+    if not username:
+        return JsonResponse({'is_available': False, 'message': _('Имя пользователя не может быть пустым')})
+    
+    # Проверяем существование пользователя с таким именем
+    exists = User.objects.filter(username=username).exists()
+    
+    if exists:
+        return JsonResponse({
+            'is_available': False,
+            'message': _('Имя пользователя уже занято. Пожалуйста, выберите другое.')
+        })
+    else:
+        return JsonResponse({
+            'is_available': True,
+            'message': _('Имя пользователя доступно!')
+        })

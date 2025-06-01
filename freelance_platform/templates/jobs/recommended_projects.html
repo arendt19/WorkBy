@@ -79,9 +79,9 @@
                                 <div>
                                     <span class="text-primary fw-bold">
                                         {% if project.budget_type == 'fixed' %}
-                                            {{ project.budget_min }} - {{ project.budget_max }} $
+                                            {{ project.budget_min }} - {{ project.budget_max }} ₸
                                         {% else %}
-                                            {{ project.budget_min }} - {{ project.budget_max }} $/{% trans "час" %}
+                                            {{ project.budget_min }} - {{ project.budget_max }} ₸/{% trans "час" %}
                                         {% endif %}
                                     </span>
                                 </div>
@@ -138,9 +138,9 @@
                                 <div>
                                     <span class="text-primary fw-bold">
                                         {% if recommendation.project.budget_type == 'fixed' %}
-                                            {{ recommendation.project.budget_min }} - {{ recommendation.project.budget_max }} $
+                                            {{ recommendation.project.budget_min }} - {{ recommendation.project.budget_max }} ₸
                                         {% else %}
-                                            {{ recommendation.project.budget_min }} - {{ recommendation.project.budget_max }} $/{% trans "час" %}
+                                            {{ recommendation.project.budget_min }} - {{ recommendation.project.budget_max }} ₸/{% trans "час" %}
                                         {% endif %}
                                     </span>
                                 </div>

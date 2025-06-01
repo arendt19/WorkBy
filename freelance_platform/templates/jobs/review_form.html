@@ -123,7 +123,7 @@
                         <h5>{% trans "Contract:" %} #{{ contract.contract_id }}</h5>
                         <p class="mb-1"><strong>{% trans "Title:" %}</strong> {{ contract.title }}</p>
                         <p class="mb-1"><strong>{% trans "Completed:" %}</strong> {{ contract.updated_at|date:"d F Y" }}</p>
-                        <p><strong>{% trans "Amount:" %}</strong> ${{ contract.amount }}</p>
+                        <p><strong>{% trans "Amount:" %}</strong> ₸{{ contract.amount }}</p>
                     </div>
                     
                     <form method="post" action="{% url 'jobs:leave_review' contract.pk %}">

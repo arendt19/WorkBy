@@ -49,7 +49,7 @@ class EpayAPI:
         signature = hashlib.sha256((sorted_data + self.client_secret).encode()).hexdigest()
         return signature
     
-    def create_payment(self, amount, currency, description, order_id=None, return_url=None, callback_url=None):
+    def create_payment(self, amount, description, currency='KZT', order_id=None, return_url=None, callback_url=None):
         """
         Создание платежа
         """
@@ -84,7 +84,7 @@ class EpayAPI:
         
         return response.json()
     
-    def create_payment_link(self, amount, currency, description, order_id=None):
+    def create_payment_link(self, amount, description, currency='KZT', order_id=None):
         """
         Создание ссылки на оплату
         """
@@ -113,7 +113,7 @@ class EpayAPI:
         
         return response.json()
     
-    def p2p_transfer(self, amount, currency, sender_card, recipient_card, description, order_id=None):
+    def p2p_transfer(self, amount, sender_card, recipient_card, description, currency='KZT', order_id=None):
         """
         Перевод средств между картами (P2P)
         """

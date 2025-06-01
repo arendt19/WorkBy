@@ -158,6 +158,13 @@ class UserRegistrationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
         # Добавляем более дружелюбные сообщения для пароля
         self.fields['password1'].help_text = _('Создайте надежный пароль: минимум 8 символов, включая буквы и цифры')
+        
+        # Добавляем атрибуты для валидации логина
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control username-field',
+            'data-validate-username-url': '/accounts/check-username/',
+            'autocomplete': 'off'
+        })
     
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -168,11 +175,13 @@ class UserRegistrationForm(UserCreationForm):
         
         if commit:
             user.save()
-            # Создаем соответствующий профиль
+            # Создаем соответствующий профиль только если его еще нет
             if user.user_type == 'freelancer':
-                FreelancerProfile.objects.create(user=user)
+                if not FreelancerProfile.objects.filter(user=user).exists():
+                    FreelancerProfile.objects.create(user=user)
             else:
-                ClientProfile.objects.create(user=user)
+                if not ClientProfile.objects.filter(user=user).exists():
+                    ClientProfile.objects.create(user=user)
                 
         return user
 
