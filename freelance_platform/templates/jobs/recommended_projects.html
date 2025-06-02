@@ -212,7 +212,8 @@
 <!-- JavaScript для записи просмотров проектов -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const projectLinks = document.querySelectorAll('a[href^="{% url 'jobs:project_detail' 0 %}'.replace('/0/', '/')]');
+        const baseUrl = "{% url 'jobs:project_detail' 0 %}".replace('/0/', '/');
+        const projectLinks = document.querySelectorAll(`a[href^="${baseUrl}"]`);
         let startTime = Date.now();
         
         // Запись времени начала просмотра страницы
