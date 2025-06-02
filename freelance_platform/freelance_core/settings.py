@@ -148,21 +148,32 @@ ASGI_APPLICATION = 'freelance_core.asgi.application'  # Для Channels
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# Используем PostgreSQL
+# Используем dj-database-url для подключения к базе данных
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'freelance_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'CONN_MAX_AGE': 600,
-        'OPTIONS': {
-            'client_encoding': 'UTF8',
-        },
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres:postgres@localhost:5432/freelance_db',
+        conn_max_age=600
+    )
 }
+
+# Настройка для локальной разработки
+if IS_LOCAL and not os.environ.get('DATABASE_URL'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'freelance_db',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': '127.0.0.1',
+            'PORT': '5432',
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'client_encoding': 'UTF8',
+            },
+        }
+    }
 
 # SQLite конфигурация (закомментирована)
 # DATABASES = {

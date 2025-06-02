@@ -22,4 +22,5 @@ pylint-django>=2.5.5
 # Зависимости для тестирования удалены в ходе очистки кода
 sentry-sdk>=1.39.1
 python-dotenv>=1.0.0
-tzdata>=2023.3 
+tzdata>=2023.3
+dj-database-url>=2.1.0
