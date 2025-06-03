@@ -152,36 +152,43 @@ ASGI_APPLICATION = 'freelance_core.asgi.application'  # Для Channels
 import dj_database_url
 
 # Настройка базы данных с поддержкой как PostgreSQL (локально), так и SQLite (для деплоя)
-if os.environ.get('DATABASE_URL'):
-    # Используем URL базы данных из переменных окружения
+# Если явно указано использовать SQLite
+if os.environ.get('USE_SQLITE', '').lower() in ('true', '1', 't'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+# Если указан явный URL для базы данных
+elif os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(conn_max_age=600)
     }
+# Для локальной разработки - PostgreSQL
+elif IS_LOCAL:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'freelance_db',
+            'USER': 'postgres',
+            'PASSWORD': 'postgres',
+            'HOST': '127.0.0.1',
+            'PORT': '5432',
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'client_encoding': 'UTF8',
+            },
+        }
+    }
+# Для всех остальных случаев - SQLite
 else:
-    # Для локальной разработки - PostgreSQL
-    if IS_LOCAL:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': 'freelance_db',
-                'USER': 'postgres',
-                'PASSWORD': 'postgres',
-                'HOST': '127.0.0.1',
-                'PORT': '5432',
-                'CONN_MAX_AGE': 600,
-                'OPTIONS': {
-                    'client_encoding': 'UTF8',
-                },
-            }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
-    # Для деплоя на Render без их базы данных - SQLite
-    else:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
-            }
-        }
+    }
 
 # SQLite конфигурация (закомментирована)
 # DATABASES = {
