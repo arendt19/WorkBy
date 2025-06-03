@@ -1,0 +1,130 @@
+{% extends 'accounts/auth_base_updated.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Register" %} | WorkBy{% endblock %}
+
+{% block auth_content %}
+<div class="auth-card">
+    <div class="auth-row">
+        <div class="auth-col auth-col-left">
+            <div class="text-center mb-4">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="7" r="4" stroke="#8B0000" stroke-width="1.5"/>
+                    <path d="M2 21V17C2 15.8954 2.89543 15 4 15H14C15.1046 15 16 15.8954 16 17V21" stroke="#8B0000" stroke-width="1.5"/>
+                    <path d="M16 8L18 10L22 6" stroke="#8B0000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <h3 class="mb-3">{% trans "Join WorkBy" %}</h3>
+            <p class="mb-4 text-muted">{% trans "Create an account to start finding projects or hiring freelancers for your tasks." %}</p>
+            <p class="mt-4">{% trans "Already have an account?" %} <a href="{% url 'accounts:login' %}" class="auth-link">{% trans "Log In" %}</a></p>
+        </div>
+        
+        <div class="auth-col">
+            <h3 class="mb-4">{% trans "Register" %}</h3>
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">{% trans "Username" %}</label>
+                    <input type="text" name="username" id="id_username" class="form-control" required>
+                    <div id="username-feedback" class="form-text"></div>
+                    {% if form.username.errors %}<div class="text-danger">{{ form.username.errors }}</div>{% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">{% trans "Email" %}</label>
+                    <input type="email" name="email" id="id_email" class="form-control" required>
+                    {% if form.email.errors %}<div class="text-danger">{{ form.email.errors }}</div>{% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_first_name" class="form-label">{% trans "First Name" %}</label>
+                    <input type="text" name="first_name" id="id_first_name" class="form-control" required>
+                    {% if form.first_name.errors %}<div class="text-danger">{{ form.first_name.errors }}</div>{% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">{% trans "Password" %}</label>
+                    <input type="password" name="password1" id="id_password1" class="form-control" required>
+                    <div class="form-text">{{ form.password1.help_text|safe }}</div>
+                    {% if form.password1.errors %}<div class="text-danger">{{ form.password1.errors }}</div>{% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">{% trans "Password Confirmation" %}</label>
+                    <input type="password" name="password2" id="id_password2" class="form-control" required>
+                    {% if form.password2.errors %}<div class="text-danger">{{ form.password2.errors }}</div>{% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">{% trans "I am a" %}</label>
+                    <div class="d-flex gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="user_type" id="id_user_type_client" value="client" required>
+                            <label class="form-check-label" for="id_user_type_client">{% trans "Client" %}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="user_type" id="id_user_type_freelancer" value="freelancer">
+                            <label class="form-check-label" for="id_user_type_freelancer">{% trans "Freelancer" %}</label>
+                        </div>
+                    </div>
+                    {% if form.user_type.errors %}<div class="text-danger">{{ form.user_type.errors }}</div>{% endif %}
+                </div>
+                
+                {% if form.captcha %}
+                <div class="mb-3">
+                    {{ form.captcha|as_crispy_field }}
+                </div>
+                {% endif %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">{% trans "Register" %}</button>
+                </div>
+                
+                <div class="mt-3 text-center small">
+                    <p class="mb-0">{% trans "By signing up, you agree to our" %} <a href="#" class="auth-link">{% trans "Terms of Service" %}</a> {% trans "and" %} <a href="#" class="auth-link">{% trans "Privacy Policy" %}</a>.</p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Проверка доступности имени пользователя с помощью AJAX
+        $('#id_username').on('change', function() {
+            const username = $(this).val();
+            if (username.length > 0) {
+                $.ajax({
+                    url: '/accounts/check-username/',
+                    data: {
+                        'username': username
+                    },
+                    dataType: 'json',
+                    success: function(data) {
+                        const feedback = $('#username-feedback');
+                        if (data.is_taken) {
+                            feedback.text('Это имя пользователя уже занято.');
+                            feedback.removeClass('text-success').addClass('text-danger');
+                        } else {
+                            feedback.text('Это имя пользователя доступно.');
+                            feedback.removeClass('text-danger').addClass('text-success');
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

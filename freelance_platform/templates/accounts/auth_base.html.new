@@ -1,0 +1,290 @@
+{% load i18n %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WorkBy{% endblock %}</title>
+    <link rel="icon" href="{% static 'img/favicon.png' %}" type="image/png">
+    <link rel="alternate icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+    
+    <!-- Основные стили (темная тема) -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v={% now 'U' %}">
+    
+    <style>
+        /* Стили для страниц аутентификации */
+        body {
+            background-color: #121212;
+            color: #fff;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .auth-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+        }
+        
+        .auth-logo-text {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #8B0000;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+        
+        .auth-language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+        
+        .auth-lang-button {
+            background-color: rgba(30, 30, 30, 0.7);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .auth-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin-top: 60px;
+        }
+        
+        .auth-card {
+            width: 100%;
+            max-width: 900px;
+            min-height: 500px;
+            background-color: rgba(25, 25, 25, 0.95);
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            display: flex;
+        }
+        
+        .auth-card-left, .auth-card-right {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .auth-card-left {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+            position: relative;
+            color: #fff;
+        }
+        
+        .auth-card-left::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 1px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(139, 0, 0, 0.7), transparent);
+        }
+        
+        .auth-card-right {
+            background: linear-gradient(135deg, rgba(25, 25, 25, 0.95) 0%, rgba(18, 18, 18, 0.95) 100%);
+            color: #fff;
+        }
+        
+        .auth-form-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #fff;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .auth-form-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -8px;
+            width: 40px;
+            height: 3px;
+            background-color: #8B0000;
+        }
+        
+        .auth-form input {
+            background-color: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        
+        .auth-form input:focus {
+            background-color: rgba(40, 40, 40, 0.6);
+            border-color: rgba(139, 0, 0, 0.7);
+            box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
+        }
+        
+        .auth-form select {
+            background-color: rgba(30, 30, 30, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        
+        .auth-btn-primary {
+            background-color: #8B0000;
+            border: none;
+            color: #fff;
+            padding: 12px;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .auth-btn-primary:hover {
+            background-color: #A50000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 0, 0, 0.4);
+        }
+        
+        .auth-link {
+            color: #8B0000;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .auth-link:hover {
+            color: #ff6b6b;
+            text-decoration: none;
+        }
+        
+        .auth-divider {
+            text-align: center;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .auth-divider::before, .auth-divider::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .auth-divider::before {
+            left: 0;
+        }
+        
+        .auth-divider::after {
+            right: 0;
+        }
+        
+        .auth-illustration {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .auth-info {
+            margin-bottom: 30px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .auth-card {
+                flex-direction: column;
+                max-height: none;
+            }
+            
+            .auth-card-left::after {
+                width: 100%;
+                height: 1px;
+                top: auto;
+                bottom: 0;
+                right: 0;
+                background: linear-gradient(to right, transparent, rgba(139, 0, 0, 0.7), transparent);
+            }
+            
+            .auth-card-right, .auth-card-left {
+                padding: 30px 20px;
+            }
+            
+            .auth-form-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-logo">
+        <a href="{% url 'jobs:home' %}" class="text-decoration-none">
+            <span class="auth-logo-text">WorkBy</span>
+        </a>
+    </div>
+    
+    <div class="auth-language-switcher">
+        {% get_current_language as CURRENT_LANGUAGE %}
+        <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle auth-lang-button" type="button" id="langDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-globe-americas"></i>
+                {% if CURRENT_LANGUAGE == 'en' %}
+                    {% trans "English" %}
+                {% elif CURRENT_LANGUAGE == 'ru' %}
+                    {% trans "Russian" %}
+                {% elif CURRENT_LANGUAGE == 'kk' %}
+                    {% trans "Kazakh" %}
+                {% endif %}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="langDropdown">
+                <li><a class="dropdown-item" href="{% url 'set_language' %}?language=en&next={{ request.path }}">{% trans "English" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'set_language' %}?language=ru&next={{ request.path }}">{% trans "Russian" %}</a></li>
+                <li><a class="dropdown-item" href="{% url 'set_language' %}?language=kk&next={{ request.path }}">{% trans "Kazakh" %}</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="auth-wrapper">
+        {% block auth_content %}{% endblock %}
+    </div>
+</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

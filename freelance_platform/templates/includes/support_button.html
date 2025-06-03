@@ -1,0 +1,22 @@
+{% load i18n %}
+
+<!-- Фиксированная кнопка для доступа к боту поддержки -->
+<div class="position-fixed bottom-0 end-0 p-4" style="z-index: 1050">
+    <a href="{% url 'chat:support_chat' %}" class="btn btn-danger rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 70px; height: 70px; animation: pulse-animation 2s infinite;" title="{% trans 'AI Support' %}">
+        <i class="fas fa-robot fs-3"></i>
+    </a>
+</div>
+
+<style>
+    @keyframes pulse-animation {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+        }
+    }
+</style>

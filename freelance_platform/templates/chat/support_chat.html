@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Поддержка" %} - WorkBy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot me-2"></i>{% trans "Чат с виртуальным помощником" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="chat-messages" class="chat-messages mb-3" style="height: 400px; overflow-y: auto;">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <div class="message-text">
+                                    {% trans "Здравствуйте! Я виртуальный помощник WorkBy. Чем могу вам помочь сегодня?" %}
+                                </div>
+                                <div class="message-time">{% now "H:i" %}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <form id="support-chat-form">
+                            <div class="input-group">
+                                <input type="text" id="message-input" class="form-control" 
+                                       placeholder="{% trans 'Введите ваш вопрос...' %}" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>{% trans "Для сложных вопросов обратитесь в" %} 
+                            <a href="mailto:support@workby.com">{% trans "службу поддержки" %}</a>
+                        </small>
+                        <div>
+                            <button id="clear-chat" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-trash-alt me-1"></i>{% trans "Очистить чат" %}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-messages {
+        display: flex;
+        flex-direction: column;
+    }
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+    }
+    .user-message {
+        justify-content: flex-end;
+    }
+    .bot-message {
+        justify-content: flex-start;
+    }
+    .message-content {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 18px;
+    }
+    .user-message .message-content {
+        background-color: #e3f2fd;
+        border-bottom-right-radius: 5px;
+    }
+    .bot-message .message-content {
+        background-color: #f1f1f1;
+        border-bottom-left-radius: 5px;
+    }
+    .message-text {
+        word-wrap: break-word;
+    }
+    .message-time {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-align: right;
+        margin-top: 3px;
+    }
+    .typing-indicator {
+        display: flex;
+        padding: 10px 15px;
+        background-color: #f1f1f1;
+        border-radius: 18px;
+        border-bottom-left-radius: 5px;
+        width: fit-content;
+    }
+    .typing-indicator span {
+        height: 8px;
+        width: 8px;
+        background-color: #6c757d;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+        animation: typing 1s infinite ease-in-out;
+    }
+    .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typing {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+        100% { transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatMessages = document.getElementById('chat-messages');
+    const messageForm = document.getElementById('support-chat-form');
+    const messageInput = document.getElementById('message-input');
+    const clearChatButton = document.getElementById('clear-chat');
+    
+    // Прокрутка чата вниз
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Добавление сообщения пользователя
+    function addUserMessage(text) {
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const messageHtml = `
+            <div class="message user-message">
+                <div class="message-content">
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        scrollToBottom();
+    }
+    
+    // Добавление сообщения бота
+    function addBotMessage(text) {
+        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        const messageHtml = `
+            <div class="message bot-message">
+                <div class="message-content">
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        scrollToBottom();
+    }
+    
+    // Показать индикатор набора текста
+    function showTypingIndicator() {
+        const indicatorHtml = `
+            <div id="typing-indicator" class="message bot-message">
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        `;
+        chatMessages.insertAdjacentHTML('beforeend', indicatorHtml);
+        scrollToBottom();
+    }
+    
+    // Скрыть индикатор набора текста
+    function hideTypingIndicator() {
+        const indicator = document.getElementById('typing-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+    
+    // Отправка сообщения боту поддержки
+    async function sendToBotSupport(message) {
+        try {
+            showTypingIndicator();
+            
+            // Небольшая задержка для имитации набора текста
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+            
+            const response = await fetch('/chat/support-bot/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ query: message })
+            });
+            
+            hideTypingIndicator();
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    addBotMessage(data.response);
+                } else {
+                    addBotMessage('Извините, произошла ошибка. Пожалуйста, попробуйте еще раз позже.');
+                }
+            } else {
+                addBotMessage('Извините, не удалось получить ответ. Пожалуйста, попробуйте еще раз позже.');
+            }
+        } catch (error) {
+            hideTypingIndicator();
+            addBotMessage('Извините, возникла техническая проблема. Пожалуйста, попробуйте еще раз позже.');
+            console.error('Error:', error);
+        }
+    }
+    
+    // Получение CSRF-токена из cookie
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Обработка отправки формы
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (message) {
+            addUserMessage(message);
+            messageInput.value = '';
+            sendToBotSupport(message);
+        }
+    });
+    
+    // Очистка чата
+    clearChatButton.addEventListener('click', function() {
+        // Оставляем только первое приветственное сообщение
+        chatMessages.innerHTML = `
+            <div class="message bot-message">
+                <div class="message-content">
+                    <div class="message-text">
+                        ${chatMessages.querySelector('.message-text').textContent}
+                    </div>
+                    <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Начальная прокрутка
+    scrollToBottom();
+});
+</script>
+{% endblock %}

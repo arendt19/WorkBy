@@ -471,3 +471,10 @@ def api_send_message_view(request, pk):
         logger.error(f"Ошибка при отправке сообщения: {str(e)}")
         logger.error(traceback.format_exc())
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+def support_chat_view(request):
+    """
+    Представление для страницы чата с ботом поддержки
+    """
+    return render(request, 'chat/support_chat.html')
