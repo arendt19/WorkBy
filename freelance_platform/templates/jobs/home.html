@@ -223,20 +223,26 @@
                         <div class="card category-card h-100">
                             <div class="card-body">
                                 <div class="category-icon">
-                                    {% if category.slug == 'web-development' %}
-                                        <i class="fas fa-laptop-code"></i>
-                                    {% elif category.slug == 'mobile-app-development' or category.slug == 'mobile-development' %}
+                                    {% if category.slug == 'audio-video-production' or category.name_en == 'Audio & Video Production' %}
+                                        <i class="fas fa-video"></i>
+                                    {% elif category.slug == 'content-copywriting' or category.name_en == 'Content & Copywriting' %}
+                                        <i class="fas fa-pen-fancy"></i>
+                                    {% elif category.slug == 'data-science-analytics' or category.name_en == 'Data Science & Analytics' %}
+                                        <i class="fas fa-chart-bar"></i>
+                                    {% elif category.slug == 'design-ui-ux' or category.name_en == 'Design & UI/UX' %}
+                                        <i class="fas fa-palette"></i>
+                                    {% elif category.slug == 'digital-marketing' or category.name_en == 'Digital Marketing' %}
+                                        <i class="fas fa-bullhorn"></i>
+                                    {% elif category.slug == 'finance-accounting' or category.name_en == 'Finance & Accounting' %}
+                                        <i class="fas fa-file-invoice-dollar"></i>
+                                    {% elif category.slug == 'legal-services' or category.name_en == 'Legal Services' %}
+                                        <i class="fas fa-balance-scale"></i>
+                                    {% elif category.slug == 'mobile-development' or category.name_en == 'Mobile Development' %}
                                         <i class="fas fa-mobile-alt"></i>
+                                    {% elif category.slug == 'web-development' %}
+                                        <i class="fas fa-laptop-code"></i>
                                     {% elif category.slug == 'writing-translation' %}
                                         <i class="fas fa-language"></i>
-                                    {% elif category.slug == 'marketing' %}
-                                        <i class="fas fa-bullhorn"></i>
-                                    {% elif category.slug == 'finance-accounting' %}
-                                        <i class="fas fa-file-invoice"></i>
-                                    {% elif category.slug == 'legal-services' %}
-                                        <i class="fas fa-balance-scale"></i>
-                                    {% elif category.slug == 'virtual-assistance' %}
-                                        <i class="fas fa-headset"></i>
                                     {% else %}
                                         <i class="fas fa-briefcase"></i>
                                     {% endif %}
