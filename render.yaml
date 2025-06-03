@@ -8,7 +8,9 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: false
+        value: true
+      - key: RENDER
+        value: true
       - key: SERVER_ENV
         value: render
       - key: USE_SQLITE

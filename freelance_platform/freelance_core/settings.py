@@ -152,21 +152,21 @@ ASGI_APPLICATION = 'freelance_core.asgi.application'  # Для Channels
 import dj_database_url
 
 # Настройка базы данных с поддержкой как PostgreSQL (локально), так и SQLite (для деплоя)
-# Если явно указано использовать SQLite
-if os.environ.get('USE_SQLITE', '').lower() in ('true', '1', 't'):
+# Проверка, запущено ли приложение на Render
+IS_RENDER = os.environ.get('SERVER_ENV') == 'render' or os.environ.get('RENDER') == 'true'
+
+# На Render всегда используем SQLite
+if IS_RENDER or os.environ.get('USE_SQLITE', '').lower() in ('true', '1', 't'):
+    print("Используем SQLite для базы данных")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-# Если указан явный URL для базы данных
-elif os.environ.get('DATABASE_URL'):
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
-    }
 # Для локальной разработки - PostgreSQL
 elif IS_LOCAL:
+    print("Используем PostgreSQL для локальной разработки")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -181,8 +181,15 @@ elif IS_LOCAL:
             },
         }
     }
+# Если указан явный URL для базы данных
+elif os.environ.get('DATABASE_URL'):
+    print(f"Используем URL базы данных: {os.environ.get('DATABASE_URL')}")
+    DATABASES = {
+        'default': dj_database_url.config(conn_max_age=600)
+    }
 # Для всех остальных случаев - SQLite
 else:
+    print("Используем SQLite по умолчанию")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
