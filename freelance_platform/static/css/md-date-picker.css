@@ -1,0 +1,373 @@
+/**
+ * Material Design Date Time Picker - темная тема
+ */
+
+/* Контейнер для календаря */
+.md-date-picker {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  font-family: 'Roboto', Arial, sans-serif;
+}
+
+.md-date-picker.active {
+  display: flex;
+}
+
+/* Карточка календаря */
+.md-date-card {
+  width: 310px;
+  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+  box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.md-date-picker.active .md-date-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Шапка с месяцем и годом */
+.md-date-header {
+  padding: 16px;
+  background-color: #375a7f;
+  color: #fff;
+  text-align: center;
+}
+
+.md-date-year {
+  font-size: 14px;
+  opacity: 0.8;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.md-date-month-day {
+  font-size: 24px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Селектор года */
+.md-year-selector {
+  height: 0;
+  overflow: hidden;
+  transition: height 0.3s ease;
+}
+
+.md-year-selector.active {
+  height: 200px;
+  overflow-y: auto;
+}
+
+.md-year-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.md-year-option {
+  padding: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.md-year-option:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.md-year-option.selected {
+  color: #375a7f;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Контейнер календаря */
+.md-date-content {
+  padding: 16px;
+}
+
+/* Навигация по месяцам */
+.md-date-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.md-date-prev, .md-date-next {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.md-date-prev:hover, .md-date-next:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.md-date-prev:before {
+  content: '◀';
+  font-size: 12px;
+}
+
+.md-date-next:before {
+  content: '▶';
+  font-size: 12px;
+}
+
+.md-date-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Сетка календаря */
+.md-date-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.md-date-weekday {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 0;
+}
+
+.md-date-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.md-date-day {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+}
+
+.md-date-day:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.md-date-day.today {
+  border: 1px solid #375a7f;
+}
+
+.md-date-day.selected {
+  background-color: #375a7f;
+  color: #fff;
+}
+
+.md-date-day.other-month {
+  opacity: 0.3;
+}
+
+.md-date-day.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Выбор времени */
+.md-time-container {
+  display: none;
+  padding: 16px;
+}
+
+.md-time-container.active {
+  display: block;
+}
+
+.md-time-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.md-time-hours, .md-time-minutes {
+  font-size: 42px;
+  font-weight: 300;
+  width: 80px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.md-time-separator {
+  font-size: 42px;
+  font-weight: 300;
+  margin: 0 4px;
+}
+
+.md-time-active {
+  color: #375a7f;
+}
+
+/* Циферблат */
+.md-time-clock {
+  position: relative;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 0 auto;
+}
+
+.md-clock-hand {
+  position: absolute;
+  width: 2px;
+  height: 90px;
+  background-color: #375a7f;
+  left: calc(50% - 1px);
+  top: 25px;
+  transform-origin: 50% 100%;
+}
+
+.md-clock-center {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #375a7f;
+  border-radius: 50%;
+  left: calc(50% - 4px);
+  top: calc(50% - 4px);
+}
+
+.md-clock-hand:after {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #375a7f;
+  left: -14px;
+  top: -15px;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.md-clock-tick {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.md-clock-tick:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.md-clock-tick.active {
+  background-color: #375a7f;
+  color: #fff;
+}
+
+/* Действия */
+.md-date-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px;
+}
+
+.md-date-btn {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  color: #375a7f;
+  font-weight: 500;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border-radius: 4px;
+}
+
+.md-date-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.md-date-btn:focus {
+  outline: none;
+}
+
+/* Анимация */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+.md-date-picker.fade-in {
+  animation: fadeIn 0.3s forwards;
+}
+
+.md-date-picker.fade-out {
+  animation: fadeOut 0.3s forwards;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  .md-date-card {
+    width: 290px;
+  }
+  
+  .md-date-day {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .md-time-clock {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .md-clock-hand {
+    height: 75px;
+  }
+}

@@ -1,0 +1,82 @@
+{% load i18n %}
+<div class="datetime-picker-container">
+    <input type="text" 
+           name="{{ widget.name }}"
+           id="id_{{ widget.name }}"
+           {% if widget.value != None %}value="{{ widget.value|stringformat:'s' }}"{% endif %}
+           {% include "django/forms/widgets/attrs.html" %}
+           readonly>
+    <input type="hidden" 
+           name="{{ widget.name }}_actual" 
+           id="{{ widget.attrs.id }}_actual" 
+           value="{{ widget.value|date:'Y-m-d\TH:i'|default:'' }}">
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Проверяем, что flatpickr доступен
+        if (typeof flatpickr === 'function') {
+            // Инициализируем календарь для поля даты/времени
+            const dateInput = document.getElementById('id_{{ widget.name }}');
+            const hiddenInput = document.getElementById('{{ widget.attrs.id }}_actual');
+            
+            if (dateInput && hiddenInput) {
+                try {
+                    // Создаем календарь с нужными настройками
+                    const picker = flatpickr(dateInput, {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        minDate: "today",
+                        time_24hr: true,
+                        locale: "ru",
+                        theme: "dark",
+                        allowInput: false,
+                        disableMobile: true,
+                        position: "auto",
+                        appendTo: document.querySelector('.card-body') || document.body,
+                        onChange: function(selectedDates, dateStr, instance) {
+                            // Обновляем скрытое поле с правильным форматом даты для Django
+                            if (selectedDates.length > 0) {
+                                const date = selectedDates[0];
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                const hours = String(date.getHours()).padStart(2, '0');
+                                const minutes = String(date.getMinutes()).padStart(2, '0');
+                                
+                                // Формат для datetime-local
+                                hiddenInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                                
+                                // Устанавливаем значение в основном поле формы
+                                const hiddenEvent = new Event('change', { bubbles: true });
+                                hiddenInput.dispatchEvent(hiddenEvent);
+                            }
+                        }
+                    });
+                    
+                    // Настраиваем форму для правильной отправки
+                    const form = dateInput.closest('form');
+                    if (form) {
+                        form.addEventListener('submit', function(e) {
+                            // Копируем значение из скрытого поля перед отправкой
+                            const actualValue = hiddenInput.value;
+                            dateInput.value = actualValue;
+                        });
+                    }
+                } catch (e) {
+                    console.error('Ошибка при инициализации календаря:', e);
+                    // Если не удалось инициализировать Flatpickr, делаем запасной вариант
+                    dateInput.type = 'datetime-local';
+                    dateInput.readOnly = false;
+                }
+            }
+        } else {
+            // Если Flatpickr не доступен, используем стандартный элемент
+            const dateInput = document.getElementById('id_{{ widget.name }}');
+            if (dateInput) {
+                dateInput.type = 'datetime-local';
+                dateInput.readOnly = false;
+            }
+        }
+    });
+</script>
