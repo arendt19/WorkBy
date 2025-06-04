@@ -296,12 +296,14 @@
                             <p class="card-text">{{ project.description|truncatechars:150 }}</p>
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 <div class="project-budget">
-                                    <span class="fw-bold">{{ project.budget|currency }}</span>
-                                    {% if project.budget_type == 'fixed' %}
-                                        <small class="text-muted">{% trans "Fixed" %}</small>
-                                    {% else %}
-                                        <small class="text-muted">{% trans "Per Hour" %}</small>
-                                    {% endif %}
+                                    <span class="fw-bold">{{ project.budget_min|floatformat:0 }} - {{ project.budget_max|floatformat:0 }} ₸</span>
+                                    <small class="text-muted d-block">
+                                        {% if project.budget_type == 'fixed' %}
+                                            {% trans "Fixed Price" %}
+                                        {% else %}
+                                            {% trans "Per Hour" %}
+                                        {% endif %}
+                                    </small>
                                 </div>
                                 <small class="text-muted">
                                     <i class="fas fa-clock me-1"></i> {{ project.created_at|timesince }}
@@ -380,9 +382,11 @@
                                 </div>
                             </div>
                             <p class="card-text small text-muted">{{ freelancer.title }}</p>
-                            <a href="{% url 'accounts:freelancer_profile' freelancer.user.username %}" class="btn btn-sm btn-outline-primary">
-                                {% trans "View Profile" %}
-                            </a>
+                            {% if freelancer.user.username %}
+                                <a href="{% url 'accounts:freelancer_detail' freelancer.user.username %}" class="btn btn-sm btn-outline-primary">
+                                    {% trans "View Profile" %}
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
