@@ -325,13 +325,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const typingIndicator = showTypingIndicator();
         
         try {
-            const response = await fetch('{% url 'chat:support_bot' %}', {
+            const response = await fetch('{% url 'chat:support_bot' %}?lang={{ LANGUAGE_CODE }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: `message=${encodeURIComponent(message)}&lang=${document.documentElement.lang}`
+                body: `message=${encodeURIComponent(message)}`
             });
             
             if (!response.ok) {
