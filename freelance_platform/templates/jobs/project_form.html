@@ -56,7 +56,6 @@
         border-radius: 8px;
         padding: 20px;
         margin-bottom: 24px;
-        display: none;
     }
     
     .form-section-title {
@@ -183,153 +182,6 @@
         transform: translateY(-50%);
         color: #aaa;
     }
-    
-    /* ==== Design Enhancements v1.7.2 ==== */
-    :root {
-        --bg-card: #1e1e1e;
-        --bg-section: #252525;
-        --color-text: #e0e0e0;
-        --color-secondary: #9e9e9e;
-        --color-accent: #c62828;
-        --color-primary: #2c7be5;
-    }
-
-    body {
-        color: var(--color-text);
-    }
-
-    /* Унифицированные поля ввода */
-    .form-control, .form-select {
-        min-height: 48px;
-        border-radius: 6px;
-    }
-
-    .form-control:focus, .form-select:focus {
-        border-color: var(--color-accent);
-        box-shadow: 0 0 0 0.15rem rgba(198, 40, 40, 0.25);
-    }
-
-    /* Цвета секций и карточек */
-    .form-section {
-        background: var(--bg-section);
-    }
-
-    .card.shadow-sm {
-        background: var(--bg-card);
-    }
-
-    /* Скрываем ON / OFF текст у переключателей */
-    .toggle-slider:after {
-        display: none;
-    }
-
-    /* Убираем стрелки у числовых инпутов */
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    /* Улучшенная фиксированная панель */
-    .action-panel-sticky {
-        backdrop-filter: blur(6px);
-        background: rgba(30, 30, 30, 0.85);
-    }
-    /* =============================== */
-
-    /* Modern polish v1.7.3 */
-    h5.mb-0 {
-        font-weight: 600;
-        letter-spacing: 0.3px;
-    }
-
-    .form-section {
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
-        border: 1px solid #333;
-    }
-
-    .form-section-title {
-        border-bottom: 1px solid #333;
-        padding-bottom: 8px;
-        margin-bottom: 24px;
-        text-transform: uppercase;
-        font-size: 0.9rem;
-        color: var(--color-secondary);
-    }
-
-    .btn.btn-primary {
-        background-color: var(--color-accent);
-        border-color: var(--color-accent);
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-    .btn.btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(198, 40, 40, 0.4);
-    }
-
-    .btn-outline-secondary {
-        border-color: #555;
-        color: #ccc;
-        transition: color 0.15s ease, border-color 0.15s ease;
-    }
-    .btn-outline-secondary:hover {
-        border-color: var(--color-primary);
-        color: var(--color-primary);
-    }
-
-    .form-control::placeholder {
-        color: #666;
-    }
-
-    .form-control, .form-select {
-        background-color: #2a2a2a;
-        color: var(--color-text);
-        border-color: #444;
-        transition: background-color 0.15s ease;
-    }
-    .form-control:hover, .form-select:hover {
-        background-color: #323232;
-    }
-    /* End modern polish */
-
-    /* ===== STEP INDICATOR ===== */
-    .stepper {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 24px;
-        counter-reset: step;
-    }
-    .stepper .step-item {
-        flex: 1 1 0;
-        text-align: center;
-        position: relative;
-        color: var(--color-secondary);
-    }
-    .stepper .step-item::before {
-        counter-increment: step;
-        content: counter(step);
-        background: var(--bg-section);
-        border: 2px solid var(--color-secondary);
-        display: inline-flex;
-        justify-content: center;
-        align-items: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        margin-bottom: 6px;
-        font-weight: 600;
-    }
-    .stepper .step-item.active,
-    .stepper .step-item.completed {
-        color: var(--color-text);
-    }
-    .stepper .step-item.active::before,
-    .stepper .step-item.completed::before {
-        border-color: var(--color-accent);
-    }
-
-    .form-section.step-active { display: block; }
-    /* ========================== */
 </style>
 {% endblock %}
 
@@ -348,13 +200,6 @@
                     </h4>
                 </div>
                 <div class="card-body">
-                    <!-- Stepper indicator -->
-                    <div class="stepper">
-                        <div class="step-item active" id="step-indicator-0">{% trans "Details" %}</div>
-                        <div class="step-item" id="step-indicator-1">{% trans "Budget" %}</div>
-                        <div class="step-item" id="step-indicator-2">{% trans "Requirements" %}</div>
-                    </div>
-                    
                     <form method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                         
@@ -366,7 +211,7 @@
                             </div>
                         {% endif %}
                         
-                        <div class="form-section step-active">
+                        <div class="form-section">
                             <div class="form-section-title">
                                 <i class="bi bi-info-circle-fill"></i>
                                 <h5 class="mb-0">{% trans "Project Details" %}</h5>
@@ -578,12 +423,21 @@
                         <!-- Фиксированная панель действий -->
                         <div class="action-panel-sticky">
                             <div class="d-flex justify-content-between align-items-center">
-                                <button type="button" id="btnPrev" class="btn btn-outline-secondary" disabled>
-                                    <i class="bi bi-arrow-left me-1"></i> {% trans "Previous" %}
-                                </button>
-                                <button type="button" id="btnNext" class="btn btn-primary">
-                                    {% trans "Next" %} <i class="bi bi-arrow-right ms-1"></i>
-                                </button>
+                                <a href="{% url 'jobs:my_projects' %}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left me-1"></i> {% trans "Back" %}
+                                </a>
+                                
+                                <div>
+                                    {% if is_edit %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-save me-1"></i> {% trans "Save Changes" %}
+                                        </button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-plus-circle me-1"></i> {% trans "Create Project" %}
+                                        </button>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -785,39 +639,6 @@
                 }
             });
         }
-        
-        const sections = document.querySelectorAll('.form-section');
-        const indicators = document.querySelectorAll('.step-item');
-        let current = 0;
-        
-        const btnPrev = document.getElementById('btnPrev');
-        const btnNext = document.getElementById('btnNext');
-        
-        function updateStep(dir) {
-            sections[current].classList.remove('step-active');
-            indicators[current].classList.remove('active');
-            indicators[current].classList.add('completed');
-            
-            current += dir;
-            sections[current].classList.add('step-active');
-            indicators[current].classList.add('active');
-            
-            btnPrev.disabled = current === 0;
-            
-            btnNext.innerHTML = (current === sections.length - 1)
-                ? '{% trans "Submit" %} <i class="bi bi-check ms-1"></i>'
-                : '{% trans "Next" %} <i class="bi bi-arrow-right ms-1"></i>';
-        }
-        
-        btnPrev.addEventListener('click', () => updateStep(-1));
-        btnNext.addEventListener('click', (e) => {
-            if (current < sections.length - 1) {
-                updateStep(1);
-            } else {
-                // Последний шаг – отправка формы
-                projectForm.requestSubmit();
-            }
-        });
     });
 </script>
-{% endblock %}
+{% endblock %} 

@@ -293,7 +293,7 @@ class Contract(models.Model):
         
     @property
     def review(self):
-        """Returns review associated with this contract"""
+        """Returns review associated with this contract using project/client/freelancer linkage (no Review.contract FK)"""
         from accounts.models import Review
         try:
             return Review.objects.get(
