@@ -492,46 +492,135 @@ def support_bot_view(request):
     # Получаем язык из запроса или используем 'ru' по умолчанию
     lang = request.GET.get('lang', 'ru')
     
-    # Базовая обработка сообщений о платежах
-    payment_keywords = [
-        'payment', 'pay', 'card', 'transaction', 'deposit', 'withdraw',
-        'оплата', 'платеж', 'карта', 'транзакция', 'депозит', 'вывод',
-        'төлөм', 'төлеу', 'кarta', 'транзакция', 'депозит', 'төлем'
-    ]
-    
-    # Проверяем, содержит ли сообщение ключевые слова о платежах
     message_lower = message.lower()
-    payment_related = any(keyword in message_lower for keyword in payment_keywords)
-    
-    # Подбираем ответ в зависимости от содержания сообщения
-    if payment_related:
-        responses = {
-            'en': "I see you're having trouble with payments. Here are some common issues:\n"
-                  "1. Check if your card is supported\n"
-                  "2. Make sure you have enough funds\n"
-                  "3. Try another card or payment method\n"
-                  "If the problem persists, please contact support.",
-            'ru': "Я вижу, у вас проблемы с платежами. Вот что можно проверить:\n"
-                  "1. Поддерживается ли ваша карта\n"
-                  "2. Достаточно ли средств на счете\n"
-                  "3. Попробуйте другую карту или метод оплаты\n"
-                  "Если проблема сохраняется, обратитесь в службу поддержки.",
-            'kk': "Төлемдермен қателіктер пайда болғанын көріп тұрмын. Бұл нәрселерді тексеріңіз:\n"
-                  "1. Картаның қолданылатындығын тексеріңіз\n"
-                  "2. Есімдегі ақша жеткілікті болатындығын тексеріңіз\n"
-                  "3. Басқа картаны же төлеу әдісін енгізіңіз\n"
-                  "Егер қателік тұрған болса, қолдау қызметіне хабарласыңыз."
+
+    categories = {
+        'payment': {
+            'keywords': [
+                'payment', 'pay', 'card', 'transaction', 'deposit', 'withdraw',
+                'оплата', 'платеж', 'карта', 'транзакция', 'депозит', 'вывод',
+                'төлем', 'төлеу'
+            ],
+            'responses': {
+                'en': (
+                    "It looks like you're experiencing payment issues. Please try the following:\n"
+                    "1. Ensure your card is supported and activated.\n"
+                    "2. Verify you have sufficient funds or credit.\n"
+                    "3. Try a different card or payment provider.\n"
+                    "Still stuck? Reach out to our support team and we'll be happy to assist."
+                ),
+                'ru': (
+                    "Похоже, у вас возникли трудности с оплатой. Попробуйте сделать следующее:\n"
+                    "1. Убедитесь, что карта поддерживается и активна.\n"
+                    "2. Проверьте, достаточно ли средств или доступного лимита.\n"
+                    "3. Попробуйте другую карту или способ оплаты.\n"
+                    "Если проблема не решена, свяжитесь со службой поддержки — мы поможем."
+                ),
+                'kk': (
+                    "Төлем кезінде қателіктер туындады сияқты. Келесі қадамдарды орындап көріңіз:\n"
+                    "1. Картаңыздың қолдау табатынына және белсенді екеніне көз жеткізіңіз.\n"
+                    "2. Шотыңызда жеткілікті қаражат бар екенін тексеріңіз.\n"
+                    "3. Басқа картаны немесе төлем әдісін қолданып көріңіз.\n"
+                    "Мәселе шешілмесе, қолдау қызметіне хабарласыңыз — көмектесуге дайынбыз."
+                )
+            }
+        },
+        'registration': {
+            'keywords': [
+                'register', 'sign up', 'registration', 'create account', 'username', 'password', 'email',
+                'регистрация', 'зарегистрироваться', 'аккаунт', 'логин', 'пароль',
+                'тіркелу', 'аккаунт жасау'
+            ],
+            'responses': {
+                'en': (
+                    "Need help signing up? Make sure to:\n"
+                    "• Choose a unique username (3–150 characters).\n"
+                    "• Provide a valid email so we can send confirmations.\n"
+                    "• Create a strong password (min 8 chars with letters & numbers).\n"
+                    "If you already have an account, simply log in from the top-right corner."
+                ),
+                'ru': (
+                    "Помощь с регистрацией:\n"
+                    "• Придумайте уникальное имя пользователя (3–150 символов).\n"
+                    "• Укажите действующий e-mail для подтверждения.\n"
+                    "• Создайте надёжный пароль (не менее 8 символов, буквы и цифры).\n"
+                    "Уже есть аккаунт? Используйте кнопку входа в правом верхнем углу."
+                ),
+                'kk': (
+                    "Тіркелуге көмек:\n"
+                    "• Бірегей пайдаланушы атын таңдаңыз (3–150 таңба).\n"
+                    "• Растау хатын алу үшін жарамды email енгізіңіз.\n"
+                    "• Күшті құпия сөз жасаңыз (кемінде 8 таңба, әріптер мен сандар).\n"
+                    "Бұрын тіркелген болсаңыз, жоғарғы оң жақтағы кіру батырмасын пайдаланыңыз."
+                )
+            }
+        },
+        'withdrawal': {
+            'keywords': [
+                'withdraw', 'payout', 'cash out', 'escrow release',
+                'вывод', 'снятие', 'вывести', 'эскроу',
+                'шығару', 'ақша шығару'
+            ],
+            'responses': {
+                'en': "To withdraw funds: Go to Wallet → Withdraw, choose a method (bank card, QIWI, etc.), enter the amount, and confirm. Processing usually takes 1-3 business days.",
+                'ru': "Чтобы вывести средства: откройте Кошелёк → Вывод, выберите способ (карта, QIWI и др.), введите сумму и подтвердите. Обработка занимает 1-3 рабочих дня.",
+                'kk': "Қаражатты шығару үшін: Әмиян → Шығару бөлімін ашыңыз, әдісті таңдаңыз (карта, QIWI т.б.), соманы енгізіп, растаңыз. Өңдеу 1-3 жұмыс күнін алады."
+            }
+        },
+        'project_post': {
+            'keywords': [
+                'post project', 'create project', 'new project', 'job posting',
+                'разместить проект', 'создать проект', 'проект', 'заказ',
+                'жоба жариялау', 'жоба қосу'
+            ],
+            'responses': {
+                'en': "Posting a project is easy: Click ‘Post a Project’, fill in title, description, budget & deadline, then publish. Freelancers will start sending proposals shortly!",
+                'ru': "Чтобы разместить проект: нажмите «Опубликовать проект», заполните название, описание, бюджет и дедлайн, затем опубликуйте. Фрилансеры вскоре начнут отправлять предложения!",
+                'kk': "Жобаны жариялау үшін: «Жоба жариялау» түймесін басып, атау, сипаттама, бюджет және мерзімді енгізіңіз, содан кейін жариялаңыз. Фрилансерлер ұсыныстарын жіберетін болады!"
+            }
+        },
+        'proposal': {
+            'keywords': [
+                'proposal', 'bid', 'apply', 'offer',
+                'предложение', 'ставка', 'отклик',
+                'ұсыныс', 'өтінім'
+            ],
+            'responses': {
+                'en': "To submit a proposal: Open the project page, click ‘Send Proposal’, specify your price, timeline & cover letter, and attach samples if relevant.",
+                'ru': "Чтобы отправить предложение: откройте страницу проекта, нажмите «Отправить предложение», укажите цену, сроки и сопроводительное письмо, при необходимости приложите примеры работ.",
+                'kk': "Ұсыныс жіберу үшін: Жоба бетіне кіріп, «Ұсыныс жіберу» түймесін басыңыз, бағасын, мерзімін және хабарламаңызды көрсетіңіз, қажет болса мысалдар тіркеңіз."
+            }
+        },
+        'dispute': {
+            'keywords': [
+                'dispute', 'conflict', 'issue', 'problem with freelancer', 'problem with client',
+                'спор', 'конфликт', 'проблема', 'жалоба',
+                'дау', 'мәселе'
+            ],
+            'responses': {
+                'en': "We’re sorry to hear about the dispute. Please open the contract page and click ‘Open Dispute’. Provide evidence and our support team will review within 48 h.",
+                'ru': "Сожалеем о споре. Перейдите на страницу контракта и нажмите «Открыть спор». Приложите доказательства, и наша команда рассмотрит запрос в течение 48 ч.",
+                'kk': "Даудың пайда болғанына өкініш білдіреміз. Контракт бетіне өтіп, «Дау ашу» түймесін басыңыз. Дәлелдер қосыңыз, қолдау тобы 48 сағ ішінде қарайды."
+            }
         }
-    else:
-        responses = {
+    }
+
+    selected_response = None
+    for cat in categories.values():
+        if any(k in message_lower for k in cat['keywords']):
+            selected_response = cat['responses'].get(lang) or cat['responses']['ru']
+            break
+
+    if not selected_response:
+        # Ответ по умолчанию
+        default_responses = {
             'en': "I'm here to help! How can I assist you today?",
             'ru': "Здравствуйте! Я виртуальный помощник WorkBy. Чем могу вам помочь сегодня?",
             'kk': "Сәлеметсіз бе! Мен WorkBy виртуалды көмекшісімін. Қалай көмектесе аламын?"
         }
-    
-    # Если язык не определен или не поддерживается, используем русский
-    response = responses.get(lang, responses['ru'])
-    
+        selected_response = default_responses.get(lang, default_responses['ru'])
+
+    response = selected_response
     return JsonResponse({
         'message': response,
         'timestamp': timezone.now().strftime('%H:%M')

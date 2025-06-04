@@ -2,94 +2,55 @@
 {% load i18n %}
 {% load static %}
 
-{% block title %}{% trans "Поддержка" %} - WorkBy{% endblock %}
-
-{% block content %}
-<div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0 d-flex align-items-center">
-                        <div class="bot-avatar me-2"></div>
-                        {% trans "Чат с виртуальным помощником" %}
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div id="chat-messages" class="chat-messages mb-3" style="height: 400px; overflow-y: auto;">
-                        <div class="message bot-message">
-                            <div class="message-content">
-                                <div class="message-text">
-                                    {% trans "Здравствуйте! Я виртуальный помощник WorkBy. Чем могу вам помочь сегодня?" %}
-                                </div>
-                                <div class="message-time">{% now "H:i" %}</div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="chat-input">
-                        <form id="support-chat-form">
-                            <div class="input-group">
-                                <input type="text" id="message-input" class="form-control" 
-                                       placeholder="{% trans 'Введите ваш вопрос...' %}" required>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <div class="card-footer bg-light">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">
-                            <i class="fas fa-info-circle me-1"></i>{% trans "Для сложных вопросов обратитесь в" %} 
-                            <a href="mailto:support@workby.com">{% trans "службу поддержки" %}</a>
-                        </small>
-                        <div>
-                            <button id="clear-chat" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-trash-alt me-1"></i>{% trans "Очистить чат" %}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+{% block title %}{% trans "Support" %} - WorkBy{% endblock %}
 
 {% block extra_css %}
 <style>
-    .card {
-        background-color: #2A2F34;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        border: none;
+    .chat-container {
+        display: flex;
+        height: calc(100vh - 150px);
+        background-color: #121212;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #333;
+        border-radius: 12px;
+        margin-top: 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
     }
     
-    .card-header {
-        background-color: #343A40;
-        padding: 16px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    .chat-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #1a1a1a;
+        border-radius: 0 8px 8px 0;
+        overflow: hidden;
+        max-width: 800px;
+        margin-left: 0;
+        height: calc(100vh - 150px);
+        box-shadow: -4px 0 10px rgba(0, 0, 0, 0.2);
     }
     
-    .card-header h5 {
-        font-weight: 600;
-        color: #FFFFFF;
-        margin: 0;
+    .chat-header {
+        padding: 15px 20px;
+        background-color: #1a1a1a;
+        border-bottom: 1px solid #333;
         display: flex;
         align-items: center;
+        gap: 12px;
     }
     
     .bot-avatar {
-        width: 32px;
-        height: 32px;
+        width: 40px;
+        height: 40px;
         background-color: #C72C41;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 16px;
+        font-size: 18px;
         font-weight: bold;
     }
     
@@ -97,18 +58,18 @@
         content: '🤖';
     }
     
-    .card-body {
-        padding: 16px 20px;
-        background-color: #2A2F34;
+    .chat-title {
+        color: #fff;
+        font-size: 18px;
+        font-weight: 600;
     }
     
     .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
         display: flex;
         flex-direction: column;
-        height: 400px;
-        overflow-y: auto;
-        padding: 16px 0;
-        background-color: #2A2F34;
     }
     
     .message {
@@ -126,11 +87,12 @@
     
     .message-content {
         max-width: 70%;
-        padding: 12px 14px;
-        border-radius: 10px;
+        padding: 12px 16px;
+        border-radius: 16px;
         font-size: 15px;
         line-height: 1.5;
         font-family: 'Inter', sans-serif;
+        word-wrap: break-word;
     }
     
     .user-message .message-content {
@@ -145,10 +107,6 @@
         border-bottom-left-radius: 5px;
     }
     
-    .message-text {
-        word-wrap: break-word;
-    }
-    
     .message-time {
         font-size: 13px;
         color: rgba(255, 255, 255, 0.7);
@@ -157,12 +115,14 @@
     }
     
     .chat-input {
-        margin-top: 24px;
+        padding: 20px;
+        background-color: #1a1a1a;
+        border-top: 1px solid #333;
     }
     
     .input-group {
         background-color: #2C3138;
-        border-radius: 6px;
+        border-radius: 8px;
         overflow: hidden;
     }
     
@@ -171,7 +131,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         color: #FFFFFF;
         padding: 12px 16px;
-        border-radius: 6px;
+        border-radius: 8px;
     }
     
     .form-control::placeholder {
@@ -181,7 +141,7 @@
     .btn-primary {
         background-color: #C72C41;
         border: none;
-        padding: 12px 16px;
+        padding: 12px 20px;
         transition: background-color 0.2s;
     }
     
@@ -189,44 +149,24 @@
         background-color: #DD3C51;
     }
     
-    .card-footer {
-        background-color: #2A2F34;
-        padding: 16px 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .card-footer small {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.7);
-    }
-    
-    .card-footer a {
-        color: #C72C41;
-        text-decoration: none;
-    }
-    
-    .card-footer a:hover {
-        color: #DD3C51;
-    }
-    
-    #clear-chat {
+    .clear-chat-btn {
         color: #C72C41;
         background: none;
         border: none;
-        padding: 6px 12px;
+        padding: 8px 16px;
         font-size: 14px;
         transition: color 0.2s;
     }
     
-    #clear-chat:hover {
+    .clear-chat-btn:hover {
         color: #DD3C51;
     }
     
     .typing-indicator {
         display: flex;
-        padding: 12px 14px;
+        padding: 12px 16px;
         background-color: #2C3138;
-        border-radius: 10px;
+        border-radius: 16px;
         border-bottom-left-radius: 5px;
         width: fit-content;
         color: rgba(255, 255, 255, 0.7);
@@ -255,6 +195,63 @@
 </style>
 {% endblock %}
 
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="chat-container">
+                <div class="chat-content">
+                    <div class="chat-header">
+                        <div class="bot-avatar"></div>
+                        <div class="chat-title">{% trans "Chat with AI Assistant" %}</div>
+                    </div>
+                    <div id="chat-messages" class="chat-messages">
+                        <div class="message bot-message">
+                            <div class="message-content">
+                                <div class="message-text">
+                                    {% trans "Hello! I am AI Assistant of WorkBy. How can i help you today?" %}
+                                </div>
+                                <div class="message-time">{% now "H:i" %}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <form id="support-chat-form">
+                            <div class="input-group">
+                                <input type="text" id="message-input" class="form-control" 
+                                       placeholder="{% trans 'Введите ваш вопрос...' %}" required>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-end">
+                <button id="clear-chat" class="clear-chat-btn">
+                    <i class="fas fa-trash-alt me-1"></i>{% trans "Clear chat" %}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row justify-content-center mt-2">
+        <div class="col-md-8 text-end">
+            <a href="mailto:support@workby.kz" id="contact-support" class="btn btn-outline-light contact-support-btn">
+                <i class="fas fa-headset me-1"></i>{% trans "Contact the support" %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -270,72 +267,71 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Добавление сообщения пользователя
     function addUserMessage(text) {
-        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const messageHtml = `
-            <div class="message user-message">
-                <div class="message-content">
-                    <div class="message-text">${text}</div>
-                    <div class="message-time">${time}</div>
-                </div>
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message user-message';
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-text">${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
             </div>
         `;
-        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        chatMessages.appendChild(messageDiv);
         scrollToBottom();
     }
     
     // Добавление сообщения бота
     function addBotMessage(text) {
-        const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        const messageHtml = `
-            <div class="message bot-message">
-                <div class="message-content">
-                    <div class="message-text">${text}</div>
-                    <div class="message-time">${time}</div>
-                </div>
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message bot-message';
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-text">${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString()}</div>
             </div>
         `;
-        chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+        chatMessages.appendChild(messageDiv);
         scrollToBottom();
     }
     
-    // Показать индикатор набора текста
+    // Показ индикатора печати
     function showTypingIndicator() {
-        const indicatorHtml = `
-            <div id="typing-indicator" class="message bot-message">
-                <div class="typing-indicator">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-            </div>
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerHTML = `
+            <span></span>
+            <span></span>
+            <span></span>
         `;
-        chatMessages.insertAdjacentHTML('beforeend', indicatorHtml);
+        chatMessages.appendChild(typingDiv);
         scrollToBottom();
+        return typingDiv;
     }
     
-    // Скрыть индикатор набора текста
-    function hideTypingIndicator() {
-        const indicator = document.getElementById('typing-indicator');
-        if (indicator) {
-            indicator.remove();
+    // Скрытие индикатора печати
+    function hideTypingIndicator(typingDiv) {
+        if (typingDiv) {
+            typingDiv.remove();
         }
     }
     
-    // Отправка сообщения боту поддержки
-    async function sendToBotSupport(message) {
+    messageForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        messageInput.value = '';
+        addUserMessage(message);
+        
+        const typingIndicator = showTypingIndicator();
+        
         try {
-            showTypingIndicator();
-            
             const response = await fetch('{% url 'chat:support_bot' %}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRFToken': getCookie('csrftoken')
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: new URLSearchParams({
-                    'message': message,
-                    'lang': document.documentElement.lang
-                })
+                body: `message=${encodeURIComponent(message)}&lang=${document.documentElement.lang}`
             });
             
             if (!response.ok) {
@@ -343,42 +339,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             const data = await response.json();
+            hideTypingIndicator(typingIndicator);
             addBotMessage(data.message);
-            
         } catch (error) {
             console.error('Error:', error);
-            addBotMessage('Извините, произошла ошибка при обработке вашего сообщения.');
-        } finally {
-            hideTypingIndicator();
-        }
-    }
-    
-    // Получение CSRF-токена из cookie
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-    
-    // Обработка отправки формы
-    messageForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const message = messageInput.value.trim();
-        if (message) {
-            addUserMessage(message);
-            messageInput.value = '';
-            sendToBotSupport(message);
+            hideTypingIndicator(typingIndicator);
+            addBotMessage('{% trans "Sorry, there is error. Please, try again." %}');
         }
     });
+    
+    // Дублирующий обработчик отправки формы удалён, см. корректный обработчик выше.
     
     // Очистка чата
     clearChatButton.addEventListener('click', function() {

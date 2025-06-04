@@ -127,25 +127,25 @@ class UserRegistrationForm(UserCreationForm):
     
     email = forms.EmailField(
         required=True,
-        help_text=_('Укажите действующий email для получения уведомлений и возможности восстановления доступа')
+        help_text=_('Enter a valid email address to receive notifications and password reset links')
     )
     first_name = forms.CharField(
         required=True,
-        help_text=_('Заполните ваше имя для более персонализированного опыта')
+        help_text=_('Enter your first name for a more personalized experience')
     )
     last_name = forms.CharField(
         required=True,
-        help_text=_('Укажите вашу фамилию для увеличения доверия на платформе')
+        help_text=_('Enter your last name to increase trust on the platform')
     )
     
     # Переопределяем поле username для добавления дружелюбных подсказок
     username = forms.CharField(
-        help_text=_('Выберите уникальное имя пользователя. Рекомендуем использовать профессиональный никнейм, чтобы выделиться на платформе.'),
+        help_text=_('Choose a unique username. We recommend a professional nickname to stand out on the platform.'),
         max_length=150,
         required=True,
         validators=[UnicodeUsernameValidator()],
         error_messages={
-            'unique': _('Это имя пользователя уже занято. Попробуйте добавить цифры или другие символы.'),
+            'unique': _('This username is already taken. Try adding numbers or other characters.'),
         },
         widget=forms.TextInput(attrs={'autofocus': True})
     )
@@ -157,7 +157,7 @@ class UserRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Добавляем более дружелюбные сообщения для пароля
-        self.fields['password1'].help_text = _('Создайте надежный пароль: минимум 8 символов, включая буквы и цифры')
+        self.fields['password1'].help_text = _('Create a strong password: at least 8 characters including letters and numbers')
         
         # Добавляем атрибуты для валидации логина
         self.fields['username'].widget.attrs.update({
