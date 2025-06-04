@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import redirect
+from django.views.decorators.http import require_POST, require_GET
 import random
 import json
 
@@ -478,3 +479,60 @@ def support_chat_view(request):
     Представление для страницы чата с ботом поддержки
     """
     return render(request, 'chat/support_chat.html')
+
+@require_POST
+def support_bot_view(request):
+    """
+    API для обработки сообщений от бота поддержки
+    """
+    message = request.POST.get('message', '').strip()
+    if not message:
+        return JsonResponse({'error': 'Message is required'}, status=400)
+
+    # Получаем язык из запроса или используем 'ru' по умолчанию
+    lang = request.GET.get('lang', 'ru')
+    
+    # Базовая обработка сообщений о платежах
+    payment_keywords = [
+        'payment', 'pay', 'card', 'transaction', 'deposit', 'withdraw',
+        'оплата', 'платеж', 'карта', 'транзакция', 'депозит', 'вывод',
+        'төлөм', 'төлеу', 'кarta', 'транзакция', 'депозит', 'төлем'
+    ]
+    
+    # Проверяем, содержит ли сообщение ключевые слова о платежах
+    message_lower = message.lower()
+    payment_related = any(keyword in message_lower for keyword in payment_keywords)
+    
+    # Подбираем ответ в зависимости от содержания сообщения
+    if payment_related:
+        responses = {
+            'en': "I see you're having trouble with payments. Here are some common issues:\n"
+                  "1. Check if your card is supported\n"
+                  "2. Make sure you have enough funds\n"
+                  "3. Try another card or payment method\n"
+                  "If the problem persists, please contact support.",
+            'ru': "Я вижу, у вас проблемы с платежами. Вот что можно проверить:\n"
+                  "1. Поддерживается ли ваша карта\n"
+                  "2. Достаточно ли средств на счете\n"
+                  "3. Попробуйте другую карту или метод оплаты\n"
+                  "Если проблема сохраняется, обратитесь в службу поддержки.",
+            'kk': "Төлемдермен қателіктер пайда болғанын көріп тұрмын. Бұл нәрселерді тексеріңіз:\n"
+                  "1. Картаның қолданылатындығын тексеріңіз\n"
+                  "2. Есімдегі ақша жеткілікті болатындығын тексеріңіз\n"
+                  "3. Басқа картаны же төлеу әдісін енгізіңіз\n"
+                  "Егер қателік тұрған болса, қолдау қызметіне хабарласыңыз."
+        }
+    else:
+        responses = {
+            'en': "I'm here to help! How can I assist you today?",
+            'ru': "Здравствуйте! Я виртуальный помощник WorkBy. Чем могу вам помочь сегодня?",
+            'kk': "Сәлеметсіз бе! Мен WorkBy виртуалды көмекшісімін. Қалай көмектесе аламын?"
+        }
+    
+    # Если язык не определен или не поддерживается, используем русский
+    response = responses.get(lang, responses['ru'])
+    
+    return JsonResponse({
+        'message': response,
+        'timestamp': timezone.now().strftime('%H:%M')
+    })

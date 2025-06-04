@@ -21,7 +21,7 @@ urlpatterns = [
     path('api/mark_messages_read/<int:pk>/', views.api_mark_messages_read_view, name='api_mark_messages_read'),
     
     # Бот поддержки
-    path('support-bot/', support_views.bot_response, name='support_bot_response'),
+    path('support-bot/', views.support_bot_view, name='support_bot'),
     
     # Тестовая страница
     path('test-button/', test_views.test_button_view, name='test_button'),
