@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load static %}
+{% load jobs_tags %}
 
 {% block title %}{% trans "My Contracts" %} | WorkBy{% endblock %}
 
@@ -235,7 +236,13 @@
                                     <div class="card-body">
                                         <div class="mb-2">
                                             <div class="small text-muted">{% trans "Contract Amount" %}</div>
-                                            <div class="fs-5 fw-bold">₸{{ contract.amount }}</div>
+                                            <div class="fs-5 fw-bold">
+                                                {% if contract.amount %}
+                                                    {{ contract.amount|currency }}
+                                                {% else %}
+                                                    {{ contract.project.budget_min|currency }} - {{ contract.project.budget_max|currency }}
+                                                {% endif %}
+                                            </div>
                                         </div>
                                         
                                         <div class="d-flex gap-2 mt-3">

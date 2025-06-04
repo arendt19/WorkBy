@@ -296,7 +296,11 @@ class Contract(models.Model):
         """Returns review associated with this contract"""
         from accounts.models import Review
         try:
-            return Review.objects.get(contract=self)
+            return Review.objects.get(
+                project=self.project,
+                client=self.client,
+                freelancer=self.freelancer,
+            )
         except Review.DoesNotExist:
             return None
 

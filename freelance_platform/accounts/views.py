@@ -54,9 +54,14 @@ def profile_view(request):
     
     elif user.user_type == 'client':
         profile, created = ClientProfile.objects.get_or_create(user=user)
+        # Получаем проекты клиента
+        active_projects = Project.objects.filter(client=user).exclude(status='completed').order_by('-created_at')
+        completed_projects = Project.objects.filter(client=user, status='completed').order_by('-created_at')
         context = {
             'user': user,
-            'profile': profile
+            'profile': profile,
+            'active_projects': active_projects,
+            'completed_projects': completed_projects,
         }
         return render(request, 'accounts/client_profile.html', context)
     
