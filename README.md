@@ -70,15 +70,26 @@
 
 ## 📸 Скриншоты
 
-
-   1) ![Главная страница] (./screenshots/main_page.jpg)
-   2) ![Проекты на сайте от клиентов] (./screenshots/projects.jpg)
-   3) ![Чат-бот ассистент] (./screenshots/chatbot.jpg)
-   4) ![Кошелек пользователя] (./screenshots/wallet.jpg)
-   5) ![Чат между пользователями] (./screenshots/conversation.jpg)
-   6) ![Профиль пользователя] (./screenshots/profile.jpg)
-   7) ![Контракты между пользователями] (./screenshots/contracts.jpg)
-   8) ![Предложения своих услуг от фрилансеров к проектам клиентов] (./screenshots/proposals.jpg)
+<div align="center">
+  <table>
+    <tr>
+      <td><img src="./screenshots/main_page.jpg" alt="Главная страница" width="100%"></td>
+      <td><img src="./screenshots/projects.jpg" alt="Проекты на сайте от клиентов" width="100%"></td>
+    </tr>
+    <tr>
+      <td><img src="./screenshots/chatbot.jpg" alt="Чат-бот ассистент" width="100%"></td>
+      <td><img src="./screenshots/wallet.jpg" alt="Кошелек пользователя" width="100%"></td>
+    </tr>
+    <tr>
+      <td><img src="./screenshots/conversation.jpg" alt="Чат между пользователями" width="100%"></td>
+      <td><img src="./screenshots/profile.jpg" alt="Профиль пользователя" width="100%"></td>
+    </tr>
+    <tr>
+      <td><img src="./screenshots/contracts.jpg" alt="Контракты между пользователями" width="100%"></td>
+      <td><img src="./screenshots/proposals.jpg" alt="Предложения своих услуг от фрилансеров" width="100%"></td>
+    </tr>
+  </table>
+</div>
    
 ## 📞 Контакты
 
